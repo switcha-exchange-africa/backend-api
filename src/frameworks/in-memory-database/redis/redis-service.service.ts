@@ -38,7 +38,9 @@ export class CustomRedisService implements IInMemoryServices {
 
   async ttl(key: string) {
     try {
-      await this.redis.ttl(key);
+      const value = await this.redis.ttl(key);
+      return value;
+
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }

@@ -90,7 +90,7 @@ export class AuthServices {
       const verification: string[] = []
 
       if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user email already exists')
+        throw new AlreadyExistsException('user email already verified')
       }
       if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) {
         throw new AlreadyExistsException('user already verified')
@@ -158,14 +158,21 @@ export class AuthServices {
         throw new BadRequestsException('user not recognized')
       }
       if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user email already exists')
+        throw new AlreadyExistsException('user email already verified')
+      }
+      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) {
+        throw new AlreadyExistsException('user already verified')
       }
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const codeSent = await this.inMemoryServices.get(redisKey) as number
+      console.log("------------------code sent -----------------------")
+      console.log(codeSent)
+      console.log("------------------code sent -----------------------")
 
-      if (!isEmpty(codeSent)) {
-        const codeExpiry = ((await this.inMemoryServices.ttl(redisKey) as Number) || 0);
+      if (codeSent) {
+        console.log("entering code sent")
+        const codeExpiry = await this.inMemoryServices.ttl(redisKey) as Number || 0;
         // taking away 4 minutes from the wait time
         const nextRequest = Math.abs(Number(codeExpiry) / 60 - 4);
         if (Number(codeExpiry && Number(codeExpiry) > 4)) {

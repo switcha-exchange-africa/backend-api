@@ -78,16 +78,24 @@ export class AuthenticationController {
     }
   }
 
-  @Get(AUTHENTICATION_ROUTE.ISSUE_VERIFICATION_CODE)
-  async issueVerificationCode(@Req() req: Request, @Res() res: Response) {
+  @Get(AUTHENTICATION_ROUTE.VERIFY_USER)
+  @UseGuards(LooseAuthGuard)
+  async issueEmailVerificationCode(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
     try {
-      return res.status(201).json("authenticated")
-    } catch (e) {
-      return res.status(500).json(e)
+      const response = await this.authServices.issueEmailVerificationCode(req, res)
+      return res.status(response.status).json(response)
+    } catch (error) {
+      if (error.name === 'TypeError') {
+        Logger.error(error)
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      return res.status(error.status || 500).json(error)
     }
   }
-
-
 
   @Post(AUTHENTICATION_ROUTE.VERIFY_USER)
   @UseGuards(LooseAuthGuard)
@@ -98,7 +106,7 @@ export class AuthenticationController {
   ) {
     try {
       const response = await this.authServices.verifyEmail(req, res, String(code))
-      return res.status(201).json(response)
+      return res.status(200).json(response)
     } catch (error) {
       if (error.name === 'TypeError') {
         Logger.error(error)
@@ -113,7 +121,7 @@ export class AuthenticationController {
   async testRoute(@Req() req: Request, @Res() res: Response) {
     try {
       const value = await this.inMemoryServices.get('test')
-      return res.status(201).json({value})
+      return res.status(201).json({ value })
     } catch (e) {
       return res.status(500).json(e)
     }
