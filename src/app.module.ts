@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { AppController } from './controllers/app.controllers';
 import { AuthenticationController } from './controllers/authentication/index.controller';
 import { DiscordServicesModule } from './frameworks/notification-services/discord/discord-service.module';
@@ -11,7 +11,8 @@ import { UserServicesModule } from './services/use-cases/user/user-service.modul
   imports: [
     DataServicesModule,
     UserServicesModule,
-    DiscordServicesModule
+    DiscordServicesModule,
+    CacheModule
   ],
   controllers: [
     AppController,

@@ -23,3 +23,6 @@ export const env = {
 export const PORT = getEnv('PORT')!;
 export const MONGO_DB_URL = getEnv('MONGO_DB_URL')!
 export const JWT_SECRET_KEY = getEnv('JWT_SECRET_KEY')!
+
+export const REDISHOST = getEnv('REDISHOST')!
+export const REDISPORT = getEnv('REDISPORT')!
