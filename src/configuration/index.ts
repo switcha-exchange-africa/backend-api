@@ -24,5 +24,7 @@ export const PORT = getEnv('PORT')!;
 export const MONGO_DB_URL = getEnv('MONGO_DB_URL')!
 export const JWT_SECRET_KEY = getEnv('JWT_SECRET_KEY')!
 
-export const REDISHOST = getEnv('REDISHOST')!
-export const REDISPORT = getEnv('REDISPORT')!
+export const REDIS_HOST = getEnv('REDIS_HOST')!
+export const REDIS_PORT = getEnv('REDIS_PORT')!
+export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD')!
+

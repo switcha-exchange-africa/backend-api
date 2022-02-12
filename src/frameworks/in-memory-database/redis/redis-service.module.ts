@@ -5,21 +5,25 @@ import {
   Logger,
   Module,
   OnModuleInit,
+  Global,
 } from '@nestjs/common';
 import * as redisStore from 'cache-manager-ioredis';
 import { Cache } from 'cache-manager';
-import { REDISHOST, REDISPORT } from 'src/configuration';
+import { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } from 'src/configuration';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { RedisService } from './redis-service.service';
 
+@Global()
 @Module({
   imports: [
     BaseCacheModule.registerAsync({
       useFactory: () => {
         return {
           store: redisStore,
-          host: REDISHOST,
-          port: REDISPORT ,
+          host: REDIS_HOST,
+          port: REDIS_PORT,
+          password: REDIS_PASSWORD,
+          promiseDependency: Promise
         }
       },
     }),
@@ -32,6 +36,7 @@ import { RedisService } from './redis-service.service';
   ],
   exports: [
     IInMemoryServices,
+    BaseCacheModule
   ],
 })
 export class CacheModule implements OnModuleInit {

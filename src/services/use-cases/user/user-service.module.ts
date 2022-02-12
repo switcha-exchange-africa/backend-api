@@ -7,7 +7,10 @@ import { UserFactoryService } from "./user-factory.service";
 
 
 @Module({
-  imports: [DataServicesModule, DiscordServicesModule],
+  imports: [
+    DataServicesModule,
+    DiscordServicesModule,
+  ],
   providers: [UserFactoryService, AuthServices],
   exports: [UserFactoryService, AuthServices],
 })

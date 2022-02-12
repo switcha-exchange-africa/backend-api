@@ -1,18 +1,38 @@
-import { Body, Controller, Get, HttpException, Logger, Post, Req, Res, UseFilters } from "@nestjs/common"
-import { AUTHENTICATION_ROUTE, DISCORD_VERIFICATION_CHANNEL_LINK, TEST_ROUTE, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants"
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Logger,
+  Post,
+  Req,
+  Res
+} from "@nestjs/common"
+import {
+  AUTHENTICATION_ROUTE,
+  DISCORD_VERIFICATION_CHANNEL_LINK,
+  TEST_ROUTE,
+  USER_LOCK,
+  USER_SIGNUP_STATUS_TYPE,
+  USER_TYPE,
+  VERIFICATION_VALUE_TYPE
+} from "src/lib/constants"
 import { Request, Response } from "express"
 import { UserFactoryService } from "src/services/use-cases/user/user-factory.service"
 import { AuthServices } from "src/services/use-cases/user/auth-services.services"
 import { CreateUserDto } from "src/core/dtos/user.dto"
 import { hash } from "src/lib/utils"
 import { INotificationServices } from "src/core/abstracts"
+import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
 
 @Controller()
 export class AuthenticationController {
   constructor(
     private authServices: AuthServices,
     private userFactoryService: UserFactoryService,
-    private discordServices: INotificationServices
+    private discordServices: INotificationServices,
+    private inMemoryServices: IInMemoryServices
+
   ) { }
 
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
@@ -79,14 +99,10 @@ export class AuthenticationController {
   @Post(TEST_ROUTE.TEST)
   async testRoute(@Req() req: Request, @Res() res: Response) {
     try {
-      const payload = {
-        message: 'Testing discord notification',
-        link: DISCORD_VERIFICATION_CHANNEL_LINK,
-        title: 'Tests'
-
-      }
-      await this.discordServices.inHouseNotification(payload)
-      return res.status(201).json("authenticated")
+      await this.inMemoryServices.set('test', 'yeah', 1000)
+      const value = await this.inMemoryServices.get('test')
+      console.log("@controller-redis-value", value)
+      return res.status(201).json({ value: value })
     } catch (e) {
       return res.status(500).json(e)
     }
