@@ -6,7 +6,7 @@ import jwtLib from "src/lib/jwtLib";
 import { AlreadyExistsException, BadRequestsException, DoesNotExistsException } from "./exceptions";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
-import { compareHash, hash, isEmpty, randomFixedInteger } from "src/lib/utils";
+import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 
 
@@ -84,12 +84,11 @@ export class AuthServices {
 
   async verifyEmail(req: Request, res: Response, code: string) {
     try {
-      const { code } = req.body;
       const authUser = req?.user!;
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
-     
+
       if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
         throw new AlreadyExistsException('user email already exists')
       }
@@ -148,4 +147,71 @@ export class AuthServices {
       throw error;
     }
   }
+
+  async issueEmailVerificationCode(
+    req: Request,
+    res: Response
+  ) {
+    try {
+      const authUser = req?.user;
+      if (!authUser) {
+        throw new BadRequestsException('user not recognized')
+      }
+      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
+        throw new AlreadyExistsException('user email already exists')
+      }
+
+      const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
+      const codeSent = await this.inMemoryServices.get(redisKey) as number
+
+      if (!isEmpty(codeSent)) {
+        const codeExpiry = ((await this.inMemoryServices.ttl(redisKey) as Number) || 0);
+        // taking away 4 minutes from the wait time
+        const nextRequest = Math.abs(Number(codeExpiry) / 60 - 4);
+        if (Number(codeExpiry && Number(codeExpiry) > 4)) {
+          return {
+            status: 202,
+            message: `if you have not received the verification code, please make another request in ${Math.ceil(
+              nextRequest,
+            )} ${maybePluralize(Math.ceil(nextRequest), 'minute', 's')}`
+          }
+        }
+      }
+
+      const emailCode = randomFixedInteger(6)
+      // Remove email code for this user
+      await this.inMemoryServices.del(redisKey)
+      const user = await this.dataServices.users.findOne({ email: authUser?.email })
+      const verification: string[] = []
+      if (user?.emailVerified! === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
+
+      if (!user) {
+        throw new DoesNotExistsException('user does not exists')
+
+      }
+      // hash verification code in redis
+      const hashedCode = await hash(String(emailCode));
+      // save hashed code to redis
+      await this.inMemoryServices.set(
+        redisKey,
+        hashedCode,
+        String(SIGNUP_CODE_EXPIRY)
+      )
+
+      return {
+        status: 200,
+        message: 'New code was successfully generated',
+        code: env.isProd ? null : emailCode,
+        verification
+      };
+    } catch (error: Error | any | unknown) {
+      if (error.name === 'TypeError') {
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      throw error;
+
+    }
+  }
+
 }
