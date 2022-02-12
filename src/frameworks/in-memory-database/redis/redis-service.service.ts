@@ -20,7 +20,6 @@ export class RedisService implements IInMemoryServices {
   async get(key: string) {
     try {
       const value = await this.cache.get(key)
-      console.log("@redis-value", value)
       return value;
     } catch (e) {
       Logger.error('@cache-manager-redis', e)

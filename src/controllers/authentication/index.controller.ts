@@ -22,15 +22,14 @@ import { UserFactoryService } from "src/services/use-cases/user/user-factory.ser
 import { AuthServices } from "src/services/use-cases/user/auth-services.services"
 import { CreateUserDto } from "src/core/dtos/user.dto"
 import { hash } from "src/lib/utils"
-import { INotificationServices } from "src/core/abstracts"
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
+import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto"
 
 @Controller()
 export class AuthenticationController {
   constructor(
     private authServices: AuthServices,
     private userFactoryService: UserFactoryService,
-    private discordServices: INotificationServices,
     private inMemoryServices: IInMemoryServices
 
   ) { }
@@ -64,7 +63,7 @@ export class AuthenticationController {
         throw new HttpException(error.message, 500)
       }
       Logger.error(error)
-      return res.status(500).json(error)
+      return res.status(error.status || 500).json(error)
     }
   }
 
@@ -88,9 +87,14 @@ export class AuthenticationController {
 
 
   @Post(AUTHENTICATION_ROUTE.VERIFY_USER)
-  async verifyUser(@Req() req: Request, @Res() res: Response) {
+  async verifyUser(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() code: VerifyUserDto
+  ) {
     try {
-      return res.status(201).json("test")
+      const response = await this.authServices.verifyEmail(req, res, String(code))
+      return res.status(201).json(response)
     } catch (e) {
       return res.status(500).json(e)
     }
@@ -101,7 +105,6 @@ export class AuthenticationController {
     try {
       await this.inMemoryServices.set('test', 'yeah', 1000)
       const value = await this.inMemoryServices.get('test')
-      console.log("@controller-redis-value", value)
       return res.status(201).json({ value: value })
     } catch (e) {
       return res.status(500).json(e)

@@ -66,7 +66,7 @@ export class CacheModule implements OnModuleInit {
 
         // Avoid logging the options
         args = args.slice(0, 2);
-        logger.log(`${commandName.toUpperCase()} ${args.join(', ')} - ${duration}ms`);
+        logger.log(`${commandName.toUpperCase()} - ${duration}ms`);
 
         return result;
       };

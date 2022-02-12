@@ -84,17 +84,16 @@ export enum ErrorResponseType {
 // redis
 
 export enum RedisPrefix {
-  signupCode = 'trofira/signupcode',
-  signupPhoneCode = 'trofira/signupPhonecode',
-  businessInvitationCode = "trofira/businessInvitationCode",
-  passwordResetCount = "trofira/passwordResetCount",
-  resetCode = "trofira/resetCode",
-  resetpassword = "trofira/resetpassword",
-  changeEmailResetCount = "trofira/changeEmailResetCount",
-  emailResetCode = "trofira/emailResetCode"
+  signupEmailCode = 'switcha/signupEmailcode',
+  signupPhoneCode = 'switcha/signupPhonecode',
+  businessInvitationCode = "switcha/businessInvitationCode",
+  passwordResetCount = "switcha/passwordResetCount",
+  resetCode = "switcha/resetCode",
+  resetpassword = "switcha/resetpassword",
+  changeEmailResetCount = "switcha/changeEmailResetCount",
+  emailResetCode = "switcha/emailResetCode"
 }
 export const RESET_PASSWORD_EXPIRY = 600
-
 
 export enum VERIFICATION_VALUE_TYPE {
   TRUE = 'true',
