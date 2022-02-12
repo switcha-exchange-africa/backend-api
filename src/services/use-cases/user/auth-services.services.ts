@@ -37,6 +37,8 @@ export class AuthServices {
       // call to our dependencies
 
       const user = await this.dataServices.users.create(data);
+      const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
+
       const verification: string[] = []
       if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
       // setup jwt
@@ -60,9 +62,9 @@ export class AuthServices {
       })
       const hashedCode = await hash(String(code));
       await this.inMemoryServices.set(
-        `${RedisPrefix.signupEmailCode}/${user?.email}`,
+        redisKey,
         hashedCode,
-        SIGNUP_CODE_EXPIRY
+        String(SIGNUP_CODE_EXPIRY)
       )
       return {
         message: "User signed up successfully",
@@ -85,23 +87,18 @@ export class AuthServices {
       const { code } = req.body;
       const authUser = req?.user!;
 
-      const user = await this.dataServices.users.findOne({ email: authUser.email });
-      const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
-
+      const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
-      if (user) {
-        throw new DoesNotExistsException('user does not exists')
-      }
-
-      if (user?.emailVerified) {
+     
+      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
         throw new AlreadyExistsException('user email already exists')
       }
-      if (user?.verified) {
+      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) {
         throw new AlreadyExistsException('user already verified')
       }
 
-
       const savedCode = await this.inMemoryServices.get(redisKey);
+
       if (isEmpty(savedCode)) {
         throw new BadRequestsException('code is incorrect, invalid or has expired')
       }
@@ -111,7 +108,7 @@ export class AuthServices {
         throw new BadRequestsException('code is incorrect, invalid or has expired')
       }
 
-      const updatedUser = await this.dataServices.users.update({ _id: user?._id }, {
+      const updatedUser = await this.dataServices.users.update({ _id: authUser?._id }, {
         $set: {
           emailVerified: VERIFICATION_VALUE_TYPE.TRUE,
           verified: VERIFICATION_VALUE_TYPE.TRUE,

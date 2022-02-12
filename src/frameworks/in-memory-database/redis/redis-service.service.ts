@@ -1,17 +1,19 @@
-import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 
 @Injectable()
-export class RedisService implements IInMemoryServices {
+export class CustomRedisService implements IInMemoryServices {
+
+
   constructor(
-    @Inject(CACHE_MANAGER) private readonly cache: IInMemoryServices,
+    @InjectRedis() private readonly redis: Redis,
   ) { }
 
-  async set(key: string, value: any, expiry: number) {
+  async set(key: string, value: any, expiry: string | any[]) {
     try {
-      await this.cache.set(key, value, expiry);
-
+      await this.redis.set(key, value, 'EX', expiry);
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }
@@ -19,7 +21,7 @@ export class RedisService implements IInMemoryServices {
   }
   async get(key: string) {
     try {
-      const value = await this.cache.get(key)
+      const value = await this.redis.get(key)
       return value;
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
@@ -28,8 +30,7 @@ export class RedisService implements IInMemoryServices {
 
   async del(key: string) {
     try {
-      await this.cache.del(key);
-
+      await this.redis.del(key);
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }

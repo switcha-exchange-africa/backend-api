@@ -27,4 +27,4 @@ export const JWT_SECRET_KEY = getEnv('JWT_SECRET_KEY')!
 export const REDIS_HOST = getEnv('REDIS_HOST')!
 export const REDIS_PORT = getEnv('REDIS_PORT')!
 export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD')!
-
+export const REDIS_CLIENT_NAME = getEnv('REDIS_CLIENT_NAME')!

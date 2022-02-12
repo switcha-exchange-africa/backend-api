@@ -18,3 +18,8 @@ export class BadRequestsException extends HttpException {
   }
 }
 
+export class UnAuthorizedException extends HttpException {
+  constructor(message: string) {
+    super(message, HttpStatus.UNAUTHORIZED);
+  }
+}

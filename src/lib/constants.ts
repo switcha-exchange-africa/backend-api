@@ -61,8 +61,8 @@ export type JWT_USER_PAYLOAD_TYPE = {
   email?: string
   authStatus?: USER_SIGNUP_STATUS_TYPE
   lock?: USER_LOCK
-  emailVerified?: boolean
-  verified?: boolean
+  emailVerified?: string
+  verified?: string
 }
 export const JWT_EXPIRY_TIME: number = 5
 export const SIGNUP_CODE_EXPIRY: number = 600
@@ -107,4 +107,4 @@ export const VERIFICATION_VALUE_TYPE_LIST = [
 
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
-export const DISCORD_VERIFICATION_CHANNEL_LINK='https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
+export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'

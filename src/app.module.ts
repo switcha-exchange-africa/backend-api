@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './controllers/app.controllers';
 import { AuthenticationController } from './controllers/authentication/index.controller';
-import { CacheModule } from './frameworks/in-memory-database/redis/redis-service.module';
+import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
 import { DiscordServicesModule } from './frameworks/notification-services/discord/discord-service.module';
 import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
 import { DataServicesModule } from './services/data-services/data-services.module';
@@ -24,7 +24,7 @@ declare global {
     DataServicesModule,
     UserServicesModule,
     DiscordServicesModule,
-    CacheModule
+    RedisServiceModule
   ],
   controllers: [
     AppController,

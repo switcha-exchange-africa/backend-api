@@ -6,7 +6,8 @@ import {
   Logger,
   Post,
   Req,
-  Res
+  Res,
+  UseGuards
 } from "@nestjs/common"
 import {
   AUTHENTICATION_ROUTE,
@@ -24,6 +25,7 @@ import { CreateUserDto } from "src/core/dtos/user.dto"
 import { hash } from "src/lib/utils"
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto"
+import { LooseAuthGuard, StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware"
 
 @Controller()
 export class AuthenticationController {
@@ -86,7 +88,9 @@ export class AuthenticationController {
   }
 
 
+
   @Post(AUTHENTICATION_ROUTE.VERIFY_USER)
+  @UseGuards(LooseAuthGuard)
   async verifyUser(
     @Req() req: Request,
     @Res() res: Response,
@@ -95,17 +99,21 @@ export class AuthenticationController {
     try {
       const response = await this.authServices.verifyEmail(req, res, String(code))
       return res.status(201).json(response)
-    } catch (e) {
-      return res.status(500).json(e)
+    } catch (error) {
+      if (error.name === 'TypeError') {
+        Logger.error(error)
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      return res.status(error.status || 500).json(error)
     }
   }
 
   @Post(TEST_ROUTE.TEST)
   async testRoute(@Req() req: Request, @Res() res: Response) {
     try {
-      await this.inMemoryServices.set('test', 'yeah', 1000)
       const value = await this.inMemoryServices.get('test')
-      return res.status(201).json({ value: value })
+      return res.status(201).json({value})
     } catch (e) {
       return res.status(500).json(e)
     }
