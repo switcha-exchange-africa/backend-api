@@ -5,6 +5,7 @@ import {
   HttpException,
   Logger,
   Post,
+  Query,
   Req,
   Res,
   UseGuards
@@ -161,11 +162,11 @@ export class AuthenticationController {
   @Post(AUTHENTICATION_ROUTE.RESET_PASSWORD)
   async resetPassword(
     @Res() res: Response,
-    @Req() req: ResetPasswordDto,
+    @Query() query: ResetPasswordDto,
     @Body() body: ResetPasswordBodyDto
   ) {
     try {
-      const { email, token } = req
+      const { email, token } = query
       const { password } = body
       const response = await this.authServices.resetPassword(res, { email, password, token })
       return res.status(response.status).json(response)

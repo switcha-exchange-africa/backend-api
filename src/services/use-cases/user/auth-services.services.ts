@@ -8,7 +8,7 @@ import { Response, Request } from "express"
 import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
-import crypto from 'crypto'
+import { randomBytes } from 'crypto'
 
 @Injectable()
 export class AuthServices {
@@ -233,6 +233,8 @@ export class AuthServices {
 
       const userRequestReset = await this.inMemoryServices.get(resetPasswordRedisKey);
       if (!userRequestReset) {
+        console.log(email, password, token)
+        console.log("reset password key", userRequestReset)
         throw new BadRequestsException('Invalid or expired reset token')
       }
       // Find user by email
@@ -295,7 +297,7 @@ export class AuthServices {
         throw new TooManyRequestsException(`Password was recently updated. Try again in ${nextTryOpening}`)
       }
 
-      const user = await this.dataServices.users.findOne({ email: String(email) });
+      const user = await this.dataServices.users.findOne({ email });
       if (!user) {
         throw new BadRequestsException(`code is invalid or has expired`)
       }
@@ -327,7 +329,7 @@ export class AuthServices {
       if (!code) {
 
         if (codeSent) {
-          const codeExpiry = await this.inMemoryServices.get(resetPasswordRedisKey) as Number || 0;
+          const codeExpiry = await this.inMemoryServices.ttl(resetCodeRedisKey) as Number || 0;
           return {
             status: 202,
             message: `Provide the code sent to your email or request another one in ${Math.ceil(
@@ -341,7 +343,7 @@ export class AuthServices {
           const phoneCode = randomFixedInteger(6)
           const hashedPhoneCode = await hash(String(phoneCode));
           await this.inMemoryServices.set(
-            resetPasswordRedisKey,
+            resetCodeRedisKey,
             hashedPhoneCode,
             String(RESET_PASSWORD_EXPIRY)
           );
@@ -369,7 +371,7 @@ export class AuthServices {
         }
 
         // Generate Reset token
-        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetToken = randomBytes(32).toString('hex');
         const hashedResetToken = await hash(resetToken);
 
         // Remove all reset token for this user if it exists
