@@ -1,9 +1,9 @@
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { User } from "src/core/entities/user.entity";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LOCK, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
-import { AlreadyExistsException, BadRequestsException, DoesNotExistsException, TooManyRequestsException } from "./exceptions";
+import { AlreadyExistsException, BadRequestsException, DoesNotExistsException, ForbiddenRequestException, TooManyRequestsException } from "./exceptions";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
@@ -99,11 +99,15 @@ export class AuthServices {
       const savedCode = await this.inMemoryServices.get(redisKey);
 
       if (isEmpty(savedCode)) {
+        console.log("code not found", savedCode)
         throw new BadRequestsException('code is incorrect, invalid or has expired')
       }
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
       if (!correctCode) {
+        console.log("does not match", correctCode)
+        console.log("code", code)
+        console.log("saved code", savedCode)
         throw new BadRequestsException('code is incorrect, invalid or has expired')
       }
 
@@ -197,7 +201,11 @@ export class AuthServices {
         hashedCode,
         String(SIGNUP_CODE_EXPIRY)
       )
-
+      await this.discordServices.inHouseNotification({
+        title: `Email Verification code :- ${env.env} environment`,
+        message: `Verification code for ${user?.firstName} ${user?.lastName}-${user?.email} is ${emailCode}`,
+        link: DISCORD_VERIFICATION_CHANNEL_LINK,
+      })
       return {
         status: 200,
         message: 'New code was successfully generated',
@@ -272,7 +280,7 @@ export class AuthServices {
       throw error;
     }
   }
-  async recoverPassword( payload: { email: string, code: string }) {
+  async recoverPassword(payload: { email: string, code: string }) {
     try {
       let { email, code } = payload;
       const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`
@@ -392,7 +400,90 @@ export class AuthServices {
     }
   }
 
+  async login(res: Response, payload: { email: string, password: string }) {
+    try {
+      const { email, password } = payload
+      const user = await this.dataServices.users.findOne({ email });
+      if (!user) {
+        throw new DoesNotExistsException('user does not exists')
+      }
+      const verification: string[] = []
+      if (user.lock === USER_LOCK.LOCK) {
+        throw new ForbiddenRequestException('account is temporary locked')
+      }
+      const correctPassword: boolean = await compareHash(password, user?.password!);
+      if (!correctPassword) {
+        throw new BadRequestsException('password is incorrect') //
+      }
+      if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) {
+        verification.push("email")
+        const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+          _id: user?._id,
+          fullName: user?.fullName,
+          email: user?.email,
+          authStatus: USER_SIGNUP_STATUS_TYPE.PENDING,
+          lock: user?.lock,
+          emailVerified: user.emailVerified,
+          verified: user.verified
+        }
+        const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
+        return {
+          status: 403,
+          message: 'email is not verified',
+          token: `Bearer ${token}`,
+          verification
+        }
+      }
 
+      if (user.verified === VERIFICATION_VALUE_TYPE.FALSE) {
+        const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+          _id: user?._id,
+          fullName: user?.fullName,
+          email: user?.email,
+          authStatus: USER_SIGNUP_STATUS_TYPE.PENDING,
+          lock: user?.lock,
+          emailVerified: user.emailVerified,
+          verified: user.verified
+        }
+        const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
+        return {
+          status: 403,
+          message: 'user is not verified',
+          token: `Bearer ${token}`,
+          verification
+        }
+      }
+      const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+        _id: user?._id,
+        fullName: `${user?.firstName} ${user?.lastName}`,
+        email: user?.email,
+        authStatus: USER_SIGNUP_STATUS_TYPE.COMPLETED,
+        lock: user?.lock,
+        emailVerified: user.emailVerified,
+        verified: user.verified
+      }
+      const token = await jwtLib.jwtSign(jwtPayload);
+      res.set('Authorization', `Bearer ${token}`);
+      await this.dataServices.users.update({ _id: user._id }, {
+        $set: {
+          lastLoginDate: new Date()
+        }
+      })
+      return {
+        status: 200,
+        message: 'User logged in successfully',
+        token: `Bearer ${token}`,
+        ...jwtPayload,
+        verification
+      }
+    } catch (error: Error | any | unknown) {
+      if (error.name === 'TypeError') {
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      throw error;
+    }
+  }
 }
 
 

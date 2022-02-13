@@ -24,9 +24,10 @@ import { CreateUserDto } from "src/core/dtos/user.dto"
 import { hash } from "src/lib/utils"
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto"
-import { LooseAuthGuard, StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware"
+import { LooseAuthGuard } from "src/middleware-guards/auth-guard.middleware"
 import { ResetPasswordBodyDto, ResetPasswordDto } from "src/core/dtos/resetPasswordDto.dto"
 import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto"
+import { LoginDto } from "src/core/dtos/authentication/login.dto"
 
 @Controller()
 export class AuthenticationController {
@@ -71,11 +72,21 @@ export class AuthenticationController {
   }
 
   @Post(AUTHENTICATION_ROUTE.LOGIN)
-  async login(@Req() req: Request, @Res() res: Response) {
+  async login(
+    @Res() res: Response,
+    @Body() body: LoginDto
+  ) {
     try {
-      return res.status(201).json("authenticated")
-    } catch (e) {
-      return res.status(500).json(e)
+      const { email, password } = body
+      const response = await this.authServices.login(res, { email, password })
+      return res.status(response.status).json(response)
+    } catch (error) {
+      if (error.name === 'TypeError') {
+        Logger.error(error)
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      return res.status(error.status || 500).json(error)
     }
   }
 
@@ -103,9 +114,10 @@ export class AuthenticationController {
   async verifyUser(
     @Req() req: Request,
     @Res() res: Response,
-    @Body() code: VerifyUserDto
+    @Body() body: VerifyUserDto
   ) {
     try {
+      const { code } = body
       const response = await this.authServices.verifyEmail(req, res, String(code))
       return res.status(200).json(response)
     } catch (error) {
