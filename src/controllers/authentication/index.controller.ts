@@ -11,7 +11,6 @@ import {
 } from "@nestjs/common"
 import {
   AUTHENTICATION_ROUTE,
-  DISCORD_VERIFICATION_CHANNEL_LINK,
   TEST_ROUTE,
   USER_LOCK,
   USER_SIGNUP_STATUS_TYPE,
@@ -26,6 +25,8 @@ import { hash } from "src/lib/utils"
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto"
 import { LooseAuthGuard, StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware"
+import { ResetPasswordBodyDto, ResetPasswordDto } from "src/core/dtos/resetPasswordDto.dto"
+import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto"
 
 @Controller()
 export class AuthenticationController {
@@ -85,7 +86,7 @@ export class AuthenticationController {
     @Res() res: Response
   ) {
     try {
-      const response = await this.authServices.issueEmailVerificationCode(req, res)
+      const response = await this.authServices.issueEmailVerificationCode(req)
       return res.status(response.status).json(response)
     } catch (error) {
       if (error.name === 'TypeError') {
@@ -126,4 +127,46 @@ export class AuthenticationController {
       return res.status(500).json(e)
     }
   }
+  @Post(AUTHENTICATION_ROUTE.RECOVER_PASSWORD)
+  async recoverPassword(
+    @Res() res: Response,
+    @Body() body: RecoverPasswordDto
+  ) {
+    try {
+      const { email, code } = body
+      const response = await this.authServices.recoverPassword({ email, code })
+      return res.status(response.status).json(response)
+    } catch (error) {
+      if (error.name === 'TypeError') {
+        Logger.error(error)
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      return res.status(error.status || 500).json(error)
+    }
+  }
+
+  @Post(AUTHENTICATION_ROUTE.RESET_PASSWORD)
+  async resetPassword(
+    @Res() res: Response,
+    @Req() req: ResetPasswordDto,
+    @Body() body: ResetPasswordBodyDto
+  ) {
+    try {
+      const { email, token } = req
+      const { password } = body
+      const response = await this.authServices.resetPassword(res, { email, password, token })
+      return res.status(response.status).json(response)
+    } catch (error) {
+      if (error.name === 'TypeError') {
+        Logger.error(error)
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      return res.status(error.status || 500).json(error)
+    }
+  }
+
+
+
 }

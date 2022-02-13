@@ -1,14 +1,14 @@
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { User } from "src/core/entities/user.entity";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, SIGNUP_CODE_EXPIRY, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
-import { AlreadyExistsException, BadRequestsException, DoesNotExistsException } from "./exceptions";
+import { AlreadyExistsException, BadRequestsException, DoesNotExistsException, TooManyRequestsException } from "./exceptions";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
-import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger } from "src/lib/utils";
+import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
-
+import crypto from 'crypto'
 
 @Injectable()
 export class AuthServices {
@@ -148,10 +148,7 @@ export class AuthServices {
     }
   }
 
-  async issueEmailVerificationCode(
-    req: Request,
-    res: Response
-  ) {
+  async issueEmailVerificationCode(req: Request) {
     try {
       const authUser = req?.user;
       if (!authUser) {
@@ -166,12 +163,8 @@ export class AuthServices {
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const codeSent = await this.inMemoryServices.get(redisKey) as number
-      console.log("------------------code sent -----------------------")
-      console.log(codeSent)
-      console.log("------------------code sent -----------------------")
 
       if (codeSent) {
-        console.log("entering code sent")
         const codeExpiry = await this.inMemoryServices.ttl(redisKey) as Number || 0;
         // taking away 4 minutes from the wait time
         const nextRequest = Math.abs(Number(codeExpiry) / 60 - 4);
@@ -217,8 +210,190 @@ export class AuthServices {
       }
       Logger.error(error)
       throw error;
-
     }
   }
 
+  async resetPassword(res: Response, payload: {
+    email: string,
+    password: string,
+    token: string
+  }) {
+    try {
+      const { email, password, token } = payload
+      const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`
+      const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`
+
+      const userRequestReset = await this.inMemoryServices.get(resetPasswordRedisKey);
+      if (!userRequestReset) {
+        throw new BadRequestsException('Invalid or expired reset token')
+      }
+      // Find user by email
+      const user = await this.dataServices.users.findOne({ email: String(email) });
+      // Check if user has requested password reset
+      if (!user) {
+        throw new DoesNotExistsException('user does not exists')
+      }
+      // If reset link is valid and not expired
+      const validReset = await compareHash(String(token), userRequestReset);
+      if (!validReset) {
+        throw new BadRequestsException('Invalid or expired reset token')
+      }
+      // Store update users password
+      const hashedPassword = await hash(password);
+      const twenty4H = 1 * 60 * 60 * 24;
+
+      // Remove reset token for this user 
+      await this.inMemoryServices.del(resetPasswordRedisKey)
+      await this.inMemoryServices.set(passwordResetCountKey, 1, String(twenty4H))
+
+      // save reset count for next 24 hours
+      // remove stored cookie so it reinstate otp
+      res.cookie('deviceTag', '');
+      await this.dataServices.users.update(
+        { email: user.email },
+        {
+          $set: {
+            verified: true,
+            emailVerified: true,
+            phoneVerified: true,
+            password: hashedPassword
+          }
+        })
+      return {
+        status: 200,
+        message: 'Password updated successfully',
+      }
+
+    } catch (error: Error | any | unknown) {
+      if (error.name === 'TypeError') {
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      throw error;
+    }
+  }
+  async recoverPassword( payload: { email: string, code: string }) {
+    try {
+      let { email, code } = payload;
+      const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`
+      const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`
+      const resetCodeRedisKey = `${RedisPrefix.resetCode}/${email}`
+
+      const resetInPast24H = await this.inMemoryServices.get(passwordResetCountKey)
+      if (resetInPast24H) {
+        const ttl = await this.inMemoryServices.ttl(passwordResetCountKey)
+        const timeToRetry = Math.ceil(Number(ttl));
+        const nextTryOpening = secondsToDhms(timeToRetry);
+        throw new TooManyRequestsException(`Password was recently updated. Try again in ${nextTryOpening}`)
+      }
+
+      const user = await this.dataServices.users.findOne({ email: String(email) });
+      if (!user) {
+        throw new BadRequestsException(`code is invalid or has expired`)
+      }
+      // Return success here
+      // so we dont disclose info to attackers about who is and isnt registered
+      // if (!user || !code) {
+      //   if (!code) {
+      //     return response
+      //       .status(202)
+      //       .json({
+      //         status: 202,
+      //         message: `Provide the code sent to your email request another one in ${Math.ceil(
+      //           Number(RESET_PASSWORD_EXPIRY) / 60,
+      //         )} minutes`,
+      //         nextRequestInSecs: Number(RESET_PASSWORD_EXPIRY)
+      //       });
+      //   }
+      //   return Response.error({
+      //     message: 'Code is invalid or has expired',
+      //     type: ErrorResponseType.ISSUANCE_ERROR,
+      //     status: 401
+      //   });
+
+      // }
+
+      // for mobile users only
+
+      const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);
+      if (!code) {
+
+        if (codeSent) {
+          const codeExpiry = await this.inMemoryServices.get(resetPasswordRedisKey) as Number || 0;
+          return {
+            status: 202,
+            message: `Provide the code sent to your email or request another one in ${Math.ceil(
+              Number(codeExpiry) / 60,
+            )} minute`,
+            nextRequestInSecs: Number(codeExpiry)
+          }
+        }
+
+        try {
+          const phoneCode = randomFixedInteger(6)
+          const hashedPhoneCode = await hash(String(phoneCode));
+          await this.inMemoryServices.set(
+            resetPasswordRedisKey,
+            hashedPhoneCode,
+            String(RESET_PASSWORD_EXPIRY)
+          );
+          return {
+            status: 202,
+            message: 'Provide the code sent to your mobile number',
+            code: env.isProd ? null : phoneCode
+          };
+        } catch (error) {
+          if (error.name === 'TypeError') {
+            throw new HttpException(error.message, 500)
+          }
+          Logger.error(error)
+          throw error;
+        }
+      } else {
+        const phoneVerifyDocument = codeSent as string;
+        if (isEmpty(phoneVerifyDocument)) {
+          throw new BadRequestsException(`code is invalid or has expired`)
+
+        }
+        const correctCode = await compareHash(String(code).trim(), (phoneVerifyDocument || '').trim());
+        if (!correctCode) {
+          throw new BadRequestsException(`code is invalid or has expired`)
+        }
+
+        // Generate Reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedResetToken = await hash(resetToken);
+
+        // Remove all reset token for this user if it exists
+        await this.inMemoryServices.del(resetCodeRedisKey)
+        await this.inMemoryServices.del(resetPasswordRedisKey)
+
+        await this.inMemoryServices.set(
+          resetPasswordRedisKey,
+          hashedResetToken,
+          String(RESET_PASSWORD_EXPIRY)
+        )
+
+
+        return {
+          status: 200,
+          message: 'You will receive an email with a link to reset your password if you have an account with this email.',
+          resetSecret: env.isProd ? null : resetToken,
+          resetToken: env.isProd ? null : resetToken
+        }
+
+      }
+    } catch (error: Error | any | unknown) {
+      if (error.name === 'TypeError') {
+        throw new HttpException(error.message, 500)
+      }
+      Logger.error(error)
+      throw error;
+    }
+  }
+
+
 }
+
+
+

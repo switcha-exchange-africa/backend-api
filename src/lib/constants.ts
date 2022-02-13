@@ -3,6 +3,9 @@ export enum AUTHENTICATION_ROUTE {
   LOGIN = '/api/v1/auth/login',
   ISSUE_VERIFICATION_CODE = '/api/v1/auth/verify-email',
   VERIFY_USER = '/api/v1/auth/verify-email',
+  RESET_PASSWORD = '/api/v1/auth/reset-password',
+  RECOVER_PASSWORD = '/api/v1/auth/recover-password'
+
 }
 
 export enum TEST_ROUTE {
