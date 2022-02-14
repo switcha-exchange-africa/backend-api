@@ -3,7 +3,13 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { User } from "src/core/entities/user.entity";
 import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LOCK, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
-import { AlreadyExistsException, BadRequestsException, DoesNotExistsException, ForbiddenRequestException, TooManyRequestsException } from "./exceptions";
+import {
+  AlreadyExistsException,
+  BadRequestsException,
+  DoesNotExistsException,
+  ForbiddenRequestException,
+  TooManyRequestsException
+} from "./exceptions";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
@@ -301,28 +307,7 @@ export class AuthServices {
       if (!user) {
         throw new BadRequestsException(`code is invalid or has expired`)
       }
-      // Return success here
-      // so we dont disclose info to attackers about who is and isnt registered
-      // if (!user || !code) {
-      //   if (!code) {
-      //     return response
-      //       .status(202)
-      //       .json({
-      //         status: 202,
-      //         message: `Provide the code sent to your email request another one in ${Math.ceil(
-      //           Number(RESET_PASSWORD_EXPIRY) / 60,
-      //         )} minutes`,
-      //         nextRequestInSecs: Number(RESET_PASSWORD_EXPIRY)
-      //       });
-      //   }
-      //   return Response.error({
-      //     message: 'Code is invalid or has expired',
-      //     type: ErrorResponseType.ISSUANCE_ERROR,
-      //     status: 401
-      //   });
-
-      // }
-
+    
       // for mobile users only
 
       const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);

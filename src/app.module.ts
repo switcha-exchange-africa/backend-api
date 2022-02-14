@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AccountController } from './controllers/account/index.controller';
 import { AppController } from './controllers/app.controllers';
 import { AuthenticationController } from './controllers/authentication/index.controller';
 import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
@@ -28,7 +29,8 @@ declare global {
   ],
   controllers: [
     AppController,
-    AuthenticationController
+    AuthenticationController,
+    AccountController
   ],
   providers: [],
 })

@@ -6,6 +6,7 @@ import {
 import {
   SwitchaDeviceType,
   SWITCHA_DEVICES,
+  UserIDDocumentType,
   USER_LOCK,
   USER_LOCK_LIST,
   USER_SIGNUP_STATUS_TYPE,
@@ -79,6 +80,13 @@ export class User {
   @Prop({ enum: USER_TYPE_LIST })
   userType: USER_TYPE
 
+  @Prop()
+  transactionPin: string
+
+  @Prop({ type: Object })
+  document: UserIDDocumentType
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+

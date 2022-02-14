@@ -1,4 +1,4 @@
-import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+import { SwitchaDeviceType, UserIDDocumentType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 
 export class User {
   firstName: string
@@ -38,5 +38,10 @@ export class User {
   authStatus: USER_SIGNUP_STATUS_TYPE
 
   userType: USER_TYPE
+
+  transactionPin?: string
+
+  document: UserIDDocumentType
+
 }
 

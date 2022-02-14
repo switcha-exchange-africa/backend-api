@@ -8,6 +8,12 @@ export enum AUTHENTICATION_ROUTE {
 
 }
 
+export enum ACCOUNT_ROUTE {
+  KYC = '/api/v1/account/kyc',
+  UPLOAD_ID_CARD = '/api/v1/account/upload-id-card',
+  TRANSACTION_PIN = '/api/v1/account/transaction-pin'
+}
+
 export enum TEST_ROUTE {
   TEST = '/api/v1/test',
 
@@ -91,7 +97,9 @@ export enum RedisPrefix {
   signupPhoneCode = 'switcha/signupPhonecode',
   businessInvitationCode = "switcha/businessInvitationCode",
   passwordResetCount = "switcha/passwordResetCount",
+  phoneCodeCount = "switcha/phoneCodeCount",
   resetCode = "switcha/resetCode",
+  phoneVerificationCode = "switcha/phoneVerificationCode",
   resetpassword = "switcha/resetpassword",
   changeEmailResetCount = "switcha/changeEmailResetCount",
   emailResetCode = "switcha/emailResetCode"
@@ -111,3 +119,8 @@ export const VERIFICATION_VALUE_TYPE_LIST = [
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
+
+export interface UserIDDocumentType{
+  documentType: string,
+  url: string
+}
