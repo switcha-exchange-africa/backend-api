@@ -113,14 +113,19 @@ export enum VERIFICATION_VALUE_TYPE {
 export const VERIFICATION_VALUE_TYPE_LIST = [
   VERIFICATION_VALUE_TYPE.TRUE,
   VERIFICATION_VALUE_TYPE.FALSE
-
 ]
+export enum USER_LEVEL_TYPE {
+  ONE = "one",
+  TWO = "two",
+  THREE = "three"
+}
 
+export const USER_LEVEL_LIST = []
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
 
-export interface UserIDDocumentType{
+export interface UserIDDocumentType {
   documentType: string,
   url: string
 }
