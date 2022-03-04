@@ -1,4 +1,5 @@
 require("dotenv").config()
+
 function getEnv(variable: string, optional: boolean = false) {
   if (process.env[variable] === undefined) {
     if (optional) {
@@ -10,6 +11,8 @@ function getEnv(variable: string, optional: boolean = false) {
 
   return process.env[variable]?.replace(/\\n/gm, '\n');
 }
+
+
 // environment
 export const env = {
   isDev: String(process.env.NODE_ENV).toLowerCase().includes('dev'),

@@ -10,6 +10,7 @@ import { MongoDataServices } from './mongo-data-services.service';
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
+      
 
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
