@@ -17,6 +17,9 @@ export class Wallet {
   balance: number;
 
   @Prop()
+  address: string;
+
+  @Prop()
   userId: string;
 
   @Prop({ type: Object })

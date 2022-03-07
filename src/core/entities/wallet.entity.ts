@@ -8,6 +8,8 @@ import { UserDetail } from "src/core/entities/user.entity";
 export class Wallet {
   balance: number;
 
+  address: string;
+
   userId: string;
 
   user: UserDetail;
