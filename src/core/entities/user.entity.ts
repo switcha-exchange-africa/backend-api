@@ -1,5 +1,11 @@
 import { SwitchaDeviceType, UserIDDocumentType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 
+export interface UserDetail{
+  email: string,
+  fullName: string
+}
+
+
 export class User {
   firstName: string
 
