@@ -1,25 +1,30 @@
-import { UserWalletInformation, WALLET_NETWORK, COIN_TYPES, WALLET_STATUS } from './../../lib/constants';
-export class Wallet{
-   
-    balance: number;
-  
-    userId: string;
-  
-    user: UserWalletInformation;
-  
-    walletNetwork: WALLET_NETWORK;
-  
-    coinType: COIN_TYPES;
-  
-    walletStatus: WALLET_STATUS;
+import {
+  BLOCKCHAIN_NETWORK,
+  COIN_TYPES,
+  WALLET_STATUS,
+} from "src/lib/constants";
 
-    lastDeposit: number;
-  
-    lastWithdrawal: number;
+import { UserDetail } from "src/core/entities/user.entity";
+export class Wallet {
+  balance: number;
 
-    createdAt: Date;
-  
-    updatedAt: Date;
-  
-    isBlocked: boolean;
+  userId: string;
+
+  user: UserDetail;
+
+  walletNetwork: BLOCKCHAIN_NETWORK;
+
+  coinType: COIN_TYPES;
+
+  walletStatus: WALLET_STATUS;
+
+  lastDeposit: number;
+
+  lastWithdrawal: number;
+
+  createdAt: Date;
+
+  updatedAt: Date;
+
+  isBlocked: boolean;
 }

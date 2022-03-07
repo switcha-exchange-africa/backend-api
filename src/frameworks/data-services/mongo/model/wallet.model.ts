@@ -2,11 +2,12 @@ import {
   COIN_TYPES,
   WALLET_STATUS_LIST,
   WALLET_STATUS,
-  WALLET_NETWORK,
-  WALLET_NETWORK_LIST,
+  BLOCKCHAIN_NETWORK,
+  BLOCKCHAIN_NETWORK_LIST,
   COIN_TYPES_LIST,
-  UserWalletInformation,
-} from "./../../../../lib/constants";
+} from "src/lib/constants";
+import { UserDetail } from "src/core/entities/user.entity";
+
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 export type WalletDocument = Wallet & Document;
@@ -19,16 +20,16 @@ export class Wallet {
   userId: string;
 
   @Prop({ type: Object })
-  user: UserWalletInformation;
+  user: UserDetail;
 
-  @Prop({ enum: WALLET_NETWORK_LIST })
-  walletNetwork: WALLET_NETWORK;
+  @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
+  network: BLOCKCHAIN_NETWORK;
 
   @Prop({ enum: COIN_TYPES_LIST })
   coinType: COIN_TYPES;
 
   @Prop({ enum: WALLET_STATUS_LIST })
-  walletStatus: WALLET_STATUS;
+  status: WALLET_STATUS;
 
   @Prop()
   lastDeposit: number;

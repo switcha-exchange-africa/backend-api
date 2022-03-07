@@ -116,14 +116,14 @@ export const VERIFICATION_VALUE_TYPE_LIST = [
 
 ]
 
-export enum WALLET_NETWORK {
+export enum BLOCKCHAIN_NETWORK {
   TRC_20 = 'TRC-20',
   ERC_20 = 'ERC-20'
 }
 
-export const WALLET_NETWORK_LIST = [
-  WALLET_NETWORK.TRC_20,
-  WALLET_NETWORK.ERC_20
+export const BLOCKCHAIN_NETWORK_LIST = [
+  BLOCKCHAIN_NETWORK.TRC_20,
+  BLOCKCHAIN_NETWORK.ERC_20
 ]
 
 export enum WALLET_STATUS {
@@ -159,7 +159,4 @@ export interface UserIDDocumentType{
   url: string
 }
 
-export interface UserWalletInformation{
-  emailAddress: string,
-  fullName: string
-}
+
