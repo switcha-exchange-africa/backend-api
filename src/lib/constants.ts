@@ -116,6 +116,40 @@ export const VERIFICATION_VALUE_TYPE_LIST = [
 
 ]
 
+export enum WALLET_NETWORK {
+  TRC_20 = 'TRC-20',
+  ERC_20 = 'ERC-20'
+}
+
+export const WALLET_NETWORK_LIST = [
+  WALLET_NETWORK.TRC_20,
+  WALLET_NETWORK.ERC_20
+]
+
+export enum WALLET_STATUS {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive'
+}
+
+export const WALLET_STATUS_LIST = [
+  WALLET_STATUS.ACTIVE,
+  WALLET_STATUS.INACTIVE
+] 
+
+export enum COIN_TYPES {
+  BTC = 'bitcoin',
+  ETH = 'ethereum',
+  USDT = 'tether',
+  NGN = 'naira'
+}
+
+export const COIN_TYPES_LIST = [
+  COIN_TYPES.BTC,
+  COIN_TYPES.ETH,
+  COIN_TYPES.USDT,
+  COIN_TYPES.NGN
+]
+
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
@@ -123,4 +157,9 @@ export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhoo
 export interface UserIDDocumentType{
   documentType: string,
   url: string
+}
+
+export interface UserWalletInformation{
+  emailAddress: string,
+  fullName: string
 }
