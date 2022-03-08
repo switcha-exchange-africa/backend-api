@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PORT } from './configuration';
+import {allEvents} from './core/custom-events/eventEmitter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,3 +13,4 @@ async function bootstrap() {
   await app.listen(PORT);
 }
 bootstrap();
+allEvents()
