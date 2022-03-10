@@ -119,6 +119,12 @@ export enum USER_LEVEL_TYPE {
   TWO = "two",
   THREE = "three"
 }
+export const USER_LEVEL_LIST = [
+  USER_LEVEL_TYPE.ONE,
+  USER_LEVEL_TYPE.TWO,
+  USER_LEVEL_TYPE.THREE,
+   
+]
 
 export enum BLOCKCHAIN_NETWORK {
   TRC_20 = 'TRC-20',
