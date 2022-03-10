@@ -31,3 +31,13 @@ export const REDIS_HOST = getEnv('REDIS_HOST')!
 export const REDIS_PORT = getEnv('REDIS_PORT')!
 export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD')!
 export const REDIS_CLIENT_NAME = getEnv('REDIS_CLIENT_NAME')!
+export const NODEMAILER_EMAIL_HOST = getEnv('NODEMAILER_EMAIL_HOST', true)!
+export const NODEMAILER_EMAIL_PASSWORD = getEnv('NODEMAILER_EMAIL_PASSWORD', true)!
+export const NODEMAILER_EMAIL_PORT = getEnv('NODEMAILER_EMAIL_PORT', true)!
+export const NODEMAILER_EMAIL_USER = getEnv('NODEMAILER_EMAIL_USER', true)!
+export const NODEMAILER_FROM_EMAIL = getEnv('NODEMAILER_FROM_EMAIL', true)!
+export const TWILIO_ACCOUNT_SID = getEnv('TWILIO_ACCOUNT_SID', true)!
+export const TWILIO_AUTH_TOKEN = getEnv('TWILIO_AUTH_TOKEN', true)!
+export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
+
+
