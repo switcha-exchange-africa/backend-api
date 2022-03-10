@@ -5,15 +5,9 @@ import { AccountServices } from "./account/account.services";
 import { AuthServices } from "./auth-services.services";
 import { UserFactoryService } from "./user-factory.service";
 
-
-
 @Module({
-  imports: [
-    DataServicesModule,
-    DiscordServicesModule,
-  ],
+  imports: [DataServicesModule, DiscordServicesModule],
   providers: [UserFactoryService, AuthServices, AccountServices],
   exports: [UserFactoryService, AuthServices, AccountServices],
 })
-
-export class UserServicesModule { }
+export class UserServicesModule {}

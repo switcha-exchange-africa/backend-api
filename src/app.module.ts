@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+import { AxiosServiceModule } from './frameworks/in-memory-database/axios/axios-service.module';
+import { HttpModule } from '@nestjs/axios';
+import { Module} from '@nestjs/common';
 import { AccountController } from './controllers/account/index.controller';
 import { AppController } from './controllers/app.controllers';
 import { AuthenticationController } from './controllers/authentication/index.controller';
@@ -22,6 +24,7 @@ declare global {
 }
 @Module({
   imports: [
+    AxiosServiceModule,
     DataServicesModule,
     UserServicesModule,
     DiscordServicesModule,
