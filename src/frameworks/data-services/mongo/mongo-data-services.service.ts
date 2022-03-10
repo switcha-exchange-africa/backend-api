@@ -20,6 +20,7 @@ export class MongoDataServices
 
   onApplicationBootstrap() {
     this.users = new MongoGenericRepository<User>(this.UserRepository);
+    
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
     //   'genre',
