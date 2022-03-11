@@ -1,3 +1,5 @@
+import { WalletServicesModule } from './services/use-cases/wallet/wallet-services.module';
+import { WalletController } from './controllers/wallet/index.controller';
 import { AxiosServiceModule } from './frameworks/http/axios/axios-service.module';
 import { Module} from '@nestjs/common';
 import { AccountController } from './controllers/account/index.controller';
@@ -27,12 +29,14 @@ declare global {
     DataServicesModule,
     UserServicesModule,
     DiscordServicesModule,
-    RedisServiceModule
+    RedisServiceModule,
+    WalletServicesModule
   ],
   controllers: [
     AppController,
     AuthenticationController,
-    AccountController
+    AccountController,
+    WalletController
   ],
   providers: [],
 })

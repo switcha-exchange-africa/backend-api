@@ -12,6 +12,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 export type WalletDocument = Wallet & Document;
 
+@Schema()
 export class Wallet {
   @Prop()
   balance: number;

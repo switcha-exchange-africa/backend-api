@@ -16,7 +16,11 @@ export enum ACCOUNT_ROUTE {
 
 export enum TEST_ROUTE {
   TEST = '/api/v1/test',
+}
 
+export enum WALLET_ROUTE{
+  GET_WALLETS = '/api/v1/wallet/wallets',
+  WALLET_DETAIL = '/api/v1/wallet/wallets/:walletId'
 }
 
 export enum SwitchaDeviceType {

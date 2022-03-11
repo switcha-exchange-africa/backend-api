@@ -14,11 +14,11 @@ export class Wallet {
 
   user: UserDetail;
 
-  walletNetwork: BLOCKCHAIN_NETWORK;
+  network: BLOCKCHAIN_NETWORK;
 
   coinType: COIN_TYPES;
 
-  walletStatus: WALLET_STATUS;
+  status: WALLET_STATUS;
 
   lastDeposit: number;
 

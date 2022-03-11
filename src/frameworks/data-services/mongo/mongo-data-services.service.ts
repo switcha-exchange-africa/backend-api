@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { MongoGenericRepository } from './mongo-generic-repository';
 import { User, UserDocument } from './model/user.model';
 import { Wallet, WalletDocument } from './model/wallet.model';
-import { IDataServices } from 'src/core/abstracts';
+import { IDataServices} from 'src/core/abstracts';
 
 @Injectable()
 export class MongoDataServices
