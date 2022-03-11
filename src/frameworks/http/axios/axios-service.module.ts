@@ -1,19 +1,17 @@
 import { Global, Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
-import { IAPICallServices } from 'src/core/abstracts/api-call.abstract';
+import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 import { CustomAxiosService } from './axios-service.service';
 
 
 @Global()
 @Module({
-    imports: [HttpModule],
     providers: [
         {
-            provide: IAPICallServices,
+            provide: IHttpServices,
             useClass: CustomAxiosService,
         }
     ],
-    exports: [IAPICallServices]
+    exports: [IHttpServices]
   })
 
 export class AxiosServiceModule {}

@@ -1,5 +1,4 @@
-import { AxiosServiceModule } from './frameworks/in-memory-database/axios/axios-service.module';
-import { HttpModule } from '@nestjs/axios';
+import { AxiosServiceModule } from './frameworks/http/axios/axios-service.module';
 import { Module} from '@nestjs/common';
 import { AccountController } from './controllers/account/index.controller';
 import { AppController } from './controllers/app.controllers';
