@@ -20,7 +20,8 @@ export enum TEST_ROUTE {
 
 export enum WALLET_ROUTE{
   GET_WALLETS = '/api/v1/wallet/wallets',
-  WALLET_DETAIL = '/api/v1/wallet/wallets/:walletId'
+  WALLET_DETAIL = '/api/v1/wallet/wallets/:walletId',
+  CREATE_WALLET = '/api/v1/wallet/create'
 }
 
 export enum SwitchaDeviceType {
@@ -164,9 +165,16 @@ export const COIN_TYPES_LIST = [
   COIN_TYPES.NGN
 ]
 
+export enum NETWORK{
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet'
+}
+
+export const WALLET_ID = '6229f6a5c725240006690467'
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
+
 
 export interface UserIDDocumentType {
   documentType: string,

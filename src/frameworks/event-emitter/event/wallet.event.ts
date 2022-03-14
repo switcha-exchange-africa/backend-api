@@ -1,5 +1,9 @@
 export class WalletCreatedEvent {
-  address: string;
+  userId: string
+  blockchain: string;
+  network: string;
+  walletId: string;
+  
 }
 
 export interface WALLET_PAYLOAD_TYPE extends WalletCreatedEvent {}

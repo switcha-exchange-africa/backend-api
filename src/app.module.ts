@@ -1,3 +1,4 @@
+import { EventEmitterServiceModule } from './frameworks/event-emitter/event-emitter-service.module';
 import { WalletServicesModule } from './services/use-cases/wallet/wallet-services.module';
 import { WalletController } from './controllers/wallet/index.controller';
 import { AxiosServiceModule } from './frameworks/http/axios/axios-service.module';
@@ -30,7 +31,8 @@ declare global {
     UserServicesModule,
     DiscordServicesModule,
     RedisServiceModule,
-    WalletServicesModule
+    WalletServicesModule,
+    EventEmitterServiceModule
   ],
   controllers: [
     AppController,
