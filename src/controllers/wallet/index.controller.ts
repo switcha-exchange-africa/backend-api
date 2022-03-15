@@ -1,3 +1,4 @@
+import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 import {
   Body,
@@ -22,12 +23,17 @@ import { Request, Response } from "express";
 export class WalletController {
   constructor(private walletServices: WalletServices) {}
 
-  @Get(WALLET_ROUTE.CREATE_WALLET)
+  @Post(WALLET_ROUTE.POST)
   @UseGuards(StrictAuthGuard)
-  async createWalletRoute(@Req() req: Request, @Res() res: Response) {
+  async create(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body
+  ) {
     try {
       const userId = req?.user?._id;
-      await this.walletServices.createWallet(userId);
+      // const {network, coinType} = body
+      await this.walletServices.create(userId);
       return res.status(201).json("Wallet Created Successfully");
     } catch (error) {
       if (error.name === "TypeError") {
@@ -39,12 +45,12 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.GET_WALLETS)
+  @Get(WALLET_ROUTE.GET)
   @UseGuards(StrictAuthGuard)
-  async findAllUserWallets(@Req() req: Request, @Res() res: Response) {
+  async findAll(@Req() req: Request, @Res() res: Response) {
     try {
       const userId = req?.user?._id;
-      const response = await this.walletServices.findAllUserWallets(userId);
+      const response = await this.walletServices.findAll(userId);
       return res.send(response);
     } catch (error) {
       if (error.name === "TypeError") {
@@ -56,9 +62,9 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.WALLET_DETAIL)
+  @Get(WALLET_ROUTE.GET_SINGLE)
   @UseGuards(StrictAuthGuard)
-  async findWalletDetail(
+  async detail(
     @Req() req: Request,
     @Res() res: Response,
     @Param() param: { walletId }
@@ -66,7 +72,7 @@ export class WalletController {
     try {
       const userId = req?.user?._id;
       const { walletId } = param;
-      const response = await this.walletServices.findWalletDetails(walletId);
+      const response = await this.walletServices.details(walletId);
       return res.send(response);
     } catch (error) {
       if (error.name === "TypeError") {

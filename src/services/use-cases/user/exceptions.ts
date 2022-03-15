@@ -12,6 +12,8 @@ export class DoesNotExistsException extends HttpException {
   }
 }
 
+
+
 export class BadRequestsException extends HttpException {
   constructor(message: string) {
     super(message, HttpStatus.BAD_REQUEST);
