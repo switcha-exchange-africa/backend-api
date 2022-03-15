@@ -39,5 +39,8 @@ export const NODEMAILER_FROM_EMAIL = getEnv('NODEMAILER_FROM_EMAIL', true)!
 export const TWILIO_ACCOUNT_SID = getEnv('TWILIO_ACCOUNT_SID', true)!
 export const TWILIO_AUTH_TOKEN = getEnv('TWILIO_AUTH_TOKEN', true)!
 export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
+export const CRYPTO_API_KEY = getEnv('CRYPTO_API_KEY')!
+export const CRYPTO_API_WALLET_ID = getEnv('CRYPTO_API_WALLET_ID')!
+
 
 

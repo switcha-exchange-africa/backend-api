@@ -16,7 +16,14 @@ export enum ACCOUNT_ROUTE {
 
 export enum TEST_ROUTE {
   TEST = '/api/v1/test',
+}
 
+export enum WALLET_ROUTE{
+  GET = '/api/v1/wallet/',
+  POST = '/api/v1/wallet',
+  GET_SINGLE = '/api/v1/wallet/:id',
+  PUT_SINGLE = '/api/v1/wallet/:id',
+  DELETE_SINGLE = '/api/v1/wallet/:id'
 }
 
 export enum SwitchaDeviceType {
@@ -127,13 +134,13 @@ export const USER_LEVEL_LIST = [
 ]
 
 export enum BLOCKCHAIN_NETWORK {
-  TRC_20 = 'TRC-20',
-  ERC_20 = 'ERC-20'
+  BITCOIN = 'bitcoin',
+  ETHEREUM = 'ethereum',
 }
 
 export const BLOCKCHAIN_NETWORK_LIST = [
-  BLOCKCHAIN_NETWORK.TRC_20,
-  BLOCKCHAIN_NETWORK.ERC_20
+  BLOCKCHAIN_NETWORK.BITCOIN,
+  BLOCKCHAIN_NETWORK.ETHEREUM,
 ]
 
 export enum WALLET_STATUS {
@@ -147,22 +154,29 @@ export const WALLET_STATUS_LIST = [
 ] 
 
 export enum COIN_TYPES {
-  BTC = 'bitcoin',
-  ETH = 'ethereum',
-  USDT = 'tether',
+  BTC = 'btc',
+  USDC = 'usdc',
+  USDT = 'usdt',
   NGN = 'naira'
 }
 
 export const COIN_TYPES_LIST = [
   COIN_TYPES.BTC,
-  COIN_TYPES.ETH,
+  COIN_TYPES.USDC,
   COIN_TYPES.USDT,
   COIN_TYPES.NGN
 ]
 
+export enum NETWORK{
+  ROPSTEN = "ropsten",
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet'
+}
+
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'
+
 
 export interface UserIDDocumentType {
   documentType: string,

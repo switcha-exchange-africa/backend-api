@@ -1,6 +1,5 @@
 import {
   BLOCKCHAIN_NETWORK,
-  COIN_TYPES,
   WALLET_STATUS,
 } from "src/lib/constants";
 
@@ -14,11 +13,11 @@ export class Wallet {
 
   user: UserDetail;
 
-  walletNetwork: BLOCKCHAIN_NETWORK;
+  network: BLOCKCHAIN_NETWORK;
 
-  coinType: COIN_TYPES;
+  coin: string;
 
-  walletStatus: WALLET_STATUS;
+  status: WALLET_STATUS;
 
   lastDeposit: number;
 
