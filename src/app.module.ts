@@ -1,6 +1,6 @@
 import { EventEmitterServiceModule } from './frameworks/event-emitter/event-emitter-service.module';
 import { WalletServicesModule } from './services/use-cases/wallet/wallet-services.module';
-import { WalletController } from './controllers/wallet/index.controller';
+import { WalletController } from './controllers/wallet';
 import { AxiosServiceModule } from './frameworks/http/axios/axios-service.module';
 import { Module} from '@nestjs/common';
 import { AccountController } from './controllers/account/index.controller';

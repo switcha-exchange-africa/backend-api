@@ -154,7 +154,7 @@ export const WALLET_STATUS_LIST = [
 ] 
 
 export enum COIN_TYPES {
-  BTC = 'bitcoin',
+  BTC = 'btc',
   USDC = 'usdc',
   USDT = 'usdt',
   NGN = 'naira'
@@ -173,7 +173,6 @@ export enum NETWORK{
   MAINNET = 'mainnet'
 }
 
-export const WALLET_ID = '6229f6a5c725240006690467'
 export const PLATFORM_NAME = 'switcha'
 export const GITHUB_LINK = 'https://github.com/switcha-exchange-africa/backend-api'
 export const DISCORD_VERIFICATION_CHANNEL_LINK = 'https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx'

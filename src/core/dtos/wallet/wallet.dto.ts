@@ -32,7 +32,7 @@ export class WalletDto {
   network: BLOCKCHAIN_NETWORK;
 
   @IsNotEmpty()
-  coinType: COIN_TYPES;
+  coin: string;
 
   @IsOptional()
   status: WALLET_STATUS;

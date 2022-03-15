@@ -1,10 +1,8 @@
 import {
-  COIN_TYPES,
   WALLET_STATUS_LIST,
   WALLET_STATUS,
   BLOCKCHAIN_NETWORK,
   BLOCKCHAIN_NETWORK_LIST,
-  COIN_TYPES_LIST,
 } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
 
@@ -29,8 +27,8 @@ export class Wallet {
   @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
   network: BLOCKCHAIN_NETWORK;
 
-  @Prop({ enum: COIN_TYPES_LIST })
-  coinType: COIN_TYPES;
+  @Prop()
+  coin: string;
 
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;

@@ -4,12 +4,11 @@ import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 
 @Injectable()
 export class WalletFactoryService {
-  createNewWallet(data: WalletDto) {
+  create(data: WalletDto) {
     const wallet = new Wallet();
-
     if (data.balance) wallet.balance = data.balance;
     if (data.address) wallet.address = data.address;
-    if (data.coinType) wallet.coinType = data.coinType;
+    if (data.coin) wallet.coin = data.coin;
     if (data.createdAt) wallet.createdAt = data.createdAt;
     if (data.isBlocked) wallet.isBlocked = data.isBlocked;
     if (data.lastDeposit) wallet.lastDeposit = data.lastDeposit;

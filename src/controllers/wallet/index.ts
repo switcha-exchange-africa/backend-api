@@ -28,20 +28,15 @@ export class WalletController {
   async create(
     @Req() req: Request,
     @Res() res: Response,
-    @Body() body
   ) {
     try {
       const userId = req?.user?._id;
-      // const {network, coinType} = body
       await this.walletServices.create(userId);
       return res.status(201).json("Wallet Created Successfully");
     } catch (error) {
-      if (error.name === "TypeError") {
-        Logger.error(error);
-        throw new HttpException(error.message, 500);
-      }
       Logger.error(error);
-      return res.status(error.status || 500).json(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -53,12 +48,9 @@ export class WalletController {
       const response = await this.walletServices.findAll(userId);
       return res.send(response);
     } catch (error) {
-      if (error.name === "TypeError") {
-        Logger.error(error);
-        throw new HttpException(error.message, 500);
-      }
       Logger.error(error);
-      return res.status(error.status || 500).json(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -75,12 +67,9 @@ export class WalletController {
       const response = await this.walletServices.details(walletId);
       return res.send(response);
     } catch (error) {
-      if (error.name === "TypeError") {
-        Logger.error(error);
-        throw new HttpException(error.message, 500);
-      }
       Logger.error(error);
-      return res.status(error.status || 500).json(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 }
