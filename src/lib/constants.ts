@@ -19,9 +19,11 @@ export enum TEST_ROUTE {
 }
 
 export enum WALLET_ROUTE{
-  GET_WALLETS = '/api/v1/wallet/wallets',
-  WALLET_DETAIL = '/api/v1/wallet/wallets/:walletId',
-  CREATE_WALLET = '/api/v1/wallet/create'
+  GET = '/api/v1/wallet/',
+  POST = '/api/v1/wallet',
+  GET_SINGLE = '/api/v1/wallet/:id',
+  PUT_SINGLE = '/api/v1/wallet/:id',
+  DELETE_SINGLE = '/api/v1/wallet/:id'
 }
 
 export enum SwitchaDeviceType {
@@ -132,13 +134,13 @@ export const USER_LEVEL_LIST = [
 ]
 
 export enum BLOCKCHAIN_NETWORK {
-  TRC_20 = 'TRC-20',
-  ERC_20 = 'ERC-20'
+  BITCOIN = 'bitcoin',
+  ETHEREUM = 'ethereum',
 }
 
 export const BLOCKCHAIN_NETWORK_LIST = [
-  BLOCKCHAIN_NETWORK.TRC_20,
-  BLOCKCHAIN_NETWORK.ERC_20
+  BLOCKCHAIN_NETWORK.BITCOIN,
+  BLOCKCHAIN_NETWORK.ETHEREUM,
 ]
 
 export enum WALLET_STATUS {
@@ -153,19 +155,20 @@ export const WALLET_STATUS_LIST = [
 
 export enum COIN_TYPES {
   BTC = 'bitcoin',
-  ETH = 'ethereum',
-  USDT = 'tether',
+  USDC = 'usdc',
+  USDT = 'usdt',
   NGN = 'naira'
 }
 
 export const COIN_TYPES_LIST = [
   COIN_TYPES.BTC,
-  COIN_TYPES.ETH,
+  COIN_TYPES.USDC,
   COIN_TYPES.USDT,
   COIN_TYPES.NGN
 ]
 
 export enum NETWORK{
+  ROPSTEN = "ropsten",
   TESTNET = 'testnet',
   MAINNET = 'mainnet'
 }
