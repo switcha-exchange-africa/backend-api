@@ -1,3 +1,4 @@
+import { WalletServices } from 'src/services/use-cases/wallet/wallet-services.services';
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { User } from "src/core/entities/user.entity";
@@ -21,7 +22,8 @@ export class AuthServices {
   constructor(
     private dataServices: IDataServices,
     private discordServices: INotificationServices,
-    private inMemoryServices: IInMemoryServices
+    private inMemoryServices: IInMemoryServices,
+    private walletServices: WalletServices
 
   ) { }
 
@@ -140,8 +142,8 @@ export class AuthServices {
       const token = (await jwtLib.jwtSign(jwtPayload)) as string;
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
 
-      await await this.inMemoryServices.del(redisKey);
-
+      await this.inMemoryServices.del(redisKey);
+      await this.walletServices.create(authUser?._id)
       return {
         message: 'User email is verified successfully',
         token: `Bearer ${token}`,

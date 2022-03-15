@@ -22,26 +22,25 @@ export class WalletServices {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.BITCOIN,
         network: env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET,
-        coinType: COIN_TYPES.BTC,
+        coin: COIN_TYPES.BTC,
       },
       {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
         network: ETH_NETWORK,
-        coinType: COIN_TYPES.USDT,
+        coin: COIN_TYPES.USDT,
       },
       {
         userId: userId,
-        blockchain: ETH_NETWORK,
-        network: NETWORK.ROPSTEN,
-        coinType: COIN_TYPES.USDC,
+        blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
+        network: ETH_NETWORK,
+        coin: COIN_TYPES.USDC,
       },
       {
         userId: userId,
         blockchain: null,
         network: null,
-        walletId: null,
-        coinType: COIN_TYPES.NGN,
+        coin: COIN_TYPES.NGN,
       },
     ];
     coins.map((coin) => this.emitter.emit("create.wallet", coin));

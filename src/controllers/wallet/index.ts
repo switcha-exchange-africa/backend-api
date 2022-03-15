@@ -46,7 +46,7 @@ export class WalletController {
     try {
       const userId = req?.user?._id;
       const response = await this.walletServices.findAll(userId);
-      return res.send(response);
+      return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
@@ -62,10 +62,9 @@ export class WalletController {
     @Param() param: { walletId }
   ) {
     try {
-      const userId = req?.user?._id;
       const { walletId } = param;
       const response = await this.walletServices.details(walletId);
-      return res.send(response);
+      return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
