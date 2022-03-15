@@ -20,7 +20,7 @@ import { Request, Response } from "express";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) {}
+  constructor(private walletServices: WalletServices) { }
 
   @Get(WALLET_ROUTE.CREATE_WALLET)
   @UseGuards(StrictAuthGuard)
