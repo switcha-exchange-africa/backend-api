@@ -1,3 +1,5 @@
+import { TransactionReference, TransactionReferenceSchema } from './model/transaction-reference.model';
+import { Transaction, TransactionSchema } from './model/transaction.model';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MONGO_DB_URL } from 'src/configuration';
@@ -11,6 +13,8 @@ import { MongoDataServices } from './mongo-data-services.service';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Wallet.name, schema: WalletSchema },
+      { name: Transaction.name, schema: TransactionSchema },
+      { name: TransactionReference.name, schema: TransactionReferenceSchema },
 
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),

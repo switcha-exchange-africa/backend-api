@@ -1,11 +1,9 @@
 import { WALLET_STATUS } from "src/lib/constants";
-import { COIN_TYPES } from "src/lib/constants";
 import { BLOCKCHAIN_NETWORK } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
 import {
   IsBoolean,
   IsDate,
-  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,

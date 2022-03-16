@@ -41,6 +41,9 @@ export const TWILIO_AUTH_TOKEN = getEnv('TWILIO_AUTH_TOKEN', true)!
 export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
 export const CRYPTO_API_KEY = getEnv('CRYPTO_API_KEY')!
 export const CRYPTO_API_WALLET_ID = getEnv('CRYPTO_API_WALLET_ID')!
+export const MONO_PUBLIC_KEY = getEnv('MONO_PUBLIC_KEY')!
+export const MONO_SECRET_KEY = getEnv('MONO_SECRET_KEY')!
+
 
 
 

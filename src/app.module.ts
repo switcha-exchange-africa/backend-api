@@ -10,6 +10,8 @@ import { DiscordServicesModule } from "./frameworks/notification-services/discor
 import { JWT_USER_PAYLOAD_TYPE } from "./lib/constants";
 import { DataServicesModule } from "./services/data-services/data-services.module";
 import { UserServicesModule } from "./services/use-cases/user/user-service.module";
+import { TransactionServicesModule } from "./services/use-cases/transaction/transaction-services.module";
+import { TransactionController } from "./controllers/transaction";
 
 declare global {
   namespace Express {
@@ -29,11 +31,13 @@ declare global {
     RedisServiceModule,
     WalletServicesModule,
     EventEmitterServiceModule,
+    TransactionServicesModule
   ],
   controllers: [
     AuthenticationController,
     AccountController,
     WalletController,
+    TransactionController
   ],
   providers: [],
 })

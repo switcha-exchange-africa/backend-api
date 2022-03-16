@@ -1,4 +1,4 @@
-import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
+import { FundDto } from "./../../core/dtos/wallet/fund.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 import {
   Body,
@@ -21,21 +21,19 @@ import { Request, Response } from "express";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) { }
+  constructor(private walletServices: WalletServices) {}
 
   @Post(WALLET_ROUTE.POST)
   @UseGuards(StrictAuthGuard)
-  async create(
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+  async create(@Req() req: Request, @Res() res: Response) {
     try {
       const userId = req?.user?._id;
       await this.walletServices.create(userId);
       return res.status(201).json("Wallet Created Successfully");
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       throw new HttpException(error.message, 500);
     }
   }
@@ -49,7 +47,8 @@ export class WalletController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       throw new HttpException(error.message, 500);
     }
   }
@@ -67,7 +66,23 @@ export class WalletController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
+    }
+  }
+
+  @Post(WALLET_ROUTE.FUND)
+  @UseGuards(StrictAuthGuard)
+  async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
+    try {
+      const userId = req?.user?._id
+      const response = await this.walletServices.fund(body, userId);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       throw new HttpException(error.message, 500);
     }
   }
