@@ -14,7 +14,7 @@ import { env, MONO_SECRET_KEY } from "src/configuration";
 export class WalletServices {
   constructor(
     private emitter: EventEmitter2,
-    private httpServices: IHttpServices,
+    private http: IHttpServices,
     private dataServices: IDataServices
   ) {}
 
@@ -102,7 +102,7 @@ export class WalletServices {
           "mono-sec-key": MONO_SECRET_KEY,
         },
       };
-      const response = this.httpServices.post(url, data, config);
+      const response = this.http.post(url, data, config);
       Logger.log(response)
       return response;
     } catch (error) {

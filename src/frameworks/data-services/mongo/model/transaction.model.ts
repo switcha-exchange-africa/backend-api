@@ -1,11 +1,4 @@
 import { UserDetail } from "src/core/entities/user.entity";
-import {
-  SWITCHATYPES,
-  SWITCHATYPESTRANSACTION,
-  TRANSACTION_STATUS,
-  TRANSACTION_STATUS_LIST,
-  TRANSACTION_SUBTYPE,
-} from "src/lib/constants";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import {
   COIN_TYPES,
@@ -13,6 +6,11 @@ import {
   TRANSACTION_TYPE,
   TRANSACTION_TYPE_LIST,
   TRANSACTION_SUBTYPE_LIST,
+  CUSTOM_TRANSACTION_TYPE,
+  CUSTOM_TRANSACTION_TYPES,
+  TRANSACTION_STATUS,
+  TRANSACTION_STATUS_LIST,
+  TRANSACTION_SUBTYPE,
 } from "src/lib/constants";
 import { Types } from "mongoose";
 import { Rates } from "src/core/entities/transaction.entity";
@@ -26,23 +24,20 @@ export class Transaction {
     ref: "User",
     required: true,
   })
-  @Prop()
   userId: string;
 
   @Prop({
     type: Types.ObjectId,
-    ref: 'Wallet',
-    required: true
+    ref: "Wallet",
+    required: true,
   })
-  @Prop()
   walletId: string;
 
   @Prop({
     type: Types.ObjectId,
-    ref: 'TransactionReference',
-    required: true
+    ref: "TransactionReference",
+    required: true,
   })
-  @Prop()
   txRefId: string;
 
   @Prop({ enum: COIN_TYPES_LIST })
@@ -72,11 +67,11 @@ export class Transaction {
   @Prop()
   balanceBefore: number;
 
-  @Prop({type: Object})
+  @Prop({ type: Object })
   rate: Rates;
 
-  @Prop({ enum: SWITCHATYPES })
-  switchaTypeTransaction: SWITCHATYPESTRANSACTION;
+  @Prop({ enum: CUSTOM_TRANSACTION_TYPES })
+  customTransactionType: CUSTOM_TRANSACTION_TYPE;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
