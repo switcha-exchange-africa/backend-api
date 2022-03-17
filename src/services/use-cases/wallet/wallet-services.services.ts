@@ -77,7 +77,7 @@ export class WalletServices {
 
   async fund(body: FundDto, userId) {
     try {
-      const { amount, description } = body;
+      const { amount } = body;
       const user = await this.dataServices.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exist");
       const wallet = await this.dataServices.wallets.findOne({
@@ -89,7 +89,7 @@ export class WalletServices {
       const data = {        
           amount,
           type: "onetime-debit",
-          description,
+          description: "Wallet Deposit",
           reference: `ref${String(wallet._id)}`,
           meta: {
             reference: `${String(wallet._id)}`,

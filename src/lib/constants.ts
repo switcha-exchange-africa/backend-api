@@ -206,7 +206,7 @@ export const TRANSACTION_STATUS_LIST = [
   TRANSACTION_STATUS.REJECTED
 ]
 
-export enum SwitchaTypeTransaction{
+export enum SWITCHATYPESTRANSACTION{
   DEPOSIT = 'deposit',
   BUY = 'buy',
   SELL = 'sell',
@@ -217,13 +217,13 @@ export enum SwitchaTypeTransaction{
 }
 
 export const SWITCHATYPES = [
-  SwitchaTypeTransaction.DEPOSIT,
-  SwitchaTypeTransaction.BUY,
-  SwitchaTypeTransaction.SELL,
-  SwitchaTypeTransaction.WITHDRAWAL,
-  SwitchaTypeTransaction.P2P,
-  SwitchaTypeTransaction.SWAP,
-  SwitchaTypeTransaction.FAUCET
+  SWITCHATYPESTRANSACTION.DEPOSIT,
+  SWITCHATYPESTRANSACTION.BUY,
+  SWITCHATYPESTRANSACTION.SELL,
+  SWITCHATYPESTRANSACTION.WITHDRAWAL,
+  SWITCHATYPESTRANSACTION.P2P,
+  SWITCHATYPESTRANSACTION.SWAP,
+  SWITCHATYPESTRANSACTION.FAUCET
 ]
 
 export const PLATFORM_NAME = "switcha";

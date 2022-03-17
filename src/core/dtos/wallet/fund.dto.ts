@@ -9,10 +9,4 @@ export class FundDto {
   @IsNumber()
   @IsNotEmpty()
   amount: number;
-
-  @IsString()
-  @IsOptional()
-  description: string;
-
-
 }

@@ -10,14 +10,15 @@ export class TransactionServices {
     try {
       const user = await this.dataServices.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exist");
-      const transactions = await this.dataServices.transactions.find({
-        userId,
+      const transactions =
+        await this.dataServices.transactions.findAllWithPagination({
+          query: { userId },
+        });
+      return Promise.resolve({
+        message: "Transaction retrieved successfully",
+        status: 200,
+        transactions,
       });
-      if (!transactions || transactions.length === 0)
-        throw new DoesNotExistsException(
-          "transaction does not exist or is empty"
-        );
-      return transactions;
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -28,10 +29,15 @@ export class TransactionServices {
 
   async details(id: string) {
     try {
-      const details = await this.dataServices.transactions.findOne({ _id: id });
-      if (!details)
-        throw new DoesNotExistsException("transaction does not exist");
-      return details;
+      const details =
+        await this.dataServices.transactions.findAllWithPagination({
+          query: { _id: id },
+        });
+      return Promise.resolve({
+        message: "Transaction Details retrieved succesfully",
+        status: 200,
+        details,
+      });
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")

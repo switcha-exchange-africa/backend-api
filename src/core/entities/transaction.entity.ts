@@ -4,8 +4,13 @@ import {
   TRANSACTION_TYPE,
   TRANSACTION_SUBTYPE,
   TRANSACTION_STATUS,
-  SwitchaTypeTransaction,
+  SWITCHATYPESTRANSACTION,
 } from "src/lib/constants";
+
+export interface Rates{
+  buyRate: number,
+  sellRate: number
+}
 
 export class Transaction {
   userId: string;
@@ -20,6 +25,6 @@ export class Transaction {
   status: TRANSACTION_STATUS;
   balanceAfter: number;
   balanceBefore: number;
-  rate: number;
-  switchaTypeTransaction: SwitchaTypeTransaction;
+  rate: Rates;
+  switchaTypeTransaction: SWITCHATYPESTRANSACTION;
 }

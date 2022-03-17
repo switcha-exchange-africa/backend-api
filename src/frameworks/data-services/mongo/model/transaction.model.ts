@@ -1,7 +1,7 @@
 import { UserDetail } from "src/core/entities/user.entity";
 import {
   SWITCHATYPES,
-  SwitchaTypeTransaction,
+  SWITCHATYPESTRANSACTION,
   TRANSACTION_STATUS,
   TRANSACTION_STATUS_LIST,
   TRANSACTION_SUBTYPE,
@@ -14,17 +14,34 @@ import {
   TRANSACTION_TYPE_LIST,
   TRANSACTION_SUBTYPE_LIST,
 } from "src/lib/constants";
+import { Types } from "mongoose";
+import { Rates } from "src/core/entities/transaction.entity";
 
 export type TransactionDocument = Transaction & Document;
 
 @Schema()
 export class Transaction {
+  @Prop({
+    type: Types.ObjectId,
+    ref: "User",
+    required: true,
+  })
   @Prop()
   userId: string;
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Wallet',
+    required: true
+  })
   @Prop()
   walletId: string;
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'TransactionReference',
+    required: true
+  })
   @Prop()
   txRefId: string;
 
@@ -55,11 +72,11 @@ export class Transaction {
   @Prop()
   balanceBefore: number;
 
-  @Prop()
-  rate: number;
+  @Prop({type: Object})
+  rate: Rates;
 
   @Prop({ enum: SWITCHATYPES })
-  switchaTypeTransaction: SwitchaTypeTransaction;
+  switchaTypeTransaction: SWITCHATYPESTRANSACTION;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
