@@ -5,8 +5,10 @@ import { Model } from 'mongoose';
 import { MongoGenericRepository } from './mongo-generic-repository';
 import { User, UserDocument } from './model/user.model';
 import { Wallet, WalletDocument } from './model/wallet.model';
-import { IDataServices} from 'src/core/abstracts';
+import { IDataServices, IGenericRepository} from 'src/core/abstracts';
 import { TransactionReference, TransactionReferenceDocument } from './model/transaction-reference.model';
+import { Faucet } from 'src/core/entities/faucet.entity';
+import { FaucetDocument } from './model/faucet.model';
 
 
 @Injectable()
@@ -17,6 +19,8 @@ export class MongoDataServices
   wallets: MongoGenericRepository<Wallet>;
   transactionReferences: MongoGenericRepository<TransactionReference>;
   transactions: MongoGenericRepository<Transaction>;
+  faucets: MongoGenericRepository<Faucet>;
+
 
   constructor(
     @InjectModel(User.name)
@@ -27,6 +31,8 @@ export class MongoDataServices
     private TransactionReferenceRepository: Model<TransactionReferenceDocument>,
     @InjectModel(Transaction.name)
     private TransactionRepository: Model<TransactionDocument>,
+    @InjectModel(Faucet.name)
+    private FaucetRepository: Model<FaucetDocument>,
    
   ) {}
   
@@ -36,6 +42,7 @@ export class MongoDataServices
     this.wallets = new MongoGenericRepository<Wallet>(this.WalletRepository)
     this.transactions = new MongoGenericRepository<Transaction>(this.TransactionRepository)
     this.transactionReferences = new MongoGenericRepository<TransactionReference>(this.TransactionReferenceRepository)
+    this.faucets = new MongoGenericRepository<Faucet>(this.FaucetRepository)
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
     //   'genre',
