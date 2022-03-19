@@ -32,7 +32,7 @@ export enum TRANSACTION_ROUTE{
 }
 
 export enum FAUCET_ROUTE{
-  FUND = "/api/faucet/fund"
+  FUND = "/api/faucet"
 }
 
 export enum SwitchaDeviceType {

@@ -30,14 +30,11 @@ export class FaucetController {
   @UseGuards(StrictAuthGuard)
 
   async fund(
-    @Req() req: Request,
     @Res() res: Response,
     @Body() body: FaucetDto
   ) {
     try {
-      const userId = req?.user?._id;
-      const faucet = await this.faucetFatoryServices.create(body, userId);
-      const response = await this.faucetServices.create(faucet);
+      const response = await this.faucetServices.create(body);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error)
