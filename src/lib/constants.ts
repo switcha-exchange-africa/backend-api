@@ -31,6 +31,10 @@ export enum TRANSACTION_ROUTE{
   GET_SINGLE = "/api/transactions/:id"
 }
 
+export enum FAUCET_ROUTE{
+  FUND = "/api/faucet"
+}
+
 export enum SwitchaDeviceType {
   IOS = "ios",
   ANDROID = "android",

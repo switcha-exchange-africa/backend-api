@@ -1,3 +1,4 @@
+import { Faucet } from '../entities/faucet.entity';
 import { TransactionReference } from '../entities/transaction-reference.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { User } from '../entities/user.entity';
@@ -9,4 +10,5 @@ export abstract class IDataServices {
   abstract wallets: IGenericRepository<Wallet>;
   abstract transactionReferences: IGenericRepository<TransactionReference>
   abstract transactions: IGenericRepository<Transaction>
+  abstract faucets: IGenericRepository<Faucet>
 }

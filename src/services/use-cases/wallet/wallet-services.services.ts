@@ -2,7 +2,6 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 
 import { BLOCKCHAIN_NETWORK, NETWORK } from "src/lib/constants";
 import { COIN_TYPES } from "src/lib/constants";
