@@ -5,8 +5,8 @@ import { FaucetFactoryServices } from './faucet-factory.services';
 import { TransactionFactoryService } from '../transaction/transaction-factory.services';
 
 @Module({
-  imports: [DataServicesModule, TransactionFactoryService],
-  providers: [FaucetServices, FaucetFactoryServices,TransactionFactoryService],
+  imports: [DataServicesModule],
+  providers: [FaucetServices, FaucetFactoryServices, TransactionFactoryService],
   exports: [FaucetServices, FaucetFactoryServices],
 })
 export class FaucetServicesModule { }
