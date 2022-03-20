@@ -1,32 +1,26 @@
 import {
   Body,
   Controller,
-  Get,
   HttpException,
   Logger,
-  Param,
   Post,
-  Query,
-  Req,
   Res,
   UseGuards,
 } from "@nestjs/common";
 import { FaucetDto } from "src/core/dtos/wallet/faucet.dto";
 import { FAUCET_ROUTE } from "src/lib/constants";
-import { FaucetFactoryServices } from "src/services/use-cases/wallet/faucet/faucet-factory.services";
-import { FaucetServices } from "src/services/use-cases/wallet/faucet/faucet-services.services";
 
-import { Request, Response } from "express";
+import { Response } from "express";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { FaucetServices } from "src/services/use-cases/faucet/faucet-services.services";
 
 @Controller()
 export class FaucetController {
   constructor(
     private faucetServices: FaucetServices,
-    private faucetFatoryServices: FaucetFactoryServices
-  ) {}
+  ) { }
 
-  @Post(FAUCET_ROUTE.FUND)
+  @Post(FAUCET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
 
   async fund(
