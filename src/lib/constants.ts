@@ -18,21 +18,17 @@ export enum TEST_ROUTE {
 }
 
 export enum WALLET_ROUTE {
-  GET = "/api/wallet/",
-  POST = "/api/wallet",
-  GET_SINGLE = "/api/wallet/:id",
-  PUT_SINGLE = "/api/wallet/:id",
-  DELETE_SINGLE = "/api/wallet/:id",
-  FUND = "/api/wallet/fund",
+  ROUTE = "/api/wallet",
+  SINGLE_ROUTE = "/api/wallet/:id"
 }
 
-export enum TRANSACTION_ROUTE{
+export enum TRANSACTION_ROUTE {
   GET = "/api/transactions",
   GET_SINGLE = "/api/transactions/:id"
 }
 
-export enum FAUCET_ROUTE{
-  FUND = "/api/faucet"
+export enum FAUCET_ROUTE {
+  ROUTE = "/api/faucet"
 }
 
 export enum RATES_ROUTE{
@@ -163,7 +159,7 @@ export enum COIN_TYPES {
   BTC = "btc",
   USDC = "usdc",
   USDT = "usdt",
-  NGN = "naira",
+  NGN = "ngn",
 }
 
 export const COIN_TYPES_LIST = [
@@ -203,7 +199,7 @@ export const TRANSACTION_SUBTYPE_LIST = [
   TRANSACTION_SUBTYPE.REVERSAL
 ]
 
-export enum TRANSACTION_STATUS{
+export enum TRANSACTION_STATUS {
   PENDING = 'pending',
   COMPLETED = 'completed',
   REJECTED = 'rejected'
@@ -215,7 +211,7 @@ export const TRANSACTION_STATUS_LIST = [
   TRANSACTION_STATUS.REJECTED
 ]
 
-export enum CUSTOM_TRANSACTION_TYPE{
+export enum CUSTOM_TRANSACTION_TYPE {
   DEPOSIT = 'deposit',
   BUY = 'buy',
   SELL = 'sell',

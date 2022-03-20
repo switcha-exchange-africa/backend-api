@@ -1,26 +1,22 @@
 import {
-  Body,
+
   Controller,
   Get,
   HttpException,
   Logger,
   Param,
-  Post,
-  Query,
-  Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 import { RATES_ROUTE } from "src/lib/constants";
 import { RatesServices } from "src/services/use-cases/rates/rates-services.services";
-import { Request, Response } from "express";
+import {  Response } from "express";
 
 @Controller()
 export class RatesController {
   constructor(private rateServices: RatesServices) {}
 
   @Get(RATES_ROUTE.PRICES)
-  async findAll(@Req() req: Request, @Res() res: Response) {
+  async findAll( @Res() res: Response) {
     try {
       const response = await this.rateServices.findAll();
       return res.status(response.status).json(response);
@@ -34,7 +30,6 @@ export class RatesController {
 
   @Get(RATES_ROUTE.SINGLE_PRICES)
   async single(
-    @Req() req: Request,
     @Res() res: Response,
     @Param() param: { asset: string }
   ) {

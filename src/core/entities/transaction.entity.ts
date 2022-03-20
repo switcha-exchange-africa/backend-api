@@ -7,24 +7,29 @@ import {
   CUSTOM_TRANSACTION_TYPE,
 } from "src/lib/constants";
 
-export interface Rates{
+export interface Rates {
   buyRate: number,
   sellRate: number
 }
 
 export class Transaction {
   userId: string;
-  walletId: string;
+  walletId?: string;
   txRefId: string;
   currency: COIN_TYPES;
   amount: number;
   signedAmount: number;
   type: TRANSACTION_TYPE;
   subType: TRANSACTION_SUBTYPE;
-  user: UserDetail;
+  user?: UserDetail;
   status: TRANSACTION_STATUS;
   balanceAfter: number;
   balanceBefore: number;
-  rate: Rates;
+  rate?: Rates;
   customTransactionType: CUSTOM_TRANSACTION_TYPE;
+  createdAt?: Date;
+  updatedAt?: Date;
+  description?: string
+  hash?: string
 }
+

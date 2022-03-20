@@ -1,4 +1,4 @@
-import { COIN_TYPES, TRANSACTION_TYPE } from "src/lib/constants";
+import { COIN_TYPES } from "src/lib/constants";
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class FaucetDto {

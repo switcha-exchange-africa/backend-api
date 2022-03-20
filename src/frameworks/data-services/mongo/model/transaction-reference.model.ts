@@ -23,6 +23,13 @@ export class TransactionReference{
     @Prop()
     amount: number
     
+    @Prop()
+    createdAt: Date
+  
+    @Prop()
+    updatedAt: Date
+  
+  
 }
 
 export const TransactionReferenceSchema = SchemaFactory.createForClass(TransactionReference);
