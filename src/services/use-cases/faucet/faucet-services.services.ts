@@ -1,6 +1,5 @@
 import { IDataServices } from "src/core/abstracts";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
-import { Faucet } from "src/core/entities/faucet.entity";
 import { FaucetFactoryServices } from "./faucet-factory.services";
 import { FaucetDto } from "src/core/dtos/wallet/faucet.dto";
 

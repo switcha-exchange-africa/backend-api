@@ -1,4 +1,3 @@
-import { AlreadyExistsException } from "src/services/use-cases/user/exceptions";
 import { WalletFactoryService } from "src/services/use-cases/wallet/wallet-factory.service";
 import { IDataServices } from "src/core/abstracts";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
@@ -42,7 +41,7 @@ export class WalletCreateListener {
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({ userId, coin }),
       ]);
-      if (!user) return "user does not exists"; 
+      if (!user) return "user does not exists";
       if (wallet) {
         Logger.warn(`${coin} already exists`);
         return;

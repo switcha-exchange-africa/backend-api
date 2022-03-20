@@ -120,7 +120,7 @@ export class AuthenticationController {
   }
 
   @Post(TEST_ROUTE.TEST)
-  async testRoute(@Req() req: Request, @Res() res: Response) {
+  async testRoute(@Res() res: Response) {
     try {
       const value = await this.inMemoryServices.get('test')
       return res.status(201).json({ value })
