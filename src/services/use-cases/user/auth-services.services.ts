@@ -30,27 +30,16 @@ export class AuthServices {
   async createUser(data: User, res: Response) {
     try {
 
-      // checks if user already exists
-      const userExists = await this.dataServices.users.findOne({ email: data.email });
-      if (userExists) {
-        throw new AlreadyExistsException('User already exists')
-      }
-
-      const phoneExists = await this.dataServices.users.findOne({ email: data.phone });
-      if (phoneExists) {
-        throw new AlreadyExistsException('User already exists')
-      }
-      // create user
-      // sends verification code
-      // call to our dependencies
+      const [userExists, phoneExists] = await Promise.all([this.dataServices.users.findOne({ email: data.email }), this.dataServices.users.findOne({ email: data.phone })]);
+      if (userExists) throw new AlreadyExistsException('User already exists')
+      if (phoneExists) throw new AlreadyExistsException('User already exists')
 
       const user = await this.dataServices.users.create(data);
       const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
 
       const verification: string[] = []
       if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
-      // setup jwt
-      // setup jwt 
+
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: user?._id,
         fullName: `${user?.firstName} ${user?.lastName}`,
@@ -61,31 +50,23 @@ export class AuthServices {
         verified: user?.verified
       }
       const token = (await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`)) as string;
-      res.set('Authorization', `Bearer ${token}`);
       const code = randomFixedInteger(6)
-      await this.discordServices.inHouseNotification({
-        title: `Email Verification code :- ${env.env} environment`,
-        message: `Verification code for ${jwtPayload?.fullName}-${jwtPayload?.email} is ${code}`,
-        link: DISCORD_VERIFICATION_CHANNEL_LINK,
-      })
       const hashedCode = await hash(String(code));
-      await this.inMemoryServices.set(
-        redisKey,
-        hashedCode,
-        String(SIGNUP_CODE_EXPIRY)
-      )
-      return {
-        message: "User signed up successfully",
-        token: `Bearer ${token}`,
-        user: jwtPayload,
-        code: env.isDev || env.isStaging ? code : null,
-        verification
-      };
+
+      res.set('Authorization', `Bearer ${token}`);
+      await Promise.all([
+        this.discordServices.inHouseNotification({
+          title: `Email Verification code :- ${env.env} environment`,
+          message: `Verification code for ${jwtPayload?.fullName}-${jwtPayload?.email} is ${code}`,
+          link: DISCORD_VERIFICATION_CHANNEL_LINK,
+        }),
+        this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY))
+      ])
+
+      return { message: "User signed up successfully", token: `Bearer ${token}`, user: jwtPayload, code: env.isDev || env.isStaging ? code : null, verification };
     } catch (error) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
       throw error;
     }
   }
@@ -97,27 +78,18 @@ export class AuthServices {
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
 
-      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user email already verified')
-      }
-      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user already verified')
-      }
+      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user email already verified')
+      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user already verified')
+
 
       const savedCode = await this.inMemoryServices.get(redisKey);
-
       if (isEmpty(savedCode)) {
-        console.log("code not found", savedCode)
+        Logger.error("code not found", savedCode)
         throw new BadRequestsException('code is incorrect, invalid or has expired')
       }
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      if (!correctCode) {
-        console.log("does not match", correctCode)
-        console.log("code", code)
-        console.log("saved code", savedCode)
-        throw new BadRequestsException('code is incorrect, invalid or has expired')
-      }
+      if (!correctCode) throw new BadRequestsException('code is incorrect, invalid or has expired')
 
       const updatedUser = await this.dataServices.users.update({ _id: authUser?._id }, {
         $set: {
@@ -139,23 +111,18 @@ export class AuthServices {
       }
       if (updatedUser?.emailVerified! === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
 
-      const token = (await jwtLib.jwtSign(jwtPayload)) as string;
-      if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
+      const [token, ,] = await Promise.all([
+        jwtLib.jwtSign(jwtPayload),
+        this.inMemoryServices.del(redisKey),
+        this.walletServices.create(authUser?._id)
+      ])
 
-      await this.inMemoryServices.del(redisKey);
-      await this.walletServices.create(authUser?._id)
-      return {
-        message: 'User email is verified successfully',
-        token: `Bearer ${token}`,
-        ...jwtPayload,
-        verification
-      }
+      if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
+      return { message: 'User email is verified successfully', token: `Bearer ${token}`, user: jwtPayload, verification }
 
     } catch (error: Error | any | unknown) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
       throw error;
     }
   }
@@ -163,18 +130,13 @@ export class AuthServices {
   async issueEmailVerificationCode(req: Request) {
     try {
       const authUser = req?.user;
-      if (!authUser) {
-        throw new BadRequestsException('user not recognized')
-      }
-      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user email already verified')
-      }
-      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) {
-        throw new AlreadyExistsException('user already verified')
-      }
+      if (!authUser) throw new BadRequestsException('user not recognized')
+      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user email already verified')
+      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user already verified')
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const codeSent = await this.inMemoryServices.get(redisKey) as number
+      const verification: string[] = []
 
       if (codeSent) {
         const codeExpiry = await this.inMemoryServices.ttl(redisKey) as Number || 0;
@@ -192,80 +154,50 @@ export class AuthServices {
 
       const emailCode = randomFixedInteger(6)
       // Remove email code for this user
-      await this.inMemoryServices.del(redisKey)
-      const user = await this.dataServices.users.findOne({ email: authUser?.email })
-      const verification: string[] = []
+      const [user,] = await Promise.all([this.dataServices.users.findOne({ email: authUser?.email }), this.inMemoryServices.del(redisKey)])
       if (user?.emailVerified! === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
+      if (!user) throw new DoesNotExistsException('user does not exists')
 
-      if (!user) {
-        throw new DoesNotExistsException('user does not exists')
 
-      }
       // hash verification code in redis
       const hashedCode = await hash(String(emailCode));
-      // save hashed code to redis
-      await this.inMemoryServices.set(
-        redisKey,
-        hashedCode,
-        String(SIGNUP_CODE_EXPIRY)
-      )
-      await this.discordServices.inHouseNotification({
-        title: `Email Verification code :- ${env.env} environment`,
-        message: `Verification code for ${user?.firstName} ${user?.lastName}-${user?.email} is ${emailCode}`,
-        link: DISCORD_VERIFICATION_CHANNEL_LINK,
-      })
-      return {
-        status: 200,
-        message: 'New code was successfully generated',
-        code: env.isProd ? null : emailCode,
-        verification
-      };
+      await Promise.all([
+        this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY)),
+        await this.discordServices.inHouseNotification({
+          title: `Email Verification code :- ${env.env} environment`,
+          message: `Verification code for ${user?.firstName} ${user?.lastName}-${user?.email} is ${emailCode}`,
+          link: DISCORD_VERIFICATION_CHANNEL_LINK,
+        })
+      ])
+      // save hashed code to redis 
+
+      return { status: 200, message: 'New code was successfully generated', code: env.isProd ? null : emailCode, verification };
     } catch (error: Error | any | unknown) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
       throw error;
     }
   }
 
-  async resetPassword(res: Response, payload: {
-    email: string,
-    password: string,
-    token: string
-  }) {
+  async resetPassword(res: Response, payload: { email: string, password: string, token: string }) {
     try {
+
       const { email, password, token } = payload
       const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`
       const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`
 
-      const userRequestReset = await this.inMemoryServices.get(resetPasswordRedisKey);
-      if (!userRequestReset) {
-        console.log(email, password, token)
-        console.log("reset password key", userRequestReset)
-        throw new BadRequestsException('Invalid or expired reset token')
-      }
-      // Find user by email
-      const user = await this.dataServices.users.findOne({ email: String(email) });
-      // Check if user has requested password reset
-      if (!user) {
-        throw new DoesNotExistsException('user does not exists')
-      }
+      const [userRequestReset, user] = await Promise.all([this.inMemoryServices.get(resetPasswordRedisKey), this.dataServices.users.findOne({ email: String(email) })]);
+      if (!userRequestReset) throw new BadRequestsException('Invalid or expired reset token')
+      if (!user) throw new DoesNotExistsException('user does not exists')
+
       // If reset link is valid and not expired
       const validReset = await compareHash(String(token), userRequestReset);
-      if (!validReset) {
-        throw new BadRequestsException('Invalid or expired reset token')
-      }
+      if (!validReset) throw new BadRequestsException('Invalid or expired reset token')
+
       // Store update users password
-      const hashedPassword = await hash(password);
       const twenty4H = 1 * 60 * 60 * 24;
 
-      // Remove reset token for this user 
-      await this.inMemoryServices.del(resetPasswordRedisKey)
-      await this.inMemoryServices.set(passwordResetCountKey, 1, String(twenty4H))
-
-      // save reset count for next 24 hours
-      // remove stored cookie so it reinstate otp
+      const [hashedPassword, ,] = await Promise.all([hash(password), this.inMemoryServices.del(resetPasswordRedisKey), this.inMemoryServices.set(passwordResetCountKey, 1, String(twenty4H))]);
       res.cookie('deviceTag', '');
       await this.dataServices.users.update(
         { email: user.email },
@@ -277,16 +209,11 @@ export class AuthServices {
             password: hashedPassword
           }
         })
-      return {
-        status: 200,
-        message: 'Password updated successfully',
-      }
+      return { status: 200, message: 'Password updated successfully' }
 
     } catch (error: Error | any | unknown) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500);
       throw error;
     }
   }
@@ -306,10 +233,9 @@ export class AuthServices {
       }
 
       const user = await this.dataServices.users.findOne({ email });
-      if (!user) {
-        throw new BadRequestsException(`code is invalid or has expired`)
-      }
-    
+      if (!user) throw new BadRequestsException(`code is invalid or has expired`)
+
+
       // for mobile users only
 
       const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);
@@ -348,29 +274,24 @@ export class AuthServices {
         }
       } else {
         const phoneVerifyDocument = codeSent as string;
-        if (isEmpty(phoneVerifyDocument)) {
-          throw new BadRequestsException(`code is invalid or has expired`)
-
-        }
+        if (isEmpty(phoneVerifyDocument)) throw new BadRequestsException(`code is invalid or has expired`)
         const correctCode = await compareHash(String(code).trim(), (phoneVerifyDocument || '').trim());
-        if (!correctCode) {
-          throw new BadRequestsException(`code is invalid or has expired`)
-        }
+        if (!correctCode) throw new BadRequestsException(`code is invalid or has expired`)
 
         // Generate Reset token
         const resetToken = randomBytes(32).toString('hex');
         const hashedResetToken = await hash(resetToken);
 
         // Remove all reset token for this user if it exists
-        await this.inMemoryServices.del(resetCodeRedisKey)
-        await this.inMemoryServices.del(resetPasswordRedisKey)
-
-        await this.inMemoryServices.set(
-          resetPasswordRedisKey,
-          hashedResetToken,
-          String(RESET_PASSWORD_EXPIRY)
-        )
-
+        await Promise.all([
+          this.inMemoryServices.del(resetCodeRedisKey),
+          this.inMemoryServices.del(resetPasswordRedisKey),
+          this.inMemoryServices.set(
+            resetPasswordRedisKey,
+            hashedResetToken,
+            String(RESET_PASSWORD_EXPIRY)
+          )
+        ])
 
         return {
           status: 200,
@@ -381,10 +302,8 @@ export class AuthServices {
 
       }
     } catch (error: Error | any | unknown) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
       throw error;
     }
   }
@@ -393,17 +312,15 @@ export class AuthServices {
     try {
       const { email, password } = payload
       const user = await this.dataServices.users.findOne({ email });
-      if (!user) {
-        throw new DoesNotExistsException('user does not exists')
-      }
       const verification: string[] = []
-      if (user.lock === USER_LOCK.LOCK) {
-        throw new ForbiddenRequestException('account is temporary locked')
-      }
+
+      if (!user) throw new DoesNotExistsException('user does not exists')
+      if (user.lock === USER_LOCK.LOCK) throw new ForbiddenRequestException('account is temporary locked')
+
+
       const correctPassword: boolean = await compareHash(password, user?.password!);
-      if (!correctPassword) {
-        throw new BadRequestsException('password is incorrect') //
-      }
+      if (!correctPassword) throw new BadRequestsException('password is incorrect') //
+
       if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) {
         verification.push("email")
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
@@ -416,12 +333,7 @@ export class AuthServices {
           verified: user.verified
         }
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
-        return {
-          status: 403,
-          message: 'email is not verified',
-          token: `Bearer ${token}`,
-          verification
-        }
+        return { status: 403, message: 'email is not verified', token: `Bearer ${token}`, verification }
       }
 
       if (user.verified === VERIFICATION_VALUE_TYPE.FALSE) {
@@ -435,12 +347,7 @@ export class AuthServices {
           verified: user.verified
         }
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
-        return {
-          status: 403,
-          message: 'user is not verified',
-          token: `Bearer ${token}`,
-          verification
-        }
+        return { status: 403, message: 'user is not verified', token: `Bearer ${token}`, verification }
       }
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: user?._id,
@@ -462,14 +369,12 @@ export class AuthServices {
         status: 200,
         message: 'User logged in successfully',
         token: `Bearer ${token}`,
-        ...jwtPayload,
+        user: jwtPayload,
         verification
       }
     } catch (error: Error | any | unknown) {
-      if (error.name === 'TypeError') {
-        throw new HttpException(error.message, 500)
-      }
       Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
       throw error;
     }
   }
