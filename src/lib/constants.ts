@@ -18,12 +18,8 @@ export enum TEST_ROUTE {
 }
 
 export enum WALLET_ROUTE {
-  GET = "/api/wallet/",
-  POST = "/api/wallet",
-  GET_SINGLE = "/api/wallet/:id",
-  PUT_SINGLE = "/api/wallet/:id",
-  DELETE_SINGLE = "/api/wallet/:id",
-  FUND = "/api/wallet/fund",
+  ROUTE = "/api/wallet",
+  SINGLE_ROUTE = "/api/wallet/:id"
 }
 
 export enum TRANSACTION_ROUTE {

@@ -5,8 +5,8 @@ import {
   BLOCKCHAIN_NETWORK_LIST,
 } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
-
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types } from "mongoose";
 
 export type WalletDocument = Wallet & Document;
 
@@ -18,7 +18,11 @@ export class Wallet {
   @Prop()
   address: string;
 
-  @Prop()
+  @Prop({
+    type: Types.ObjectId,
+    ref: "User",
+    required: true,
+  })
   userId: string;
 
   @Prop({ type: Object })

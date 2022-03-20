@@ -21,9 +21,9 @@ import { Request, Response } from "express";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) {}
+  constructor(private walletServices: WalletServices) { }
 
-  @Post(WALLET_ROUTE.POST)
+  @Post(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
   async create(@Req() req: Request, @Res() res: Response) {
     try {
@@ -38,7 +38,7 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.GET)
+  @Get(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
   async findAll(@Req() req: Request, @Res() res: Response) {
     try {
@@ -53,10 +53,9 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.GET_SINGLE)
+  @Get(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
   async detail(
-    @Req() req: Request,
     @Res() res: Response,
     @Param() param: { walletId }
   ) {
@@ -72,7 +71,7 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.FUND)
+  @Post(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
   async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
     try {
