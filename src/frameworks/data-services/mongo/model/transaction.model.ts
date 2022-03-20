@@ -72,6 +72,18 @@ export class Transaction {
 
   @Prop({ enum: CUSTOM_TRANSACTION_TYPES })
   customTransactionType: CUSTOM_TRANSACTION_TYPE;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
+
+  @Prop()
+  description: string
+
+  @Prop()
+  hash: string
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
