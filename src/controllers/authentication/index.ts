@@ -63,12 +63,9 @@ export class AuthenticationController {
       // send email verification code to discord and mailgun 
       return res.status(201).json(createdUser)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -82,12 +79,9 @@ export class AuthenticationController {
       const response = await this.authServices.login(res, { email, password })
       return res.status(response.status).json(response)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -101,12 +95,9 @@ export class AuthenticationController {
       const response = await this.authServices.issueEmailVerificationCode(req)
       return res.status(response.status).json(response)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -122,17 +113,14 @@ export class AuthenticationController {
       const response = await this.authServices.verifyEmail(req, res, String(code))
       return res.status(200).json(response)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
   @Post(TEST_ROUTE.TEST)
-  async testRoute(@Req() req: Request, @Res() res: Response) {
+  async testRoute(@Res() res: Response) {
     try {
       const value = await this.inMemoryServices.get('test')
       return res.status(201).json({ value })
@@ -150,12 +138,9 @@ export class AuthenticationController {
       const response = await this.authServices.recoverPassword({ email, code })
       return res.status(response.status).json(response)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -171,12 +156,9 @@ export class AuthenticationController {
       const response = await this.authServices.resetPassword(res, { email, password, token })
       return res.status(response.status).json(response)
     } catch (error) {
-      if (error.name === 'TypeError') {
-        Logger.error(error)
-        throw new HttpException(error.message, 500)
-      }
-      Logger.error(error)
-      return res.status(error.status || 500).json(error)
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
     }
   }
 

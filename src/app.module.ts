@@ -1,18 +1,10 @@
-import { Module } from '@nestjs/common';
-import { AccountController } from './controllers/account/index.controller';
-import { AppController } from './controllers/app.controllers';
-import { AuthenticationController } from './controllers/authentication/index.controller';
-import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
-import { DiscordServicesModule } from './frameworks/notification-services/discord/discord-service.module';
-import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
-import { DataServicesModule } from './services/data-services/data-services.module';
-import { UserServicesModule } from './services/use-cases/user/user-service.module';
-
+import { Module } from "@nestjs/common";
+import controllers from "./controllers";
+import { JWT_USER_PAYLOAD_TYPE } from "./lib/constants";
+import modules from './modules';
 
 declare global {
   namespace Express {
-
-
     export interface Request {
       user?: JWT_USER_PAYLOAD_TYPE;
     }
@@ -21,24 +13,9 @@ declare global {
   var io: any;
 }
 @Module({
-  imports: [
-    DataServicesModule,
-    UserServicesModule,
-    DiscordServicesModule,
-    RedisServiceModule
-  ],
-  controllers: [
-    AppController,
-    AuthenticationController,
-    AccountController
-  ],
+  imports: [...modules],
+  controllers: [...controllers],
   providers: [],
 })
 export class AppModule { }
 
-
-// export class AppModule implements NestModule {
-//   configure(consumer: MiddlewareConsumer) {
-//     consumer.apply(LoggingMiddleware).forRoutes("/")
-//   }
-// }

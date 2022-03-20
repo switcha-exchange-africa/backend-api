@@ -1,4 +1,5 @@
 require("dotenv").config()
+
 function getEnv(variable: string, optional: boolean = false) {
   if (process.env[variable] === undefined) {
     if (optional) {
@@ -10,6 +11,8 @@ function getEnv(variable: string, optional: boolean = false) {
 
   return process.env[variable]?.replace(/\\n/gm, '\n');
 }
+
+
 // environment
 export const env = {
   isDev: String(process.env.NODE_ENV).toLowerCase().includes('dev'),
@@ -28,3 +31,18 @@ export const REDIS_HOST = getEnv('REDIS_HOST')!
 export const REDIS_PORT = getEnv('REDIS_PORT')!
 export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD')!
 export const REDIS_CLIENT_NAME = getEnv('REDIS_CLIENT_NAME')!
+export const NODEMAILER_EMAIL_HOST = getEnv('NODEMAILER_EMAIL_HOST', true)!
+export const NODEMAILER_EMAIL_PASSWORD = getEnv('NODEMAILER_EMAIL_PASSWORD', true)!
+export const NODEMAILER_EMAIL_PORT = getEnv('NODEMAILER_EMAIL_PORT', true)!
+export const NODEMAILER_EMAIL_USER = getEnv('NODEMAILER_EMAIL_USER', true)!
+export const NODEMAILER_FROM_EMAIL = getEnv('NODEMAILER_FROM_EMAIL', true)!
+export const TWILIO_ACCOUNT_SID = getEnv('TWILIO_ACCOUNT_SID', true)!
+export const TWILIO_AUTH_TOKEN = getEnv('TWILIO_AUTH_TOKEN', true)!
+export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
+export const CRYPTO_API_KEY = getEnv('CRYPTO_API_KEY')!
+export const CRYPTO_API_WALLET_ID = getEnv('CRYPTO_API_WALLET_ID')!
+export const MONO_PUBLIC_KEY = getEnv('MONO_PUBLIC_KEY')!
+export const MONO_SECRET_KEY = getEnv('MONO_SECRET_KEY')!
+
+
+

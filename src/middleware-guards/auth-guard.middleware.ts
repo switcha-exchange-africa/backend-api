@@ -5,12 +5,9 @@ import jwtLib from "src/lib/jwtLib";
 import { DoesNotExistsException, UnAuthorizedException } from "src/services/use-cases/user/exceptions";
 
 
-
-
 @Injectable()
 export class StrictAuthGuard implements CanActivate {
-  constructor(private readonly dataServices: IDataServices
-  ) { }
+  constructor() { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
 

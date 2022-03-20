@@ -1,17 +1,16 @@
 import {
-  COIN_TYPES,
   WALLET_STATUS_LIST,
   WALLET_STATUS,
   BLOCKCHAIN_NETWORK,
   BLOCKCHAIN_NETWORK_LIST,
-  COIN_TYPES_LIST,
 } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
-
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types } from "mongoose";
 
 export type WalletDocument = Wallet & Document;
 
+@Schema()
 export class Wallet {
   @Prop()
   balance: number;
@@ -19,7 +18,11 @@ export class Wallet {
   @Prop()
   address: string;
 
-  @Prop()
+  @Prop({
+    type: Types.ObjectId,
+    ref: "User",
+    required: true,
+  })
   userId: string;
 
   @Prop({ type: Object })
@@ -28,8 +31,8 @@ export class Wallet {
   @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
   network: BLOCKCHAIN_NETWORK;
 
-  @Prop({ enum: COIN_TYPES_LIST })
-  coinType: COIN_TYPES;
+  @Prop()
+  coin: string;
 
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;

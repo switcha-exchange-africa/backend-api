@@ -7,6 +7,8 @@ import {
   SwitchaDeviceType,
   SWITCHA_DEVICES,
   UserIDDocumentType,
+  USER_LEVEL_LIST,
+  USER_LEVEL_TYPE,
   USER_LOCK,
   USER_LOCK_LIST,
   USER_SIGNUP_STATUS_TYPE,
@@ -85,8 +87,11 @@ export class User {
 
   @Prop({ type: Object })
   document: UserIDDocumentType
+
+  @Prop({ enum: USER_LEVEL_LIST })
+  level: USER_LEVEL_TYPE
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
 
