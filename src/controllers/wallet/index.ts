@@ -21,9 +21,9 @@ import { Request, Response } from "express";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) {}
+  constructor(private walletServices: WalletServices) { }
 
-  @Post(WALLET_ROUTE.POST)
+  @Post(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
   async create(@Req() req: Request, @Res() res: Response) {
     try {
@@ -38,12 +38,12 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.GET)
+  @Get(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
-  async findAll(@Req() req: Request, @Res() res: Response) {
+  async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
       const userId = req?.user?._id;
-      const response = await this.walletServices.findAll(userId);
+      const response = await this.walletServices.findAll(query, userId);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -53,16 +53,15 @@ export class WalletController {
     }
   }
 
-  @Get(WALLET_ROUTE.GET_SINGLE)
+  @Get(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
   async detail(
-    @Req() req: Request,
     @Res() res: Response,
-    @Param() param: { walletId }
+    @Param() param: { id }
   ) {
     try {
-      const { walletId } = param;
-      const response = await this.walletServices.details(walletId);
+      const { id } = param;
+      const response = await this.walletServices.details(id);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -72,7 +71,7 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.FUND)
+  @Post(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
   async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
     try {

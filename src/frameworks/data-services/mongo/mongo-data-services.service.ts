@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { MongoGenericRepository } from './mongo-generic-repository';
 import { User, UserDocument } from './model/user.model';
 import { Wallet, WalletDocument } from './model/wallet.model';
-import { IDataServices, IGenericRepository} from 'src/core/abstracts';
+import { IDataServices } from 'src/core/abstracts';
 import { TransactionReference, TransactionReferenceDocument } from './model/transaction-reference.model';
 import { Faucet } from 'src/core/entities/faucet.entity';
 import { FaucetDocument } from './model/faucet.model';
@@ -13,8 +13,7 @@ import { FaucetDocument } from './model/faucet.model';
 
 @Injectable()
 export class MongoDataServices
-  implements IDataServices, OnApplicationBootstrap
-{
+  implements IDataServices, OnApplicationBootstrap {
   users: MongoGenericRepository<User>;
   wallets: MongoGenericRepository<Wallet>;
   transactionReferences: MongoGenericRepository<TransactionReference>;
@@ -33,9 +32,9 @@ export class MongoDataServices
     private TransactionRepository: Model<TransactionDocument>,
     @InjectModel(Faucet.name)
     private FaucetRepository: Model<FaucetDocument>,
-   
-  ) {}
-  
+
+  ) { }
+
 
   onApplicationBootstrap() {
     this.users = new MongoGenericRepository<User>(this.UserRepository);

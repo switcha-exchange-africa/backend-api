@@ -1,6 +1,7 @@
 import moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
+import { env } from "src/configuration";
 
 export const convertDate = (date: any) => {
   return new Date(date).toISOString();
@@ -87,4 +88,33 @@ export const createSlug = (word: string) => {
     locale: "vi", // language code of the locale to use
     trim: true, // trim leading and trailing replacement chars, defaults to `true`
   });
+};
+
+
+const generateRef = (length: number) => {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+export const generateWalletRef = () => {
+  const key = env.isProd ? 'SWITCH_LIVE_' : 'SWITCH_TEST_';
+  const reference = key + generateRef(6);
+  return reference;
+};
+
+export const generateTXRef = () => {
+  const key = env.isProd ? 'SWITCH_REF_LIVE_' : 'SWITCH_REF_TEST_';
+  const reference = key + generateRef(6);
+  return reference;
+};
+
+export const generateTXHash = () => {
+  const key = env.isProd ? 'SWITCH_HASH_LIVE_' : 'SWITCH_HASH_TEST_';
+  const reference = key + generateRef(6);
+  return reference;
 };

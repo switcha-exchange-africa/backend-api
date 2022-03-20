@@ -57,7 +57,7 @@ export class AccountServices {
 
   async issuePhoneVerificationCode(phone: string) {
     try {
-
+      console.log(phone)
     } catch (error) {
       if (error.name === 'TypeError') {
         throw new HttpException(error.message, 500)

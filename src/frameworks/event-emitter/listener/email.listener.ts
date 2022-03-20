@@ -1,5 +1,3 @@
-
-  
 import { Injectable } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { sendMail } from "src/lib/send-email";
