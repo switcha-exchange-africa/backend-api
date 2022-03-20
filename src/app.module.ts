@@ -14,6 +14,8 @@ import { UserServicesModule } from "./services/use-cases/user/user-service.modul
 import { TransactionServicesModule } from "./services/use-cases/transaction/transaction-services.module";
 import { TransactionController } from "./controllers/transaction";
 import { FaucetServicesModule } from './services/use-cases/wallet/faucet/faucet-services.module';
+import { RatesController } from './controllers/rates';
+import { RatesServicesModule } from './services/use-cases/rates/rates-services.module';
 
 declare global {
   namespace Express {
@@ -34,14 +36,16 @@ declare global {
     WalletServicesModule,
     EventEmitterServiceModule,
     TransactionServicesModule,
-    FaucetServicesModule
+    FaucetServicesModule,
+    RatesServicesModule
   ],
   controllers: [
     AuthenticationController,
     AccountController,
     WalletController,
     TransactionController,
-    FaucetController
+    FaucetController,
+    RatesController
   ],
   providers: [],
 })

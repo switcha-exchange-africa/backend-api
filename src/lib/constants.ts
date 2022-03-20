@@ -35,6 +35,11 @@ export enum FAUCET_ROUTE{
   FUND = "/api/faucet"
 }
 
+export enum RATES_ROUTE{
+  PRICES = "/api/rates",
+  SINGLE_PRICES = "/api/rates/:asset"
+}
+
 export enum SwitchaDeviceType {
   IOS = "ios",
   ANDROID = "android",
