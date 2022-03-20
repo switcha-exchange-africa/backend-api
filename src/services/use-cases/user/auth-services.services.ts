@@ -118,7 +118,7 @@ export class AuthServices {
       ])
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
-      return { message: 'User email is verified successfully', token: `Bearer ${token}`, user: jwtPayload, verification }
+      return { status: 200, message: 'User email is verified successfully', token: `Bearer ${token}`, user: jwtPayload, verification }
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)

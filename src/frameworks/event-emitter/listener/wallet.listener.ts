@@ -16,7 +16,7 @@ export class WalletCreateListener {
     private httpServices: IHttpServices,
     private dataServices: IDataServices,
     private walletFactoryService: WalletFactoryService
-  ) {}
+  ) { }
 
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
@@ -42,10 +42,7 @@ export class WalletCreateListener {
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({ userId, coin }),
       ]);
-      if (!user) {
-        Logger.error("user does not exists");
-        return "user does not exists";
-      }
+      if (!user) return "user does not exists"; 
       if (wallet) {
         Logger.warn(`${coin} already exists`);
         return;
@@ -54,11 +51,11 @@ export class WalletCreateListener {
         coin !== COIN_TYPES.NGN
           ? await this.httpServices.post(url, body, config)
           : {
-              item: {
-                address: "",
-                label,
-              },
-            };
+            item: {
+              address: "",
+              label,
+            },
+          };
       const userDetail: UserDetail = {
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
@@ -87,5 +84,5 @@ export class WalletCreateListener {
   }
 
   @OnEvent("created.wallet", { async: true })
-  async handleWalletCreatedEvent() {}
+  async handleWalletCreatedEvent() { }
 }

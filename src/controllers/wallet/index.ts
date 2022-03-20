@@ -40,10 +40,10 @@ export class WalletController {
 
   @Get(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
-  async findAll(@Req() req: Request, @Res() res: Response) {
+  async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
       const userId = req?.user?._id;
-      const response = await this.walletServices.findAll(userId);
+      const response = await this.walletServices.findAll(query, userId);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -57,11 +57,11 @@ export class WalletController {
   @UseGuards(StrictAuthGuard)
   async detail(
     @Res() res: Response,
-    @Param() param: { walletId }
+    @Param() param: { id }
   ) {
     try {
-      const { walletId } = param;
-      const response = await this.walletServices.details(walletId);
+      const { id } = param;
+      const response = await this.walletServices.details(id);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
