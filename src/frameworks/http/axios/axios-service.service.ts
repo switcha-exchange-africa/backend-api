@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import axios from "axios";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 

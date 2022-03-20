@@ -1,13 +1,10 @@
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
-  Body,
   Controller,
   Get,
   HttpException,
   Logger,
   Param,
-  Post,
-  Query,
   Req,
   Res,
   UseGuards,
@@ -39,13 +36,12 @@ export class TransactionController {
   @Get(TRANSACTION_ROUTE.GET_SINGLE)
   @UseGuards(StrictAuthGuard)
   async detail(
-    @Req() req: Request,
     @Res() res: Response,
-    @Param() param: { transactionId }
+    @Param() param: { id }
   ) {
     try {
-      const { transactionId } = param;
-      const response = await this.transactionServices.details(transactionId);
+      const { id } = param;
+      const response = await this.transactionServices.details(id);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
