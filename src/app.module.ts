@@ -6,7 +6,7 @@ import modules from './modules';
 declare global {
   namespace Express {
     export interface Request {
-      user?: JWT_USER_PAYLOAD_TYPE;
+      user?: JWT_USER_PAYLOAD_TYPE
     }
   }
 
