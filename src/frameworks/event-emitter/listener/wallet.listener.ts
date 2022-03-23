@@ -50,6 +50,7 @@ export class WalletCreateListener {
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
       };
+      console.log(response);
 
       //create new account
       const body = {
@@ -68,6 +69,8 @@ export class WalletCreateListener {
               config
             )
           : null;
+      console.log(account);
+
       //verify phrase
       const secretPhrase = await hash(phrase);
       // console.log(secretPhrase)
@@ -77,19 +80,25 @@ export class WalletCreateListener {
           ? await generateCryptographicSecret(password, response.mnemonic)
           : null;
       // create address
-      const {address} = account
-        ? await this.httpServices.get(
-            `https://api-us-west1.tatum.io/v3/${blockchain}/address/${response.xpub}/1`,
+
+      const { address, xpub } = account
+        ? await this.httpServices.post(
+            `https://api-us-west1.tatum.io/v3/offchain/account/${account.id}/address`,
+            {},
             config
           )
         : "";
+      const balance = account ? account.balance.availableBalance : 0;
+      const accountId = account ? account.id : "";
       const walletPayload: WalletDto = {
-        balance: 0,
+        balance,
         address,
         userId,
         user: userDetail,
         phrase: secretPhrase,
-        secret,        
+        secret,
+        xpub,
+        accountId,
         coin,
         createdAt: new Date(),
         updatedAt: new Date(),
