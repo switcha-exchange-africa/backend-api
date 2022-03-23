@@ -66,33 +66,6 @@ export class WalletServices {
 
   async findAll(query, userId: string) {
     try {
-      const coins = [
-        {
-          userId: userId,
-          blockchain: BLOCKCHAIN_NETWORK.BITCOIN,
-          network: env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET,
-          coin: COIN_TYPES.BTC,
-        },
-        {
-          userId: userId,
-          blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
-          network: ETH_NETWORK,
-          coin: COIN_TYPES.ETH,
-        },
-        {
-          userId: userId,
-          blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
-          network: ETH_NETWORK,
-          coin: COIN_TYPES.ETH,
-        },
-        {
-          userId: userId,
-          blockchain: null,
-          network: null,
-          coin: COIN_TYPES.NGN,
-        },
-      ];
-      coins.map((coin) => this.emitter.emit("create.wallet", coin));
       const wallets = await this.dataServices.wallets.findAllWithPagination({ query, queryFields: { userId: userId } });
       return { status: 200, message: 'Wallets retrieved successfully', wallets }
     } catch (error) {
