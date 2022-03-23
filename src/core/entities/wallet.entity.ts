@@ -13,6 +13,10 @@ export class Wallet {
 
   phrase: string;
 
+  xpub:string;
+
+  accountId: string;
+
   userId: string;
 
   user: UserDetail;

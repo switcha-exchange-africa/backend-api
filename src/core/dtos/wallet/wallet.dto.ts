@@ -37,6 +37,12 @@ export class WalletDto {
   @IsNotEmpty()
   secret: string;
 
+  @IsString()
+  xpub: string;
+
+  @IsString()
+  accountId:string;
+
   @IsOptional()
   @IsNotEmpty()
   network: BLOCKCHAIN_NETWORK;
