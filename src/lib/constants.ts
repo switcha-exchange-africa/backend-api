@@ -33,8 +33,12 @@ export enum FAUCET_ROUTE {
 
 export enum RATES_ROUTE{
   PRICES = "/api/rates",
-  SINGLE_PRICES = "/api/rates/:asset"
+  SINGLE_PRICES = "/api/rates/:asset",
+  MARKETS = "/api/rates/markets",
+  MARKETS_SINGLE = "/api/rates/markets/:coin/:baseCurrency/:pricePercentage",
+  HISTORICAL_MARKETS_DATA = "/api/rates/markets/:coin/:baseCurrency/:interval/:days"
 }
+
 
 export enum SwitchaDeviceType {
   IOS = "ios",

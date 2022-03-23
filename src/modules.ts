@@ -1,3 +1,4 @@
+import { RatesServicesModule } from './services/use-cases/rates/rates-services.module';
 import { EventEmitterServiceModule } from "./frameworks/event-emitter/event-emitter-service.module";
 import { AxiosServiceModule } from "./frameworks/http/axios/axios-service.module";
 import { RedisServiceModule } from "./frameworks/in-memory-database/redis/redis-service.module";
@@ -17,5 +18,6 @@ export default [
   WalletServicesModule,
   EventEmitterServiceModule,
   TransactionServicesModule,
-  FaucetServicesModule
+  FaucetServicesModule,
+  RatesServicesModule
 ]
