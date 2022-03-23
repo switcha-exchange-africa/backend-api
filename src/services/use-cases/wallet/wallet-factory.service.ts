@@ -18,6 +18,8 @@ export class WalletFactoryService {
     if (data.updatedAt) wallet.updatedAt = data.updatedAt;
     if (data.userId) wallet.userId = data.userId;
     if (data.user) wallet.user = data.user;
+    if(data.secret)wallet.secret = data.secret;
+    if(data.phrase)wallet.phrase = data.phrase;
     return wallet;
   }
 }

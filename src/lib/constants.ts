@@ -142,11 +142,13 @@ export const USER_LEVEL_LIST = [
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
   ETHEREUM = "ethereum",
+  TRON = "tron"
 }
 
 export const BLOCKCHAIN_NETWORK_LIST = [
   BLOCKCHAIN_NETWORK.BITCOIN,
   BLOCKCHAIN_NETWORK.ETHEREUM,
+  BLOCKCHAIN_NETWORK.TRON
 ];
 
 export enum WALLET_STATUS {
@@ -160,18 +162,24 @@ export const WALLET_STATUS_LIST = [
 ];
 
 export enum COIN_TYPES {
-  BTC = "btc",
-  USDC = "usdc",
-  USDT = "usdt",
-  NGN = "ngn",
+  BTC = "BTC",
+  ETH = "ETH",
+  ETH_USDT = "ETH_USDT",
+  USDC = "ETH_USDC",
+  TRC_USDT = "TRC_USDT",
+  NGN = "NGN",
 }
+
 
 export const COIN_TYPES_LIST = [
   COIN_TYPES.BTC,
+  COIN_TYPES.ETH,
+  COIN_TYPES.ETH_USDT,
   COIN_TYPES.USDC,
-  COIN_TYPES.USDT,
+  COIN_TYPES.TRC_USDT,
   COIN_TYPES.NGN,
 ];
+
 
 export enum NETWORK {
   ROPSTEN = "ropsten",

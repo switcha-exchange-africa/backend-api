@@ -9,6 +9,10 @@ export class Wallet {
 
   address: string;
 
+  secret: string;
+
+  phrase: string;
+
   userId: string;
 
   user: UserDetail;

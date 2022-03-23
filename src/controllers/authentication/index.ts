@@ -109,8 +109,7 @@ export class AuthenticationController {
     @Body() body: VerifyUserDto
   ) {
     try {
-      const { code } = body
-      const response = await this.authServices.verifyEmail(req, res, String(code))
+      const response = await this.authServices.verifyEmail(req, res, body)
       return res.status(200).json(response)
     } catch (error) {
       Logger.error(error);

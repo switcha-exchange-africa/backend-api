@@ -2,6 +2,8 @@ import moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
 import { env } from "src/configuration";
+import { createCipheriv, randomBytes, scrypt } from "crypto";
+import { promisify } from "util";
 
 export const convertDate = (date: any) => {
   return new Date(date).toISOString();
@@ -36,6 +38,21 @@ export const hash = async (password: string) => {
 export const compareHash = async (password: string, hashedPassword: string) => {
   const bool = await compare(password, hashedPassword);
   return bool;
+};
+
+export const generateCryptographicSecret = async (
+  password: string,
+  secretText: string
+) => {
+  const iv = randomBytes(16);
+
+  const key = (await promisify(scrypt)(password, "salt", 32)) as Buffer;
+  const cipher = createCipheriv("aes-256-ctr", key, iv);
+  const encryptedText = Buffer.concat([
+    cipher.update(secretText),
+    cipher.final(),
+  ]).toString();
+  return encryptedText;
 };
 
 export const maybePluralize = (count: number, noun: string, suffix = "s") =>
@@ -90,10 +107,10 @@ export const createSlug = (word: string) => {
   });
 };
 
-
 const generateRef = (length: number) => {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const charactersLength = characters.length;
   for (var i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -102,19 +119,19 @@ const generateRef = (length: number) => {
 };
 
 export const generateWalletRef = () => {
-  const key = env.isProd ? 'SWITCH_LIVE_' : 'SWITCH_TEST_';
+  const key = env.isProd ? "SWITCH_LIVE_" : "SWITCH_TEST_";
   const reference = key + generateRef(6);
   return reference;
 };
 
 export const generateTXRef = () => {
-  const key = env.isProd ? 'SWITCH_REF_LIVE_' : 'SWITCH_REF_TEST_';
+  const key = env.isProd ? "SWITCH_REF_LIVE_" : "SWITCH_REF_TEST_";
   const reference = key + generateRef(6);
   return reference;
 };
 
 export const generateTXHash = () => {
-  const key = env.isProd ? 'SWITCH_HASH_LIVE_' : 'SWITCH_HASH_TEST_';
+  const key = env.isProd ? "SWITCH_HASH_LIVE_" : "SWITCH_HASH_TEST_";
   const reference = key + generateRef(6);
   return reference;
 };
