@@ -1,10 +1,12 @@
+import { hash } from "src/lib/utils";
+import { generateCryptographicSecret } from "./../../../lib/utils";
 import { WalletFactoryService } from "src/services/use-cases/wallet/wallet-factory.service";
 import { IDataServices } from "src/core/abstracts";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { WalletCreatedEvent } from "./../event/wallet.event";
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { CRYPTO_API_KEY, CRYPTO_API_WALLET_ID } from "src/configuration";
+import { CRYPTO_API_KEY, WALLET_PRIVATE_KEY } from "src/configuration";
 import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 import { UserDetail } from "src/core/entities/user.entity";
 import { COIN_TYPES, WALLET_STATUS } from "src/lib/constants";
@@ -15,25 +17,16 @@ export class WalletCreateListener {
     private httpServices: IHttpServices,
     private dataServices: IDataServices,
     private walletFactoryService: WalletFactoryService
-  ) { }
+  ) {}
 
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
-    const { userId, blockchain, network, coin } = event;
-    const label = `switcha-${coin}-userId`;
-    const url = `https://rest.cryptoapis.io/v2/wallet-as-a-service/wallets/${CRYPTO_API_WALLET_ID}/${blockchain}/${network}/addresses`;
-    const body = {
-      context: "",
-      data: {
-        item: {
-          label,
-        },
-      },
-    };
+    const { userId, blockchain, network, coin, phrase, symbol } = event;
+    const url = `https://api-us-west1.tatum.io/v3/${blockchain}/wallet?type=${network}`;
     const config = {
       headers: {
-        "Content-Type": "application/json",
         "X-API-Key": CRYPTO_API_KEY,
+        "x-testnet-type": "ethereum-ropsten",
       },
     };
     try {
@@ -48,23 +41,55 @@ export class WalletCreateListener {
       }
       const response =
         coin !== COIN_TYPES.NGN
-          ? await this.httpServices.post(url, body, config)
+          ? await this.httpServices.get(url, config)
           : {
-            item: {
-              address: "",
-              label,
-            },
-          };
+              mnemonic: "",
+              xpub: "",
+            };
       const userDetail: UserDetail = {
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
       };
 
+      //create new account
+      const body = {
+        currency: symbol,
+        xpub: response.xpub,
+        customer: {
+          externalId: userId,
+        },
+        accountingCurrency: "NGN",
+      };
+      const account =
+        coin !== COIN_TYPES.NGN
+          ? await this.httpServices.post(
+              `https://api-us-west1.tatum.io/v3/ledger/account`,
+              body,
+              config
+            )
+          : null;
+      //verify phrase
+      const secretPhrase = await hash(phrase);
+      // console.log(secretPhrase)
+      const password = `${secretPhrase}${WALLET_PRIVATE_KEY}`;
+      const secret =
+        response.mnemonic !== ""
+          ? await generateCryptographicSecret(password, response.mnemonic)
+          : null;
+      // create address
+      const {address} = account
+        ? await this.httpServices.get(
+            `https://api-us-west1.tatum.io/v3/${blockchain}/address/${response.xpub}/1`,
+            config
+          )
+        : "";
       const walletPayload: WalletDto = {
         balance: 0,
-        address: response.item.address,
+        address,
         userId,
         user: userDetail,
+        phrase: secretPhrase,
+        secret,        
         coin,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -83,5 +108,5 @@ export class WalletCreateListener {
   }
 
   @OnEvent("created.wallet", { async: true })
-  async handleWalletCreatedEvent() { }
+  async handleWalletCreatedEvent() {}
 }

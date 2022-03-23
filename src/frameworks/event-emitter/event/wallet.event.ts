@@ -5,6 +5,8 @@ export class WalletCreatedEvent {
   blockchain: string;
   network: string;
   coin: string | COIN_TYPES;
+  phrase: string
+  symbol: string
 }
 
 export interface WALLET_PAYLOAD_TYPE extends WalletCreatedEvent { }

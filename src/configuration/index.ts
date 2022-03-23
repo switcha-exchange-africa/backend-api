@@ -43,6 +43,7 @@ export const CRYPTO_API_KEY = getEnv('CRYPTO_API_KEY')!
 export const CRYPTO_API_WALLET_ID = getEnv('CRYPTO_API_WALLET_ID')!
 export const MONO_PUBLIC_KEY = getEnv('MONO_PUBLIC_KEY')!
 export const MONO_SECRET_KEY = getEnv('MONO_SECRET_KEY')!
+export const WALLET_PRIVATE_KEY = getEnv('WALLET_PRIVATE_KEY')!
 
 
 

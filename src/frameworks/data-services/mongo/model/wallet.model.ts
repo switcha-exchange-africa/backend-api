@@ -28,6 +28,12 @@ export class Wallet {
   @Prop({ type: Object })
   user: UserDetail;
 
+  @Prop()
+  phrase: string
+
+  @Prop()
+  secret: string;
+
   @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
   network: BLOCKCHAIN_NETWORK;
 

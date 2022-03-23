@@ -9,7 +9,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { env, MONO_SECRET_KEY } from "src/configuration";
 
-const ETH_NETWORK = env.isProd ? NETWORK.MAINNET : NETWORK.ROPSTEN;
+const ETH_NETWORK = env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET;
 @Injectable()
 export class WalletServices {
   constructor(
@@ -18,31 +18,47 @@ export class WalletServices {
     private dataServices: IDataServices
   ) { }
 
-  async create(userId: string) {
+  async create(userId: string, phrase: string) {
     const coins = [
       {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.BITCOIN,
         network: env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET,
         coin: COIN_TYPES.BTC,
+        symbol : "BTC",
+        phrase
       },
       {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
         network: ETH_NETWORK,
-        coin: COIN_TYPES.USDT,
+        coin: COIN_TYPES.ETH,
+        symbol : "ETH",
+        phrase
       },
       {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
         network: ETH_NETWORK,
-        coin: COIN_TYPES.USDC,
+        coin: COIN_TYPES.ETH_USDT,
+        symbol : "ETH",
+        phrase
+      },
+      {
+        userId: userId,
+        blockchain: BLOCKCHAIN_NETWORK.TRON,
+        network: ETH_NETWORK,
+        coin: COIN_TYPES.TRC_USDT,
+        symbol : "TRON",
+        phrase
       },
       {
         userId: userId,
         blockchain: null,
         network: null,
         coin: COIN_TYPES.NGN,
+        symbol : "NGN",
+        phrase
       },
     ];
     coins.map((coin) => this.emitter.emit("create.wallet", coin));
@@ -61,13 +77,13 @@ export class WalletServices {
           userId: userId,
           blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
           network: ETH_NETWORK,
-          coin: COIN_TYPES.USDT,
+          coin: COIN_TYPES.ETH,
         },
         {
           userId: userId,
           blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
           network: ETH_NETWORK,
-          coin: COIN_TYPES.USDC,
+          coin: COIN_TYPES.ETH,
         },
         {
           userId: userId,

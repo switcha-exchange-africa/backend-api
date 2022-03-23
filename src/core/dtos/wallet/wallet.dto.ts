@@ -10,6 +10,12 @@ import {
   IsString,
 } from "class-validator";
 
+export class PhraseDto{
+  @IsString()
+  @IsNotEmpty()
+  phrase: string;
+}
+
 export class WalletDto {
   @IsNumber()
   @IsNotEmpty()
@@ -24,6 +30,12 @@ export class WalletDto {
 
   @IsNotEmpty()
   user: UserDetail;
+
+  @IsString()
+  phrase: string;
+
+  @IsNotEmpty()
+  secret: string;
 
   @IsOptional()
   @IsNotEmpty()

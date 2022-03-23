@@ -4,4 +4,8 @@ export class VerifyUserDto {
   @IsString()
   @IsNotEmpty()
   code: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phrase:string
 }
