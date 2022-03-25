@@ -63,7 +63,7 @@ export class BuySellServices {
           updatedNgnWallet = await this.dataServices.wallets.update(
             {
               _id: ngnWallet._id,
-              balance: { $gt: 0 },
+              balance: { $gt: 0, $gte: currencyAmount },
             },
             {
               $inc: {
@@ -199,7 +199,7 @@ export class BuySellServices {
           updatedCryptoWallet = await this.dataServices.wallets.update(
             {
               _id: cryptoWallet,
-              balance: { $gt: 0 },
+              balance: { $gt: 0, $gte: amount },
             },
             {
               $inc: {
@@ -267,23 +267,4 @@ export class BuySellServices {
       throw new Error(error);
     }
   }
-
-  // async swap(body: SwapDto, userId: string){
-  //   const { amount, currency1, currency2 } = body;
-  //   const [user, buyCryptoWallet, sellCryptoWallet] = await Promise.all([
-  //       this.dataServices.users.findOne({ _id: userId }),
-  //       this.dataServices.wallets.findOne({
-  //         userId,
-  //         coin: currency1,
-  //       }),
-  //       this.dataServices.wallets.findOne({
-  //         userId,
-  //         coin: currency2,
-  //       }),
-  //     ]);
-  //     if (!user) throw new DoesNotExistsException("user does not exist");
-  //     if (!buyCryptoWallet || !sellCryptoWallet)
-  //       throw new DoesNotExistsException("wallet does not exist");
-
-  // }
 }
