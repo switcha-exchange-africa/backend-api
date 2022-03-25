@@ -40,8 +40,9 @@ export enum RATES_ROUTE{
 }
 
 export enum TRADE_ROUTE{
-  BUY = "/api/trade",
-  SELL = "/api/trade",
+  BUY = "/api/trade/buy",
+  SELL = "/api/trade/sell",
+  SWAP = "/api/trade/swap"
 }
 
 export enum WEBHOOK_ROUTE{
@@ -250,11 +251,6 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.SWAP,
   CUSTOM_TRANSACTION_TYPE.FAUCET
 ]
-
-export enum TRADE_TYPE {
-  buy = "buy",
-  sell = "sell",
-}
 
 export const PLATFORM_NAME = "switcha";
 export const GITHUB_LINK =

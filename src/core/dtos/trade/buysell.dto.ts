@@ -3,11 +3,8 @@ import {
     IsString,
     IsNumber
   } from "class-validator";
-import { COIN_TYPES, TRADE_TYPE } from "src/lib/constants";
-export class TradeDto{
-
-    @IsString()
-    type: TRADE_TYPE
+import { COIN_TYPES } from "src/lib/constants";
+export class BuySellDto{
 
     @IsNotEmpty()
     @IsNumber()
