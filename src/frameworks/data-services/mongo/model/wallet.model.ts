@@ -12,8 +12,10 @@ export type WalletDocument = Wallet & Document;
 
 @Schema()
 export class Wallet {
-  @Prop()
-  balance: number;
+  @Prop({
+    default: 0
+  })
+  balance: Number;
 
   @Prop()
   address: string;

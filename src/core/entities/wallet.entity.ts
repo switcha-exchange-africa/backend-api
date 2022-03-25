@@ -5,7 +5,7 @@ import {
 
 import { UserDetail } from "src/core/entities/user.entity";
 export class Wallet {
-  balance: number;
+  balance: Number;
 
   address: string;
 

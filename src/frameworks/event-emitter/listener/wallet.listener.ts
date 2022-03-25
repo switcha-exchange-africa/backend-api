@@ -50,7 +50,6 @@ export class WalletCreateListener {
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
       };
-      console.log(response);
 
       //create new account
       const body = {
@@ -69,7 +68,6 @@ export class WalletCreateListener {
               config
             )
           : null;
-      console.log(account);
 
       //verify phrase
       const secretPhrase = await hash(phrase);
@@ -88,7 +86,22 @@ export class WalletCreateListener {
             config
           )
         : "";
-      const balance = account ? account.balance.availableBalance : 0;
+      // create subscription for address
+       address
+        ? await this.httpServices.post(
+            `https://api-us-west1.tatum.io/v3/subscription`,
+            {
+              type: "ADDRESS_TRANSACTION",
+              attr: {
+                address,
+                chain: symbol,
+                url: "http://30a1-197-210-53-99.ngrok.io/transactions",
+              },
+            },
+            config
+          )
+        : null;
+      const balance = account  ? account.balance.availableBalance : 0;
       const accountId = account ? account.id : "";
       const walletPayload: WalletDto = {
         balance,

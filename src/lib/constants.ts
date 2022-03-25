@@ -39,6 +39,14 @@ export enum RATES_ROUTE{
   HISTORICAL_MARKETS_DATA = "/api/rates/markets/:coin/:baseCurrency/:interval/:days"
 }
 
+export enum TRADE_ROUTE{
+  BUY = "/api/trade",
+  SELL = "/api/trade",
+}
+
+export enum WEBHOOK_ROUTE{
+  ADDRESS_TRANSACTION = "/transactions"
+}
 
 export enum SwitchaDeviceType {
   IOS = "ios",
@@ -164,9 +172,8 @@ export const WALLET_STATUS_LIST = [
 export enum COIN_TYPES {
   BTC = "BTC",
   ETH = "ETH",
-  ETH_USDT = "ETH_USDT",
-  USDC = "ETH_USDC",
-  TRC_USDT = "TRC_USDT",
+  USDT = "USDT",
+  USDC = "USDC",
   NGN = "NGN",
 }
 
@@ -174,11 +181,12 @@ export enum COIN_TYPES {
 export const COIN_TYPES_LIST = [
   COIN_TYPES.BTC,
   COIN_TYPES.ETH,
-  COIN_TYPES.ETH_USDT,
+  COIN_TYPES.USDT,
   COIN_TYPES.USDC,
-  COIN_TYPES.TRC_USDT,
   COIN_TYPES.NGN,
 ];
+
+
 
 
 export enum NETWORK {
@@ -242,6 +250,11 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.SWAP,
   CUSTOM_TRANSACTION_TYPE.FAUCET
 ]
+
+export enum TRADE_TYPE {
+  buy = "buy",
+  sell = "sell",
+}
 
 export const PLATFORM_NAME = "switcha";
 export const GITHUB_LINK =

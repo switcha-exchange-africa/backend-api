@@ -19,7 +19,7 @@ export class PhraseDto{
 export class WalletDto {
   @IsNumber()
   @IsNotEmpty()
-  balance: number;
+  balance: Number;
 
   @IsString()
   @IsNotEmpty()
