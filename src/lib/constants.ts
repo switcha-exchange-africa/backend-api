@@ -46,7 +46,7 @@ export enum TRADE_ROUTE {
 }
 
 export enum WEBHOOK_ROUTE {
-  ADDRESS_TRANSACTION = "/transactions"
+  ROUTE = "/api/webhook/tatum"
 }
 
 export enum SwitchaDeviceType {

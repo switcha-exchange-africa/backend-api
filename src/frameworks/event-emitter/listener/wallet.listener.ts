@@ -6,7 +6,7 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { WalletCreatedEvent } from "./../event/wallet.event";
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { TATUM_API_KEY, WALLET_PRIVATE_KEY } from "src/configuration";
+import { API_URL, TATUM_API_KEY, TATUM_BASE_URL, WALLET_PRIVATE_KEY } from "src/configuration";
 import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 import { UserDetail } from "src/core/entities/user.entity";
 import { COIN_TYPES } from "src/lib/constants";
@@ -22,7 +22,7 @@ export class WalletCreateListener {
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
     const { userId, blockchain, network, coin, phrase, symbol } = event;
-    const url = `https://api-us-west1.tatum.io/v3/${blockchain}/wallet?type=${network}`;
+    const url = `${TATUM_BASE_URL}/${blockchain}/wallet?type=${network}`;
     const config = {
       headers: {
         "X-API-Key": TATUM_API_KEY,
@@ -63,7 +63,7 @@ export class WalletCreateListener {
       const account =
         coin !== COIN_TYPES.NGN
           ? await this.httpServices.post(
-            `https://api-us-west1.tatum.io/v3/ledger/account`,
+            `${TATUM_BASE_URL}/v3/ledger/account`,
             body,
             config
           )
@@ -81,7 +81,7 @@ export class WalletCreateListener {
 
       const { address, xpub } = account
         ? await this.httpServices.post(
-          `https://api-us-west1.tatum.io/v3/offchain/account/${account.id}/address`,
+          `${TATUM_BASE_URL}/v3/offchain/account/${account.id}/address`,
           {},
           config
         )
@@ -89,13 +89,13 @@ export class WalletCreateListener {
       // create subscription for address
       address
         ? await this.httpServices.post(
-          `https://api-us-west1.tatum.io/v3/subscription`,
+          `${TATUM_BASE_URL}/subscription`,
           {
             type: "ADDRESS_TRANSACTION",
             attr: {
               address,
               chain: symbol,
-              url: "http://30a1-197-210-53-99.ngrok.io/transactions",
+              url: `${API_URL}/api/webhook/tatum`,
             },
           },
           config

@@ -46,5 +46,5 @@ export const MONO_SECRET_KEY = getEnv('MONO_SECRET_KEY')!
 export const WALLET_PRIVATE_KEY = getEnv('WALLET_PRIVATE_KEY')!
 export const TATUM_API_KEY = getEnv('TATUM_API_KEY')!
 export const ADMIN_CYPHER_SECRET = getEnv('ADMIN_CYPHER_SECRET')!
-
-
+export const TATUM_BASE_URL = getEnv('TATUM_BASE_URL')!
+export const API_URL = getEnv('API_URL')
