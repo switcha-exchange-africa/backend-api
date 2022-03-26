@@ -36,7 +36,7 @@ export enum RATES_ROUTE {
   SINGLE_PRICES = "/api/rates/:asset",
   MARKETS = "/api/rates/markets",
   MARKETS_SINGLE = "/api/rates/markets/:coin/:baseCurrency/:pricePercentage",
-  HISTORICAL_MARKETS_DATA = "/api/rates/markets/:coin/:baseCurrency/:interval/:days"
+  HISTORICAL_MARKETS_DATA = "/api/rates/historic-data"
 }
 
 export enum TRADE_ROUTE {

@@ -1,6 +1,7 @@
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { ForbiddenRequestException } from "../user/exceptions";
+import { ResponsesType } from "src/core/types/response";
 
 const CURRENCY_IDS: string = "bitcoin,ethereum,ripple,stellar,celo";
 const COINGGECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
@@ -19,9 +20,9 @@ const config = {
 
 @Injectable()
 export class RatesServices {
-  constructor(private http: IHttpServices) {}
+  constructor(private http: IHttpServices) { }
 
-  async findAll() {
+  async findAll(): Promise<ResponsesType<any>> {
     try {
       const url = `${COINGGECKO_BASE_URL}/simple/price?ids=${CURRENCY_IDS}&vs_currencies=${VS_CURRENCY}`;
 
@@ -29,17 +30,16 @@ export class RatesServices {
       return Promise.resolve({
         message: "Rates retrieved successfully",
         status: 200,
-        rates,
+        data: rates,
       });
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
     }
   }
 
-  async findOne(asset: string) {
+  async findOne(asset: string): Promise<ResponsesType<any>> {
     const supportedAssetsList = [
       "bitcoin",
       "ethereum",
@@ -55,16 +55,15 @@ export class RatesServices {
       return Promise.resolve({
         message: `${asset} rate retrieved successfully`,
         status: 200,
-        rate,
+        data: rate,
       });
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
     }
   }
-  async allCryptoMarketCharts() {
+  async allCryptoMarketCharts(): Promise<ResponsesType<any>> {
     try {
       const url = `${COINGGECKO_BASE_URL}/coins/markets?vs_currency=${VS_CURRENCY}&ids=${CURRENCY_IDS}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&sparkline=${SPARKLINE}&price_change_percentage=${price_change_percentage}`;
       const data = await this.http.get(url, config);
@@ -74,10 +73,9 @@ export class RatesServices {
         data,
       });
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
     }
   }
 
@@ -85,7 +83,7 @@ export class RatesServices {
     base: string,
     coin: string,
     priceChangePercentage: string
-  ) {
+  ): Promise<ResponsesType<any>> {
     const url = `${COINGGECKO_BASE_URL}/coins/markets?vs_currency=${base}&ids=${coin}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&sparkline=${SPARKLINE}&price_change_percentage=${priceChangePercentage}`;
     try {
       const data = await this.http.get(url, config);
@@ -95,32 +93,21 @@ export class RatesServices {
         data,
       });
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
     }
   }
 
-  async cryptoPrices(
-    base: string,
-    coin: string,
-    days: string,
-    interval: string
-  ) {
-    const url = `${COINGGECKO_BASE_URL}/coins/${coin}/market_chart?vs_currency=${base}&days=${days}&interval=${interval}`;
+  async cryptoPrices(payload: { base: string, coin: string, days: string, interval: string }): Promise<ResponsesType<any>> {
+    const url = `${COINGGECKO_BASE_URL}/coins/${payload.coin}/market_chart?vs_currency=${payload.base}&days=${payload.days}&interval=${payload.interval}`;
     try {
       const data = await this.http.get(url, config);
-      return Promise.resolve({
-        message: `data retrieved successfully`,
-        status: 200,
-        data,
-      });
+      return Promise.resolve({ message: `data retrieved successfully`, status: 200, data });
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
     }
   }
 }

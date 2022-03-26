@@ -4,15 +4,17 @@ import {
   HttpException,
   Logger,
   Param,
+  Query,
   Res,
 } from "@nestjs/common";
 import { RATES_ROUTE } from "src/lib/constants";
 import { RatesServices } from "src/services/use-cases/rates/rates-services.services";
 import { Response } from "express";
+import { HistoricDataDto } from "src/core/dtos/rates/rates.dto";
 
 @Controller()
 export class RatesController {
-  constructor(private rateServices: RatesServices) {}
+  constructor(private rateServices: RatesServices) { }
 
   @Get(RATES_ROUTE.PRICES)
   async findAll(@Res() res: Response) {
@@ -21,9 +23,8 @@ export class RatesController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -34,9 +35,8 @@ export class RatesController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -56,36 +56,28 @@ export class RatesController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
   @Get(RATES_ROUTE.HISTORICAL_MARKETS_DATA)
   async cryptoPrices(
     @Res() res: Response,
-    @Param()
-    param: {
-      coin: string;
-      baseCurrency: string;
-      days: string;
-      interval: string;
-    }
+    @Query() query: HistoricDataDto
   ) {
-    const { coin, baseCurrency, days, interval } = param;
+    const { coin, base, days, interval } = query;
     try {
-      const response = await this.rateServices.cryptoPrices(
-        baseCurrency,
+      const response = await this.rateServices.cryptoPrices({
+        base,
         coin,
         days,
         interval
-      );
+      });
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -97,9 +89,8 @@ export class RatesController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 }
