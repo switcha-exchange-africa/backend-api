@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
+import { ADMIN_CYPHER_SECRET } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
 import { USER_SIGNUP_STATUS_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { DoesNotExistsException, UnAuthorizedException } from "src/services/use-cases/user/exceptions";
-
 
 @Injectable()
 export class StrictAuthGuard implements CanActivate {
@@ -22,7 +22,7 @@ export class StrictAuthGuard implements CanActivate {
       token = token.replace('Bearer ', '');
 
       const decoded = await jwtLib.jwtVerify(token);
-      if (!decoded) throw new UnAuthorizedException("Unauthorized")
+      if (!decoded) throw new UnAuthorizedException("unauthorized")
 
       const user = await this.dataServices.users.findOne({ _id: decoded._id });
       if (!user) throw new DoesNotExistsException('unauthorized.User does not exists')
@@ -53,13 +53,13 @@ export class LooseAuthGuard implements CanActivate {
       const request: any = context.switchToHttp().getRequest();
 
       let token = request.headers.authorization;
-      if (!token) throw new UnAuthorizedException("Unauthorized")
+      if (!token) throw new UnAuthorizedException("unauthorized")
       token = token.replace('Bearer ', '');
 
       const decoded = await jwtLib.jwtVerify(token);
-      if (!decoded) throw new UnAuthorizedException("Unauthorized")
+      if (!decoded) throw new UnAuthorizedException("unauthorized")
 
-      const user = await this.dataServices.users.findOne({_id: decoded._id });
+      const user = await this.dataServices.users.findOne({ _id: decoded._id });
       if (!user) throw new DoesNotExistsException('user does not exists')
 
       request.user = decoded;
@@ -67,8 +67,28 @@ export class LooseAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       Logger.error('@jwt-middleware-error', error)
-      throw new UnAuthorizedException("Unauthorized")
+      throw new UnAuthorizedException("unauthorized")
     }
   }
 }
 
+
+@Injectable()
+export class BypassGuard implements CanActivate {
+  constructor() { }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+
+    try {
+      const request: any = context.switchToHttp().getRequest();
+
+      const token = request.headers.bypass;
+      if (token !== ADMIN_CYPHER_SECRET) throw new UnAuthorizedException("unauthorized")
+
+      return true;
+    } catch (error) {
+      Logger.error('@jwt-bypass-error', error)
+      throw new UnAuthorizedException("unauthorized")
+    }
+  }
+}

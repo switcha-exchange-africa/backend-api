@@ -24,7 +24,6 @@ export class AuthenticationController {
     try {
 
       const response = await this.authServices.createUser(body, res)
-      // send email verification code to discord and mailgun 
       return res.status(response.status).json(response)
     } catch (error) {
       Logger.error(error);

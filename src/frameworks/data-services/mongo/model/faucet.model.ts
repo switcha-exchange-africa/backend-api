@@ -18,7 +18,7 @@ export class Faucet {
   @Prop()
   description: string
 
-  @Prop()
+  @Prop({ default: 0 })
   balance: number
 
   @Prop({
@@ -28,6 +28,17 @@ export class Faucet {
   })
   userId: string;
 
+  @Prop({ default: 0 })
+  lastDeposit: number;
+
+  @Prop({ default: 0 })
+  lastWithdrawal: number;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const FaucetSchema = SchemaFactory.createForClass(Faucet);

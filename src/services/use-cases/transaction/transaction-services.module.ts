@@ -6,8 +6,8 @@ import { TransactionFactoryService } from './transaction-factory.services';
 
 @Module({
     imports: [DataServicesModule],
-    providers: [TransactionServices,TransactionFactoryService],
-    exports: [TransactionServices,TransactionFactoryService]
+    providers: [TransactionServices, TransactionFactoryService],
+    exports: [TransactionServices, TransactionFactoryService]
 })
 
-export class TransactionServicesModule{}
+export class TransactionServicesModule { }
