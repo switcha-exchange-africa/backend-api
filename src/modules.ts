@@ -8,6 +8,8 @@ import { FaucetServicesModule } from "./services/use-cases/faucet/faucet-service
 import { TransactionServicesModule } from "./services/use-cases/transaction/transaction-services.module";
 import { UserServicesModule } from "./services/use-cases/user/user-service.module";
 import { WalletServicesModule } from "./services/use-cases/wallet/wallet-services.module";
+import { BuySellServicesModule } from './services/use-cases/trade/buysell-services.module';
+import { SwapServicesModule } from './services/use-cases/trade/swap/swap-services.module';
 
 export default [
   AxiosServiceModule,
@@ -19,5 +21,7 @@ export default [
   EventEmitterServiceModule,
   TransactionServicesModule,
   FaucetServicesModule,
-  RatesServicesModule
+  RatesServicesModule,
+  BuySellServicesModule,
+  SwapServicesModule
 ]
