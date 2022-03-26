@@ -111,12 +111,12 @@ export class FaucetServices {
       if (!faucet || !wallet)
         throw new DoesNotExistsException("Wallet or Faucet does not exist");
 
-      let updatedFaucet, updatedWallet: any;
-      const processAtomicFundAction = async (
+      let updatedWallet: any;
+      const processAtomicAction = async (
         session: mongoose.ClientSession
       ) => {
         try {
-          updatedFaucet = await this.data.faucets.update(
+          const updatedFaucet = await this.data.faucets.update(
             { _id: faucet._id },
             { $set: { lastWithdrawal: amount }, $inc: { balance: -amount } },
             session
@@ -145,7 +145,7 @@ export class FaucetServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description: "",
+            description: "debited faucet",
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: updatedFaucet?.balance,
             balanceBefore: faucet?.balance,
@@ -162,7 +162,7 @@ export class FaucetServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: "",
+            description: "credited wallet",
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: updatedWallet?.balance,
             balanceBefore: wallet?.balance,
@@ -186,12 +186,12 @@ export class FaucetServices {
         }
       };
       await databaseHelper.executeTransaction(
-        processAtomicFundAction,
+        processAtomicAction,
         this.connection
       );
       return {
         message: "Transaction successful",
-        data: { updatedFaucet, updatedWallet },
+        data: { ...updatedWallet },
         status: HttpStatus.CREATED,
       };
     } catch (error) {

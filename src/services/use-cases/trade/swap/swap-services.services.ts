@@ -1,7 +1,6 @@
 import { TransactionFactoryService } from "src/services/use-cases/transaction/transaction-factory.services";
 import { Transaction } from "src/core/entities/transaction.entity";
 import { TransactionReference } from "src/core/entities/transaction-reference.entity";
-import { generateTXHash } from "src/lib/utils";
 import {
   BadRequestsException,
   DoesNotExistsException,
@@ -9,7 +8,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
-import { CRYPTO_API_KEY } from "src/configuration";
+import { CRYPTO_API_KEY, TATUM_URL } from "src/configuration";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import {
   COIN_TYPES,
@@ -22,6 +21,7 @@ import {
 import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
+import { ResponsesType } from "src/core/types/response";
 
 @Injectable()
 export class SwapServices {
@@ -32,7 +32,7 @@ export class SwapServices {
     @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
 
-  async swap(body: SwapDto, userId: string) {
+  async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
     const { amount, currency1, currency2 } = body;
     const [user, buyCryptoWallet, sellCryptoWallet] = await Promise.all([
       this.dataServices.users.findOne({ _id: userId }),
@@ -48,8 +48,8 @@ export class SwapServices {
     if (!user) throw new DoesNotExistsException("user does not exist");
     if (!buyCryptoWallet || !sellCryptoWallet)
       throw new DoesNotExistsException("wallet does not exist");
-    const url1 = `https://api-us-west1.tatum.io/v3/tatum/rate/${buyCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
-    const url2 = `https://api-us-west1.tatum.io/v3/tatum/rate/${sellCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
+    const url1 = `${TATUM_URL}/rate/${buyCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
+    const url2 = `${TATUM_URL}/rate/${sellCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
     const config = {
       headers: {
         "X-API-Key": CRYPTO_API_KEY,
@@ -98,13 +98,9 @@ export class SwapServices {
           Logger.error("Error Occurred");
           throw new BadRequestsException("Error Occurred");
         }
-        const hash = generateTXHash();
         const txRefPayload: TransactionReference = {
           userId,
           amount,
-          hash,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         };
         const txRef = await this.dataServices.transactionReferences.create(
           txRefPayload,
@@ -118,11 +114,11 @@ export class SwapServices {
           amount,
           signedAmount: amount,
           type: TRANSACTION_TYPE.CREDIT,
-          description: "",
+          description: "swap currency",
           status: TRANSACTION_STATUS.COMPLETED,
           balanceAfter: updatedBuyCryptoWallet?.balance,
           balanceBefore: buyCryptoWallet?.balance,
-          hash,
+          hash: txRef?.hash,
           subType: TRANSACTION_SUBTYPE.CREDIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
         };
@@ -136,11 +132,9 @@ export class SwapServices {
     };
     await databaseHelper.executeTransaction(atomicTransaction, this.connection);
     return {
-      message: txFactory ? `swap successful` : "Transaction failed",
-      ...txFactory,
-      currency1_rate: txFactory && value1,
-      currency2_rate: txFactory && value2,
-      status: txFactory ? 200 : 500,
+      message: `swap successful`,
+      data: { ...txFactory, currency1Rate: value1, currency2Rate: value2 },
+      status: 200,
     };
   }
 }

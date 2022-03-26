@@ -9,7 +9,7 @@ import {
   BadRequestsException,
   DoesNotExistsException,
 } from "../user/exceptions";
-import { CRYPTO_API_KEY } from "src/configuration";
+import { CRYPTO_API_KEY, TATUM_URL } from "src/configuration";
 import {
   COIN_TYPES,
   CUSTOM_TRANSACTION_TYPE,
@@ -18,12 +18,17 @@ import {
   TRANSACTION_TYPE,
 } from "src/lib/constants";
 import * as mongoose from "mongoose";
-import { generateTXHash } from "src/lib/utils";
 import { Transaction } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
+import { ResponsesType } from "src/core/types/response";
 
 @Injectable()
 export class BuySellServices {
+  private config = {
+    headers: {
+      "X-API-Key": CRYPTO_API_KEY,
+    },
+  };
   constructor(
     private http: IHttpServices,
     private dataServices: IDataServices,
@@ -31,16 +36,12 @@ export class BuySellServices {
     @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
 
-  async buy(body: BuySellDto, userId: string) {
+  async buy(body: BuySellDto, userId: string) : Promise<ResponsesType<any>>{
     const { amount, currency } = body;
     try {
-      const url = `https://api-us-west1.tatum.io/v3/tatum/rate/${currency}?basePair=${COIN_TYPES.NGN}`;
-      const config = {
-        headers: {
-          "X-API-Key": CRYPTO_API_KEY,
-        },
-      };
-      const [user, cryptoWallet, ngnWallet,{value}] = await Promise.all([
+      const url = `${TATUM_URL}/rate/${currency}?basePair=${COIN_TYPES.NGN}`;
+
+      const [user, cryptoWallet, ngnWallet, { value }] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -49,9 +50,9 @@ export class BuySellServices {
         this.dataServices.wallets.findOne({
           userId,
           coin: COIN_TYPES.NGN,
-          balance: {$gt : 0}
+          balance: { $gt: 0 },
         }),
-        this.http.get(url, config)
+        this.http.get(url, this.config),
       ]);
       if (!user) throw new DoesNotExistsException("user does not exist");
       if (!cryptoWallet || !ngnWallet)
@@ -59,10 +60,10 @@ export class BuySellServices {
 
       const currencyAmount = parseFloat((value * amount).toFixed(4));
 
-      let updatedNgnWallet, updatedCryptoWallet, txFactory: any;
+      let txFactory: any;
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
-          updatedNgnWallet = await this.dataServices.wallets.update(
+          const updatedNgnWallet = await this.dataServices.wallets.update(
             {
               _id: ngnWallet._id,
               balance: { $gte: currencyAmount },
@@ -80,7 +81,7 @@ export class BuySellServices {
             throw new BadRequestsException("Balance is 0");
           }
 
-          updatedCryptoWallet = await this.dataServices.wallets.update(
+          const updatedCryptoWallet = await this.dataServices.wallets.update(
             {
               _id: cryptoWallet,
             },
@@ -95,14 +96,7 @@ export class BuySellServices {
             Logger.error("Error Occurred");
             throw new BadRequestsException("Error Occurred");
           }
-          const hash = generateTXHash();
-          const txRefPayload: TransactionReference = {
-            userId,
-            amount,
-            hash,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+          const txRefPayload: TransactionReference = { userId, amount };
           const txRef = await this.dataServices.transactionReferences.create(
             txRefPayload,
             session
@@ -115,11 +109,11 @@ export class BuySellServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: "",
+            description: `${currency} bought`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: updatedCryptoWallet?.balance,
             balanceBefore: cryptoWallet?.balance,
-            hash,
+            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
           };
@@ -136,9 +130,9 @@ export class BuySellServices {
         this.connection
       );
       return {
-        message:`${currency} bought successfully`,
-        data: {...txFactory, value},
-        status: 200
+        message: `${currency} bought successfully`,
+        data: { ...txFactory, value },
+        status: 200,
       };
     } catch (error) {
       Logger.error(error);
@@ -148,7 +142,7 @@ export class BuySellServices {
     }
   }
 
-  async sell(body: BuySellDto, userId: string) {
+  async sell(body: BuySellDto, userId: string) : Promise<ResponsesType<any>>{
     const { amount, currency } = body;
     try {
       const [user, cryptoWallet, ngnWallet] = await Promise.all([
@@ -166,19 +160,14 @@ export class BuySellServices {
       if (!cryptoWallet || !ngnWallet)
         throw new DoesNotExistsException("wallet does not exist");
 
-      const url = `https://api-us-west1.tatum.io/v3/tatum/rate/${cryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
-      const config = {
-        headers: {
-          "X-API-Key": CRYPTO_API_KEY,
-        },
-      };
-      const { value } = await this.http.get(url, config);
+      const url = `${TATUM_URL}/rate/${cryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
+      const { value } = await this.http.get(url, this.config);
       const currencyAmount = parseFloat((value * amount).toFixed(4));
 
-      let updatedNgnWallet, updatedCryptoWallet, txFactory: any;
+      let txFactory: any;
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
-          updatedNgnWallet = await this.dataServices.wallets.update(
+          const updatedNgnWallet = await this.dataServices.wallets.update(
             {
               _id: ngnWallet._id,
             },
@@ -195,7 +184,7 @@ export class BuySellServices {
             throw new BadRequestsException("Error Occurred");
           }
 
-          updatedCryptoWallet = await this.dataServices.wallets.update(
+          const updatedCryptoWallet = await this.dataServices.wallets.update(
             {
               _id: cryptoWallet,
               balance: { $gt: 0, $gte: amount },
@@ -211,14 +200,7 @@ export class BuySellServices {
             Logger.error("Error Occurred");
             throw new BadRequestsException("Error Occurred");
           }
-          const hash = generateTXHash();
-          const txRefPayload: TransactionReference = {
-            userId,
-            amount,
-            hash,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+          const txRefPayload: TransactionReference = { userId, amount };
           const txRef = await this.dataServices.transactionReferences.create(
             txRefPayload,
             session
@@ -231,11 +213,11 @@ export class BuySellServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description: "",
+            description: `${currency} sold`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: updatedCryptoWallet?.balance,
             balanceBefore: cryptoWallet?.balance,
-            hash,
+            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
@@ -252,12 +234,9 @@ export class BuySellServices {
         this.connection
       );
       return {
-        message: txFactory
-          ? `${currency} sold successfully`
-          : "Transaction failed",
-        ...txFactory,
-        rateBought: txFactory && value,
-        status: txFactory ? 200 : 500,
+        message: `${currency} sold successfully`,
+        data: { ...txFactory, value },
+        status: 200,
       };
     } catch (error) {
       Logger.error(error);
