@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsBoolean, IsEmail, IsOptional } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
-import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from 'src/lib/constants';
+import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
 
 export class CreateUserDto {
   @IsString()
@@ -30,13 +30,10 @@ export class CreateUserDto {
   isAdmin: boolean
 
   @IsOptional()
-  emailVerified: VERIFICATION_VALUE_TYPE
+  emailVerified: boolean
 
   @IsOptional()
-  phoneVerified: VERIFICATION_VALUE_TYPE
-
-  @IsOptional()
-  verified: VERIFICATION_VALUE_TYPE
+  phoneVerified: boolean
 
   @IsOptional()
   lastLoginDate: Date

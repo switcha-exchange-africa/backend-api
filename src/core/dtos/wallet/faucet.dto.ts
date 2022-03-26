@@ -12,10 +12,23 @@ export class FaucetDto {
   @IsOptional()
   description: string;
 
+  @IsOptional()
   @IsNumber()
   balance: number;
 
   @IsString()
   @IsOptional()
   userId: string;
+}
+
+export class CreateFaucetDto {
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
+
+  @IsNotEmpty()
+  coin: COIN_TYPES;
+
+  @IsOptional()
+  description: string;
 }

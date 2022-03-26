@@ -1,7 +1,7 @@
 export class TransactionReference {
   amount: number;
   userId: string;
-  hash: string;
+  hash?: string;
   createdAt?: Date;
   updatedAt?: Date;
 

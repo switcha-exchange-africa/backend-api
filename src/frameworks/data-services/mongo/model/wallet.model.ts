@@ -12,8 +12,10 @@ export type WalletDocument = Wallet & Document;
 
 @Schema()
 export class Wallet {
-  @Prop()
-  balance: number;
+  @Prop({
+    default: 0
+  })
+  balance: Number;
 
   @Prop()
   address: string;
@@ -34,6 +36,12 @@ export class Wallet {
   @Prop()
   secret: string;
 
+  @Prop()
+  xpub: string;
+
+  @Prop()
+  accountId: string;
+
   @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
   network: BLOCKCHAIN_NETWORK;
 
@@ -43,10 +51,10 @@ export class Wallet {
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 
-  @Prop()
+  @Prop({default:0})
   lastDeposit: number;
 
-  @Prop()
+  @Prop({default:0})
   lastWithdrawal: number;
 
   @Prop()

@@ -40,16 +40,8 @@ export class WalletServices {
         userId: userId,
         blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
         network: ETH_NETWORK,
-        coin: COIN_TYPES.ETH_USDT,
+        coin: COIN_TYPES.USDT,
         symbol : "ETH",
-        phrase
-      },
-      {
-        userId: userId,
-        blockchain: BLOCKCHAIN_NETWORK.TRON,
-        network: ETH_NETWORK,
-        coin: COIN_TYPES.TRC_USDT,
-        symbol : "TRON",
         phrase
       },
       {

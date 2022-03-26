@@ -15,8 +15,7 @@ import {
   USER_SIGNUP_STATUS_TYPE_LIST,
   USER_TYPE,
   USER_TYPE_LIST,
-  VERIFICATION_VALUE_TYPE,
-  VERIFICATION_VALUE_TYPE_LIST
+
 } from 'src/lib/constants';
 
 export type UserDocument = User & Document;
@@ -50,15 +49,11 @@ export class User {
   @Prop()
   isAdmin: boolean
 
-  @Prop({ enum: VERIFICATION_VALUE_TYPE_LIST })
-  emailVerified: VERIFICATION_VALUE_TYPE
+  @Prop({ default: false })
+  emailVerified: boolean
 
-  @Prop({ enum: VERIFICATION_VALUE_TYPE_LIST })
-  phoneVerified: VERIFICATION_VALUE_TYPE
-
-
-  @Prop({ enum: VERIFICATION_VALUE_TYPE_LIST })
-  verified: VERIFICATION_VALUE_TYPE
+  @Prop({ default: false })
+  phoneVerified: boolean
 
   @Prop()
   lastLoginDate: Date

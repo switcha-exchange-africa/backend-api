@@ -1,6 +1,6 @@
-import { SwitchaDeviceType, UserIDDocumentType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+import { SwitchaDeviceType, UserIDDocumentType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from "src/lib/constants";
 
-export interface UserDetail{
+export interface UserDetail {
   email: string,
   fullName: string
 }
@@ -23,11 +23,9 @@ export class User {
 
   isAdmin: boolean
 
-  emailVerified: VERIFICATION_VALUE_TYPE
+  emailVerified: boolean
 
-  phoneVerified: VERIFICATION_VALUE_TYPE
-
-  verified: VERIFICATION_VALUE_TYPE
+  phoneVerified: boolean
 
   lastLoginDate: Date
 
