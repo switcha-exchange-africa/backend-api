@@ -79,7 +79,7 @@ export class WalletCreateListener {
           : null;
       // create address
 
-      const { address, xpub } = account
+      const { address, xpub ,derivationKey,destinationTag,memo,message} = account
         ? await this.httpServices.post(
           `${TATUM_BASE_URL}/offchain/account/${account.id}/address`,
           {},
@@ -118,7 +118,7 @@ export class WalletCreateListener {
         lastWithdrawal: 0,
         network: null,
       };
-      const factory = await this.walletFactoryService.create(walletPayload);
+      const factory = await this.walletFactoryService.create({ ...walletPayload,derivationKey,destinationTag,memo,tatumMessage:message });
       await this.dataServices.wallets.create(factory);
       return;
     } catch (error) {

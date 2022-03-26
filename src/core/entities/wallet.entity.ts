@@ -13,7 +13,7 @@ export class Wallet {
 
   phrase: string;
 
-  xpub:string;
+  xpub: string;
 
   accountId: string;
 
@@ -23,17 +23,26 @@ export class Wallet {
 
   network: BLOCKCHAIN_NETWORK;
 
-  coin: string;
+  coin?: string;
 
-  status: WALLET_STATUS;
+  status?: WALLET_STATUS;
 
-  lastDeposit: number;
+  lastDeposit?: number;
 
-  lastWithdrawal: number;
+  lastWithdrawal?: number;
 
-  createdAt: Date;
+  createdAt?: Date;
 
-  updatedAt: Date;
+  updatedAt?: Date;
 
-  isBlocked: boolean;
+  isBlocked?: boolean;
+
+  derivationKey?: string;
+
+  destinationTag?: string;
+
+  memo?: string;
+
+  tatumMessage?: string;
+
 }

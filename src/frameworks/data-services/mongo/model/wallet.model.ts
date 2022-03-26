@@ -51,10 +51,10 @@ export class Wallet {
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 
-  @Prop({default:0})
+  @Prop({ default: 0 })
   lastDeposit: number;
 
-  @Prop({default:0})
+  @Prop({ default: 0 })
   lastWithdrawal: number;
 
   @Prop()
@@ -65,6 +65,25 @@ export class Wallet {
 
   @Prop()
   isBlocked: boolean;
+
+  @Prop()
+  derivationKey: string;
+
+
+  @Prop()
+  destinationTag: string;
+
+
+  @Prop()
+  memo: string;
+
+
+  @Prop()
+  tatumMessage: string;
+
+
+
+
 }
 
 export const WalletSchema = SchemaFactory.createForClass(Wallet);
