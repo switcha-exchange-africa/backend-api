@@ -32,3 +32,16 @@ export class CreateFaucetDto {
   @IsOptional()
   description: string;
 }
+
+export class FundFaucetDto{
+
+  @IsNotEmpty()
+  coin: COIN_TYPES
+
+  @IsNotEmpty()
+  walletId: string
+
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number
+}

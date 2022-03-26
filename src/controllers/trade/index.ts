@@ -12,8 +12,8 @@ import {
 
 import { Request, Response } from "express";
 import { TRADE_ROUTE } from "src/lib/constants";
-import { BuySellDto } from "src/core/dtos/trade/buysell.dto";
-import { BuySellServices } from "src/services/use-cases/trade/buysell-services.services";
+import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
+import { BuySellServices } from "src/services/use-cases/trade/buy-sell-services.services";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { SwapServices } from "src/services/use-cases/trade/swap/swap-services.services";
 

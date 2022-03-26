@@ -28,7 +28,8 @@ export enum TRANSACTION_ROUTE {
 }
 
 export enum FAUCET_ROUTE {
-  ROUTE = "/api/faucet"
+  ROUTE = "/api/faucet",
+  FUND = "/api/faucet/fund"
 }
 
 export enum RATES_ROUTE {
