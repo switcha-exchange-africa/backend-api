@@ -31,7 +31,7 @@ export enum FAUCET_ROUTE {
   ROUTE = "/api/faucet"
 }
 
-export enum RATES_ROUTE{
+export enum RATES_ROUTE {
   PRICES = "/api/rates",
   SINGLE_PRICES = "/api/rates/:asset",
   MARKETS = "/api/rates/markets",
@@ -39,13 +39,13 @@ export enum RATES_ROUTE{
   HISTORICAL_MARKETS_DATA = "/api/rates/markets/:coin/:baseCurrency/:interval/:days"
 }
 
-export enum TRADE_ROUTE{
+export enum TRADE_ROUTE {
   BUY = "/api/trade/buy",
   SELL = "/api/trade/sell",
   SWAP = "/api/trade/swap"
 }
 
-export enum WEBHOOK_ROUTE{
+export enum WEBHOOK_ROUTE {
   ADDRESS_TRANSACTION = "/transactions"
 }
 
@@ -95,8 +95,8 @@ export type JWT_USER_PAYLOAD_TYPE = {
   email?: string;
   authStatus?: USER_SIGNUP_STATUS_TYPE;
   lock?: USER_LOCK;
-  emailVerified?: string;
-  verified?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
 };
 export const JWT_EXPIRY_TIME: number = 5;
 export const SIGNUP_CODE_EXPIRY: number = 600;
@@ -129,14 +129,6 @@ export enum RedisPrefix {
 }
 export const RESET_PASSWORD_EXPIRY = 600;
 
-export enum VERIFICATION_VALUE_TYPE {
-  TRUE = "true",
-  FALSE = "false",
-}
-export const VERIFICATION_VALUE_TYPE_LIST = [
-  VERIFICATION_VALUE_TYPE.TRUE,
-  VERIFICATION_VALUE_TYPE.FALSE,
-];
 export enum USER_LEVEL_TYPE {
   ONE = "one",
   TWO = "two",

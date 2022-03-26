@@ -1,9 +1,8 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
 import { WalletServices } from 'src/services/use-cases/wallet/wallet-services.services';
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { User } from "src/core/entities/user.entity";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LOCK, USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LOCK, USER_SIGNUP_STATUS_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import {
   AlreadyExistsException,
@@ -17,6 +16,10 @@ import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { randomBytes } from 'crypto'
+import { CreateUserDto } from 'src/core/dtos/user.dto';
+import { UserFactoryService } from './user-factory.service';
+import { ResponsesType } from 'src/core/types/response';
+import { User } from 'src/core/entities/user.entity';
 
 @Injectable()
 export class AuthServices {
@@ -24,37 +27,40 @@ export class AuthServices {
     private dataServices: IDataServices,
     private discordServices: INotificationServices,
     private inMemoryServices: IInMemoryServices,
-    private walletServices: WalletServices
+    private walletServices: WalletServices,
+    private factory: UserFactoryService,
 
   ) { }
 
-  async createUser(data: User, res: Response) {
+  async createUser(data: CreateUserDto, res: Response): Promise<ResponsesType<User>> {
     try {
 
       const [userExists, phoneExists] = await Promise.all([this.dataServices.users.findOne({ email: data.email }), this.dataServices.users.findOne({ email: data.phone })]);
       if (userExists) throw new AlreadyExistsException('User already exists')
       if (phoneExists) throw new AlreadyExistsException('User already exists')
 
-      const user = await this.dataServices.users.create(data);
+
+      const factory = await this.factory.createNewUser(data);
+      const user = await this.dataServices.users.create(factory);
       const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
 
       const verification: string[] = []
-      if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
+      if (!user.emailVerified) verification.push("email")
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: user?._id,
-        fullName: `${user?.firstName} ${user?.lastName}`,
-        email: user?.email,
-        authStatus: user?.authStatus,
-        lock: user?.lock,
-        emailVerified: user?.emailVerified,
-        verified: user?.verified
+        _id: user._id,
+        fullName: `${user.firstName} ${user?.lastName}`,
+        email: user.email,
+        authStatus: user.authStatus,
+        lock: user.lock,
+        emailVerified: user.emailVerified,
       }
-      const token = (await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`)) as string;
+      const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
       const code = randomFixedInteger(6)
       const hashedCode = await hash(String(code));
 
       res.set('Authorization', `Bearer ${token}`);
+
       await Promise.all([
         this.discordServices.inHouseNotification({
           title: `Email Verification code :- ${env.env} environment`,
@@ -64,7 +70,14 @@ export class AuthServices {
         this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY))
       ])
 
-      return { message: "User signed up successfully", token: `Bearer ${token}`, user: jwtPayload, code: env.isDev || env.isStaging ? code : null, verification };
+      return {
+        status: 201,
+        message: "User signed up successfully",
+        token: `Bearer ${token}`,
+        data: jwtPayload,
+        extra: env.isDev || env.isStaging ? code : null,
+        verification
+      };
     } catch (error) {
       Logger.error(error)
       if (error.name === 'TypeError') throw new HttpException(error.message, 500)
@@ -72,8 +85,8 @@ export class AuthServices {
     }
   }
 
-  async verifyEmail(req: Request, res: Response, body: VerifyUserDto) {
-    let {code, phrase} = body;
+  async verifyEmail(req: Request, res: Response, body: VerifyUserDto): Promise<ResponsesType<User>> {
+    let { code, phrase } = body;
     code = String(code);
     try {
       const authUser = req?.user!;
@@ -81,23 +94,18 @@ export class AuthServices {
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
 
-      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user email already verified')
-      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user already verified')
-
+      if (authUser.emailVerified) throw new AlreadyExistsException('user email already verified')
 
       const savedCode = await this.inMemoryServices.get(redisKey);
-      if (isEmpty(savedCode)) {
-        Logger.error("code not found", savedCode)
-        throw new BadRequestsException('code is incorrect, invalid or has expired')
-      }
+      if (isEmpty(savedCode)) throw new BadRequestsException('code is incorrect, invalid or has expired')
+
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
       if (!correctCode) throw new BadRequestsException('code is incorrect, invalid or has expired')
 
       const updatedUser = await this.dataServices.users.update({ _id: authUser?._id }, {
         $set: {
-          emailVerified: VERIFICATION_VALUE_TYPE.TRUE,
-          verified: VERIFICATION_VALUE_TYPE.TRUE,
+          emailVerified: true,
           authStatus: USER_SIGNUP_STATUS_TYPE.COMPLETED,
           lastLoginDate: new Date(),
         }
@@ -110,9 +118,7 @@ export class AuthServices {
         authStatus: USER_SIGNUP_STATUS_TYPE.COMPLETED,
         lock: updatedUser?.lock,
         emailVerified: updatedUser.emailVerified,
-        verified: updatedUser.verified
       }
-      if (updatedUser?.emailVerified! === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
 
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
@@ -121,7 +127,7 @@ export class AuthServices {
       ])
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
-      return { status: 200, message: 'User email is verified successfully', token: `Bearer ${token}`, user: jwtPayload, verification }
+      return { status: 200, message: 'User email is verified successfully', token: `Bearer ${token}`, data: jwtPayload, verification }
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
@@ -130,12 +136,14 @@ export class AuthServices {
     }
   }
 
-  async issueEmailVerificationCode(req: Request) {
+  async issueEmailVerificationCode(req: Request): Promise<ResponsesType<User>> {
     try {
-      const authUser = req?.user;
-      if (!authUser) throw new BadRequestsException('user not recognized')
-      if (authUser?.emailVerified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user email already verified')
-      if (authUser?.verified === VERIFICATION_VALUE_TYPE.TRUE) throw new AlreadyExistsException('user already verified')
+      const authUser = req?.user!;
+      if (authUser.emailVerified) return {
+        status: HttpStatus.ACCEPTED,
+        message: `user already verified`,
+        data: null
+      }
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const codeSent = await this.inMemoryServices.get(redisKey) as number
@@ -150,7 +158,8 @@ export class AuthServices {
             status: 202,
             message: `if you have not received the verification code, please make another request in ${Math.ceil(
               nextRequest,
-            )} ${maybePluralize(Math.ceil(nextRequest), 'minute', 's')}`
+            )} ${maybePluralize(Math.ceil(nextRequest), 'minute', 's')}`,
+            data: null
           }
         }
       }
@@ -158,7 +167,7 @@ export class AuthServices {
       const emailCode = randomFixedInteger(6)
       // Remove email code for this user
       const [user,] = await Promise.all([this.dataServices.users.findOne({ email: authUser?.email }), this.inMemoryServices.del(redisKey)])
-      if (user?.emailVerified! === VERIFICATION_VALUE_TYPE.FALSE) verification.push("email")
+      if (!user.emailVerified) verification.push("email")
       if (!user) throw new DoesNotExistsException('user does not exists')
 
 
@@ -174,7 +183,7 @@ export class AuthServices {
       ])
       // save hashed code to redis 
 
-      return { status: 200, message: 'New code was successfully generated', code: env.isProd ? null : emailCode, verification };
+      return { status: 200, message: 'new code was successfully generated', data: env.isProd ? null : String(emailCode), verification };
     } catch (error: Error | any | unknown) {
       Logger.error(error)
       if (error.name === 'TypeError') throw new HttpException(error.message, 500)
@@ -182,7 +191,7 @@ export class AuthServices {
     }
   }
 
-  async resetPassword(res: Response, payload: { email: string, password: string, token: string }) {
+  async resetPassword(res: Response, payload: { email: string, password: string, token: string }): Promise<ResponsesType<User>> {
     try {
 
       const { email, password, token } = payload
@@ -212,7 +221,7 @@ export class AuthServices {
             password: hashedPassword
           }
         })
-      return { status: 200, message: 'Password updated successfully' }
+      return { status: 200, data: 'password updated successfully', message: 'password updated successfully' }
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
@@ -220,7 +229,7 @@ export class AuthServices {
       throw error;
     }
   }
-  async recoverPassword(payload: { email: string, code: string }) {
+  async recoverPassword(payload: { email: string, code: string }): Promise<ResponsesType<User>> {
     try {
       let { email, code } = payload;
       const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`
@@ -251,7 +260,7 @@ export class AuthServices {
             message: `Provide the code sent to your email or request another one in ${Math.ceil(
               Number(codeExpiry) / 60,
             )} minute`,
-            nextRequestInSecs: Number(codeExpiry)
+            data: `seconds ${codeExpiry}`
           }
         }
 
@@ -266,7 +275,7 @@ export class AuthServices {
           return {
             status: 202,
             message: 'Provide the code sent to your mobile number',
-            code: env.isProd ? null : phoneCode
+            data: env.isProd ? null : String(phoneCode)
           };
         } catch (error) {
           if (error.name === 'TypeError') {
@@ -299,8 +308,7 @@ export class AuthServices {
         return {
           status: 200,
           message: 'You will receive an email with a link to reset your password if you have an account with this email.',
-          resetSecret: env.isProd ? null : resetToken,
-          resetToken: env.isProd ? null : resetToken
+          data: env.isProd ? null : resetToken,
         }
 
       }
@@ -311,7 +319,7 @@ export class AuthServices {
     }
   }
 
-  async login(res: Response, payload: { email: string, password: string }) {
+  async login(res: Response, payload: { email: string, password: string }): Promise<ResponsesType<User>> {
     try {
       const { email, password } = payload
       const user = await this.dataServices.users.findOne({ email });
@@ -324,7 +332,7 @@ export class AuthServices {
       const correctPassword: boolean = await compareHash(password, user?.password!);
       if (!correctPassword) throw new BadRequestsException('password is incorrect') //
 
-      if (user?.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) {
+      if (!user.emailVerified) {
         verification.push("email")
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
           _id: user?._id,
@@ -333,25 +341,11 @@ export class AuthServices {
           authStatus: USER_SIGNUP_STATUS_TYPE.PENDING,
           lock: user?.lock,
           emailVerified: user.emailVerified,
-          verified: user.verified
         }
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
-        return { status: 403, message: 'email is not verified', token: `Bearer ${token}`, verification }
+        return { status: 403, message: 'email is not verified', data: 'email is not verified', token: `Bearer ${token}`, verification }
       }
 
-      if (user.verified === VERIFICATION_VALUE_TYPE.FALSE) {
-        const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-          _id: user?._id,
-          fullName: user?.fullName,
-          email: user?.email,
-          authStatus: USER_SIGNUP_STATUS_TYPE.PENDING,
-          lock: user?.lock,
-          emailVerified: user.emailVerified,
-          verified: user.verified
-        }
-        const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
-        return { status: 403, message: 'user is not verified', token: `Bearer ${token}`, verification }
-      }
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: user?._id,
         fullName: `${user?.firstName} ${user?.lastName}`,
@@ -359,7 +353,6 @@ export class AuthServices {
         authStatus: USER_SIGNUP_STATUS_TYPE.COMPLETED,
         lock: user?.lock,
         emailVerified: user.emailVerified,
-        verified: user.verified
       }
       const token = await jwtLib.jwtSign(jwtPayload);
       res.set('Authorization', `Bearer ${token}`);
@@ -370,9 +363,9 @@ export class AuthServices {
       })
       return {
         status: 200,
-        message: 'User logged in successfully',
+        message: 'user logged in successfully',
         token: `Bearer ${token}`,
-        user: jwtPayload,
+        data: jwtPayload,
         verification
       }
     } catch (error: Error | any | unknown) {

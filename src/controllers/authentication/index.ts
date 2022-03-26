@@ -1,29 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  Logger,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards
-} from "@nestjs/common"
-import {
-  AUTHENTICATION_ROUTE,
-  TEST_ROUTE,
-  USER_LOCK,
-  USER_SIGNUP_STATUS_TYPE,
-  USER_TYPE,
-  VERIFICATION_VALUE_TYPE
-} from "src/lib/constants"
+import { Body, Controller, Get, HttpException, Logger, Post, Query, Req, Res, UseGuards } from "@nestjs/common"
+import { AUTHENTICATION_ROUTE } from "src/lib/constants"
 import { Request, Response } from "express"
-import { UserFactoryService } from "src/services/use-cases/user/user-factory.service"
 import { AuthServices } from "src/services/use-cases/user/auth-services.services"
 import { CreateUserDto } from "src/core/dtos/user.dto"
-import { hash } from "src/lib/utils"
-import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract"
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto"
 import { LooseAuthGuard } from "src/middleware-guards/auth-guard.middleware"
 import { ResetPasswordBodyDto, ResetPasswordDto } from "src/core/dtos/resetPasswordDto.dto"
@@ -34,38 +13,23 @@ import { LoginDto } from "src/core/dtos/authentication/login.dto"
 export class AuthenticationController {
   constructor(
     private authServices: AuthServices,
-    private userFactoryService: UserFactoryService,
-    private inMemoryServices: IInMemoryServices
 
   ) { }
 
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
   async signup(
     @Res() res: Response,
-    @Body() userDto: CreateUserDto
+    @Body() body: CreateUserDto
   ) {
     try {
 
-      const payload = {
-        ...userDto,
-        password: await hash(userDto.password),
-        userType: USER_TYPE.CLIENT,
-        lock: USER_LOCK.UNLOCK,
-        authStatus: USER_SIGNUP_STATUS_TYPE.PENDING,
-        emailVerified: VERIFICATION_VALUE_TYPE.FALSE,
-        verified: VERIFICATION_VALUE_TYPE.FALSE,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-
-      const user = await this.userFactoryService.createNewUser(payload);
-      const createdUser = await this.authServices.createUser(user, res)
+      const response = await this.authServices.createUser(body, res)
       // send email verification code to discord and mailgun 
-      return res.status(201).json(createdUser)
+      return res.status(response.status).json(response)
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -81,7 +45,7 @@ export class AuthenticationController {
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -97,7 +61,7 @@ export class AuthenticationController {
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -114,19 +78,10 @@ export class AuthenticationController {
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
-  @Post(TEST_ROUTE.TEST)
-  async testRoute(@Res() res: Response) {
-    try {
-      const value = await this.inMemoryServices.get('test')
-      return res.status(201).json({ value })
-    } catch (e) {
-      return res.status(500).json(e)
-    }
-  }
   @Post(AUTHENTICATION_ROUTE.RECOVER_PASSWORD)
   async recoverPassword(
     @Res() res: Response,
@@ -139,7 +94,7 @@ export class AuthenticationController {
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -157,7 +112,7 @@ export class AuthenticationController {
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
