@@ -63,7 +63,7 @@ export class WalletCreateListener {
       const account =
         coin !== COIN_TYPES.NGN
           ? await this.httpServices.post(
-            `${TATUM_BASE_URL}/v3/ledger/account`,
+            `${TATUM_BASE_URL}/ledger/account`,
             body,
             config
           )
@@ -81,7 +81,7 @@ export class WalletCreateListener {
 
       const { address, xpub } = account
         ? await this.httpServices.post(
-          `${TATUM_BASE_URL}/v3/offchain/account/${account.id}/address`,
+          `${TATUM_BASE_URL}/offchain/account/${account.id}/address`,
           {},
           config
         )
