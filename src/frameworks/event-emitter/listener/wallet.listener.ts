@@ -6,10 +6,10 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { WalletCreatedEvent } from "./../event/wallet.event";
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { CRYPTO_API_KEY, WALLET_PRIVATE_KEY } from "src/configuration";
+import { TATUM_API_KEY, WALLET_PRIVATE_KEY } from "src/configuration";
 import { WalletDto } from "src/core/dtos/wallet/wallet.dto";
 import { UserDetail } from "src/core/entities/user.entity";
-import { COIN_TYPES, WALLET_STATUS } from "src/lib/constants";
+import { COIN_TYPES } from "src/lib/constants";
 
 @Injectable()
 export class WalletCreateListener {
@@ -17,7 +17,7 @@ export class WalletCreateListener {
     private httpServices: IHttpServices,
     private dataServices: IDataServices,
     private walletFactoryService: WalletFactoryService
-  ) {}
+  ) { }
 
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
@@ -25,7 +25,7 @@ export class WalletCreateListener {
     const url = `https://api-us-west1.tatum.io/v3/${blockchain}/wallet?type=${network}`;
     const config = {
       headers: {
-        "X-API-Key": CRYPTO_API_KEY,
+        "X-API-Key": TATUM_API_KEY,
         "x-testnet-type": "ethereum-ropsten",
       },
     };
@@ -43,9 +43,9 @@ export class WalletCreateListener {
         coin !== COIN_TYPES.NGN
           ? await this.httpServices.get(url, config)
           : {
-              mnemonic: "",
-              xpub: "",
-            };
+            mnemonic: "",
+            xpub: "",
+          };
       const userDetail: UserDetail = {
         email: user.email,
         fullName: `${user.firstName} ${user.lastName}`,
@@ -63,10 +63,10 @@ export class WalletCreateListener {
       const account =
         coin !== COIN_TYPES.NGN
           ? await this.httpServices.post(
-              `https://api-us-west1.tatum.io/v3/ledger/account`,
-              body,
-              config
-            )
+            `https://api-us-west1.tatum.io/v3/ledger/account`,
+            body,
+            config
+          )
           : null;
 
       //verify phrase
@@ -81,27 +81,27 @@ export class WalletCreateListener {
 
       const { address, xpub } = account
         ? await this.httpServices.post(
-            `https://api-us-west1.tatum.io/v3/offchain/account/${account.id}/address`,
-            {},
-            config
-          )
+          `https://api-us-west1.tatum.io/v3/offchain/account/${account.id}/address`,
+          {},
+          config
+        )
         : "";
       // create subscription for address
-       address
+      address
         ? await this.httpServices.post(
-            `https://api-us-west1.tatum.io/v3/subscription`,
-            {
-              type: "ADDRESS_TRANSACTION",
-              attr: {
-                address,
-                chain: symbol,
-                url: "http://30a1-197-210-53-99.ngrok.io/transactions",
-              },
+          `https://api-us-west1.tatum.io/v3/subscription`,
+          {
+            type: "ADDRESS_TRANSACTION",
+            attr: {
+              address,
+              chain: symbol,
+              url: "http://30a1-197-210-53-99.ngrok.io/transactions",
             },
-            config
-          )
+          },
+          config
+        )
         : null;
-      const balance = account  ? account.balance.availableBalance : 0;
+      const balance = account ? account.balance.availableBalance : 0;
       const accountId = account ? account.id : "";
       const walletPayload: WalletDto = {
         balance,
@@ -113,13 +113,10 @@ export class WalletCreateListener {
         xpub,
         accountId,
         coin,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         isBlocked: false,
         lastDeposit: 0,
         lastWithdrawal: 0,
         network: null,
-        status: WALLET_STATUS.ACTIVE,
       };
       const factory = await this.walletFactoryService.create(walletPayload);
       await this.dataServices.wallets.create(factory);
@@ -130,5 +127,5 @@ export class WalletCreateListener {
   }
 
   @OnEvent("created.wallet", { async: true })
-  async handleWalletCreatedEvent() {}
+  async handleWalletCreatedEvent() { }
 }
