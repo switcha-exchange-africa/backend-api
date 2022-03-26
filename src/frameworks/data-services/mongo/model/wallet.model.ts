@@ -51,10 +51,10 @@ export class Wallet {
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 
-  @Prop()
+  @Prop({default:0})
   lastDeposit: number;
 
-  @Prop()
+  @Prop({default:0})
   lastWithdrawal: number;
 
   @Prop()
