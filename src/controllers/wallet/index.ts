@@ -1,4 +1,4 @@
-import { FundDto } from "./../../core/dtos/wallet/fund.dto";
+import { FundDto } from "src/core/dtos/wallet/fund.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 import {
   Body,
