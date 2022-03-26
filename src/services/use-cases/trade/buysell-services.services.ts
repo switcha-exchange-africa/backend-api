@@ -1,4 +1,4 @@
-import { TransactionReference } from "../../../core/entities/transaction-reference.entity";
+import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BuySellDto } from "src/core/dtos/trade/buysell.dto";
@@ -34,7 +34,13 @@ export class BuySellServices {
   async buy(body: BuySellDto, userId: string) {
     const { amount, currency } = body;
     try {
-      const [user, cryptoWallet, ngnWallet] = await Promise.all([
+      const url = `https://api-us-west1.tatum.io/v3/tatum/rate/${currency}?basePair=${COIN_TYPES.NGN}`;
+      const config = {
+        headers: {
+          "X-API-Key": CRYPTO_API_KEY,
+        },
+      };
+      const [user, cryptoWallet, ngnWallet,{value}] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -43,27 +49,23 @@ export class BuySellServices {
         this.dataServices.wallets.findOne({
           userId,
           coin: COIN_TYPES.NGN,
+          balance: {$gt : 0}
         }),
+        this.http.get(url, config)
       ]);
       if (!user) throw new DoesNotExistsException("user does not exist");
       if (!cryptoWallet || !ngnWallet)
         throw new DoesNotExistsException("wallet does not exist");
 
-      const url = `https://api-us-west1.tatum.io/v3/tatum/rate/${cryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
-      const config = {
-        headers: {
-          "X-API-Key": CRYPTO_API_KEY,
-        },
-      };
-      const { value } = await this.http.get(url, config);
       const currencyAmount = parseFloat((value * amount).toFixed(4));
+
       let updatedNgnWallet, updatedCryptoWallet, txFactory: any;
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           updatedNgnWallet = await this.dataServices.wallets.update(
             {
               _id: ngnWallet._id,
-              balance: { $gt: 0, $gte: currencyAmount },
+              balance: { $gte: currencyAmount },
             },
             {
               $inc: {
@@ -134,12 +136,9 @@ export class BuySellServices {
         this.connection
       );
       return {
-        message: txFactory
-          ? `${currency} bought successfully`
-          : "Transaction failed",
-        txFactory,
-        rateBought: txFactory && value,
-        status: txFactory ? 200 : 500,
+        message:`${currency} bought successfully`,
+        data: {...txFactory, value},
+        status: 200
       };
     } catch (error) {
       Logger.error(error);
@@ -256,7 +255,7 @@ export class BuySellServices {
         message: txFactory
           ? `${currency} sold successfully`
           : "Transaction failed",
-        txFactory,
+        ...txFactory,
         rateBought: txFactory && value,
         status: txFactory ? 200 : 500,
       };

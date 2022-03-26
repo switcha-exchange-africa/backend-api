@@ -1,16 +1,23 @@
 import { IDataServices } from "src/core/abstracts";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { FaucetFactoryServices } from "./faucet-factory.services";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
-import * as mongoose from 'mongoose';
+import * as mongoose from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
 import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { Transaction } from "src/core/entities/transaction.entity";
-import { COIN_TYPES, CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/lib/constants";
+import {
+  COIN_TYPES,
+  CUSTOM_TRANSACTION_TYPE,
+  TRANSACTION_STATUS,
+  TRANSACTION_SUBTYPE,
+  TRANSACTION_TYPE,
+} from "src/lib/constants";
 import { TransactionReferenceFactoryService } from "../transaction/transaction-reference.services";
 import { Faucet } from "src/core/entities/faucet.entity";
-import { ResponsesType } from 'src/core/types/response';
+import { ResponsesType } from "src/core/types/response";
+import { DoesNotExistsException } from "../user/exceptions";
 
 @Injectable()
 export class FaucetServices {
@@ -20,27 +27,36 @@ export class FaucetServices {
     private txFactoryServices: TransactionFactoryService,
     private txRefFactoryServices: TransactionReferenceFactoryService,
 
-    @InjectConnection() private readonly connection: mongoose.Connection,
-  ) { }
+    @InjectConnection() private readonly connection: mongoose.Connection
+  ) {}
 
-  async create(body: { amount: number, description: string, coin: string, userId: string }): Promise<ResponsesType<Faucet>> {
+  async create(body: {
+    amount: number;
+    description: string;
+    coin: string;
+    userId: string;
+  }): Promise<ResponsesType<Faucet>> {
     try {
       // atomic transaction
-      const { amount, description, coin, userId } = body
-      let faucet: any
+      const { amount, description, coin, userId } = body;
+      let faucet: any;
       const processAtomicAction = async (session: mongoose.ClientSession) => {
         try {
           const faucetFactory = await this.faucetFactoryServices.create(body);
           faucet = await this.data.faucets.create(faucetFactory, session);
 
-
           const txRefPayload: TransactionReference = { userId, amount };
-          const txRefFactory = await this.txRefFactoryServices.create(txRefPayload)
-          const txRef = await this.data.transactionReferences.create(txRefFactory, session);
+          const txRefFactory = await this.txRefFactoryServices.create(
+            txRefPayload
+          );
+          const txRef = await this.data.transactionReferences.create(
+            txRefFactory,
+            session
+          );
 
           const txPayload: Transaction = {
             userId,
-            walletId: 'faucet',
+            walletId: "faucet",
             txRefId: txRef?._id,
             currency: coin as COIN_TYPES,
             amount,
@@ -52,24 +68,137 @@ export class FaucetServices {
             balanceBefore: faucet?.balance,
             hash: txRef.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
-            customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
 
-
-          const txFactory = await this.txFactoryServices.create(txPayload)
-          await this.data.transactions.create(txFactory, session)
-
+          const txFactory = await this.txFactoryServices.create(txPayload);
+          await this.data.transactions.create(txFactory, session);
         } catch (e) {
-          throw new HttpException(e.message, 500)
+          throw new HttpException(e.message, 500);
         }
-      }
+      };
 
-      await databaseHelper.executeTransaction(processAtomicAction, this.connection)
-      return { message: "Faucet created successfully", data: faucet, status: HttpStatus.CREATED };
-
+      await databaseHelper.executeTransaction(
+        processAtomicAction,
+        this.connection
+      );
+      return {
+        message: "Faucet created successfully",
+        data: faucet,
+        status: HttpStatus.CREATED,
+      };
     } catch (error) {
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       throw error;
+    }
+  }
+
+  async fund(body: {
+    amount: number;
+    walletId: string;
+    coin: string;
+    userId: string;
+  }): Promise<ResponsesType<any>> {
+    const { amount, walletId, coin, userId } = body;
+
+    try {
+      const [faucet, wallet] = await Promise.all([
+        this.data.faucets.findOne({ coin, balance: { $gte: amount } }),
+        this.data.wallets.findOne({ _id: walletId, coin }),
+      ]);
+
+      if (!faucet || !wallet)
+        throw new DoesNotExistsException("Wallet or Faucet does not exist");
+
+      let updatedFaucet, updatedWallet: any;
+      const processAtomicFundAction = async (
+        session: mongoose.ClientSession
+      ) => {
+        try {
+          updatedFaucet = await this.data.faucets.update(
+            { _id: faucet._id },
+            { $set: { lastWithdrawal: amount }, $inc: { balance: -amount } },
+            session
+          );
+
+          updatedWallet = await this.data.wallets.update(
+            { _id: walletId },
+            { $set: { lastDeposit: amount }, $inc: { balance: amount } },
+            session
+          );
+
+          const txRefPayload: TransactionReference = { userId, amount };
+          const txRefFactory = await this.txRefFactoryServices.create(
+            txRefPayload
+          );
+          const txRef = await this.data.transactionReferences.create(
+            txRefFactory,
+            session
+          );
+
+          const txFaucetPayload: Transaction = {
+            userId,
+            walletId: "faucet",
+            txRefId: txRef?._id,
+            currency: coin as COIN_TYPES,
+            amount,
+            signedAmount: amount,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: "",
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: updatedFaucet?.balance,
+            balanceBefore: faucet?.balance,
+            hash: txRef.hash,
+            subType: TRANSACTION_SUBTYPE.DEBIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
+          };
+
+          const txWalletPayload: Transaction = {
+            userId,
+            walletId,
+            txRefId: txRef?._id,
+            currency: coin as COIN_TYPES,
+            amount,
+            signedAmount: amount,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: "",
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: updatedWallet?.balance,
+            balanceBefore: wallet?.balance,
+            hash: txRef.hash,
+            subType: TRANSACTION_SUBTYPE.CREDIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
+          };
+
+          const txFaucetFactory = await this.txFactoryServices.create(
+            txFaucetPayload
+          );
+          const txWalletFactory = await this.txFactoryServices.create(
+            txWalletPayload
+          );
+          await Promise.all([
+            await this.data.transactions.create(txFaucetFactory, session),
+            await this.data.transactions.create(txWalletFactory, session),
+          ]);
+        } catch (error) {
+          throw new HttpException(error.message, 500);
+        }
+      };
+      await databaseHelper.executeTransaction(
+        processAtomicFundAction,
+        this.connection
+      );
+      return {
+        message: "Transaction successful",
+        data: { updatedFaucet, updatedWallet },
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
     }
   }
 }
