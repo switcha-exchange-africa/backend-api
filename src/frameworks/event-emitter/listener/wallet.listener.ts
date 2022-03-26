@@ -26,7 +26,7 @@ export class WalletCreateListener {
     const config = {
       headers: {
         "X-API-Key": TATUM_API_KEY,
-        "x-testnet-type": "ethereum-ropsten",
+        "x-testnet-type": "ethereum-rinkeby",
       },
     };
     try {
