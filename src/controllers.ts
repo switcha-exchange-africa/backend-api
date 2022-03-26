@@ -6,6 +6,7 @@ import { FaucetController } from "./controllers/faucet";
 import { RatesController } from "./controllers/rates";
 import { TransactionController } from "./controllers/transaction";
 import { WalletController } from "./controllers/wallet";
+import { HomeController } from './controllers/home';
 
 export default [
   AuthenticationController,
@@ -15,5 +16,6 @@ export default [
   FaucetController,
   RatesController,
   TradeController,
-  WebhookController
+  WebhookController,
+  HomeController
 ]
