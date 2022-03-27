@@ -50,20 +50,17 @@ export class WalletCreateListener {
           CONFIG
         )
         // create subscription for address
-        address
-          ? await this.httpServices.post(
-            `${TATUM_BASE_URL}/subscription`,
-            {
-              type: "ADDRESS_TRANSACTION",
-              attr: {
-                address,
-                chain: coin,
-                url: `${API_URL}/api/webhook/tatum`,
-              },
+        await this.httpServices.post(`${TATUM_BASE_URL}/subscription`,
+          {
+            type: "ADDRESS_TRANSACTION",
+            attr: {
+              address,
+              chain: coin,
+              url: `${API_URL}/api/webhook/tatum`,
             },
-            CONFIG
-          )
-          : null;
+          },
+          CONFIG
+        )
 
         const walletPayload: Wallet = {
           address,
@@ -80,7 +77,20 @@ export class WalletCreateListener {
         await this.dataServices.wallets.create(factory);
         return;
       }
-
+      const walletPayload: Wallet = {
+        address: "",
+        userId,
+        user: userDetail,
+        accountId,
+        coin: COIN_TYPES.NGN,
+        isBlocked: false,
+        lastDeposit: 0,
+        lastWithdrawal: 0,
+        network: null,
+      };
+      const factory = await this.walletFactoryService.create(walletPayload);
+      await this.dataServices.wallets.create(factory);
+      return;
 
     } catch (error) {
       Logger.error(error);
