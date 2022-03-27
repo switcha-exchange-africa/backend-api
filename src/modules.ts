@@ -11,6 +11,7 @@ import { WalletServicesModule } from "./services/use-cases/wallet/wallet-service
 import { BuySellServicesModule } from './services/use-cases/trade/buy-sell-services.module';
 import { SwapServicesModule } from './services/use-cases/trade/swap/swap-services.module';
 import { WebhookServicesModule } from './services/use-cases/webhook/webhook-services.module';
+import { BullServiceModule } from './frameworks/bull/bull-services.module';
 
 export default [
   AxiosServiceModule,
@@ -26,5 +27,6 @@ export default [
   BuySellServicesModule,
   SwapServicesModule,
   WebhookServicesModule,
+  BullServiceModule
   
 ]

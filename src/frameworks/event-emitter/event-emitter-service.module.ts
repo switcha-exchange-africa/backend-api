@@ -6,6 +6,7 @@ import { Global, Module } from "@nestjs/common";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { EmailSentListener } from "./listener/email.listener";
 import { SmsSentListener } from "./listener/sms.listener";
+import { BullModule } from '@nestjs/bull';
 
 @Global()
 @Module({
@@ -21,6 +22,11 @@ import { SmsSentListener } from "./listener/sms.listener";
     }),
     DataServicesModule,
     WalletServicesModule,
+    BullModule.registerQueue(
+      { name: 'wallet' },
+      { name: 'wallet.webhook.subscription' }
+    )
+
   ],
   providers: [
     EmailSentListener,
@@ -29,4 +35,4 @@ import { SmsSentListener } from "./listener/sms.listener";
     WalletFactoryService,
   ],
 })
-export class EventEmitterServiceModule {}
+export class EventEmitterServiceModule { }

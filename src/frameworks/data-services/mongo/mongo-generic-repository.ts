@@ -12,10 +12,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   }
 
 
-
-
-  async create(payload: T, session?: ClientSession) {
+  async create(payload: T | T[], session?: ClientSession) {
     try {
+      if (Array.isArray(payload)) {
+        const data = session ? this._repository.insertMany(payload, { session }) : this._repository.insertMany(payload);
+        return Promise.resolve(data);
+      }
       const instance = new this._repository(payload);
       const data = session ? await instance.save({ session }) : await instance.save();
       return Promise.resolve(data);
@@ -23,6 +25,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       return Promise.reject(e);
     }
   }
+
 
   async update(key: FilterQuery<T>, payload: UpdateQuery<T>, session?: ClientSession) {
     try {

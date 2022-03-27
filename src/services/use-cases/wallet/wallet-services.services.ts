@@ -5,44 +5,48 @@ import { IDataServices } from "src/core/abstracts";
 import { BLOCKCHAIN_CHAIN, COIN_TYPES } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
-import { MONO_SECRET_KEY, TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
+import {
+  MONO_SECRET_KEY,
+  TATUM_BTC_ACCOUNT_ID,
+} from "src/configuration";
 
 @Injectable()
 export class WalletServices {
   constructor(
     private emitter: EventEmitter2,
     private http: IHttpServices,
-    private dataServices: IDataServices
+    private dataServices: IDataServices,
   ) { }
 
+  // deprecated, don't use
   async create(userId: string) {
     const coins = [
       {
         userId,
         coin: COIN_TYPES.BTC,
         accountId: TATUM_BTC_ACCOUNT_ID,
-        chain:BLOCKCHAIN_CHAIN.BTC
+        chain: BLOCKCHAIN_CHAIN.BTC
       },
-      {
-        userId,
-        coin: COIN_TYPES.USDT,
-        accountId: TATUM_USDT_ACCOUNT_ID,
-        chain:BLOCKCHAIN_CHAIN.ETH
-      },
-      {
-        userId,
-        coin: COIN_TYPES.USDC,
-        accountId: TATUM_USDC_ACCOUNT_ID,
-        chain:BLOCKCHAIN_CHAIN.ETH
+      // {
+      //   userId,
+      //   coin: COIN_TYPES.USDT,
+      //   accountId: TATUM_USDT_ACCOUNT_ID,
+      //   chain:BLOCKCHAIN_CHAIN.ETH
+      // },
+      // {
+      //   userId,
+      //   coin: COIN_TYPES.USDC,
+      //   accountId: TATUM_USDC_ACCOUNT_ID,
+      //   chain:BLOCKCHAIN_CHAIN.ETH
 
-      },
-      {
-        userId,
-        coin: COIN_TYPES.USDT_TRON,
-        accountId: TATUM_USDT_TRON_ACCOUNT_ID,
-        chain:BLOCKCHAIN_CHAIN.TRON
+      // },
+      // {
+      //   userId,
+      //   coin: COIN_TYPES.USDT_TRON,
+      //   accountId: TATUM_USDT_TRON_ACCOUNT_ID,
+      //   chain:BLOCKCHAIN_CHAIN.TRON
 
-      },
+      // },
       {
         userId,
         coin: COIN_TYPES.NGN,
@@ -54,6 +58,7 @@ export class WalletServices {
 
   async findAll(query, userId: string) {
     try {
+      this.emitter.emit("create.wallet", { userId })
       const wallets = await this.dataServices.wallets.findAllWithPagination({ query, queryFields: { userId: userId } });
       return { status: 200, message: 'Wallets retrieved successfully', wallets }
     } catch (error) {

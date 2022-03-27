@@ -1,102 +1,105 @@
-import { WalletFactoryService } from "src/services/use-cases/wallet/wallet-factory.service";
-import { IDataServices } from "src/core/abstracts";
-import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { WalletCreatedEvent } from "./../event/wallet.event";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { API_URL, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { BLOCKCHAIN_CHAIN, COIN_TYPES } from "src/lib/constants";
+import { TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
 import { UserDetail } from "src/core/entities/user.entity";
-import { COIN_TYPES } from "src/lib/constants";
-import { Wallet } from "src/core/entities/wallet.entity";
+import { IDataServices } from "src/core/abstracts";
 
 
-const CONFIG = {
-  headers: {
-    "X-API-Key": TATUM_API_KEY
-  },
-};
+
+
+
 @Injectable()
 export class WalletCreateListener {
   constructor(
-    private httpServices: IHttpServices,
-    private dataServices: IDataServices,
-    private walletFactoryService: WalletFactoryService
+    private data: IDataServices,
+    @InjectQueue('wallet') private walletQueue: Queue,
+    @InjectQueue('wallet.webhook.subscription') private walletWebhookQueue: Queue,
+
   ) { }
 
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
-    const { userId, coin, accountId,chain } = event;
+    const userId = event.userId
+    const user = await this.data.users.findOne({ _id: userId })
+    if (!user) return "user does not exists";
 
-    try {
-      const [user, wallet] = await Promise.all([
-        this.dataServices.users.findOne({ _id: userId }),
-        this.dataServices.wallets.findOne({ userId, coin }),
-      ]);
-      if (!user) return "user does not exists";
-      if (wallet) {
-        Logger.warn(`${coin} already exists`);
-        return;
-      }
+    const userDetail: UserDetail = { email: user.email, fullName: `${user.firstName} ${user.lastName}` };
 
-      const userDetail: UserDetail = {
-        email: user.email,
-        fullName: `${user.firstName} ${user.lastName}`,
-      };
-
-      if (coin !== COIN_TYPES.NGN) {
-        const { address, destinationTag, memo, message } = await this.httpServices.post(
-          `${TATUM_BASE_URL}/offchain/account/${accountId}/address`,
-          {},
-          CONFIG
-        )
-        // create subscription for address
-        await this.httpServices.post(`${TATUM_BASE_URL}/subscription`,
-          {
-            type: "ADDRESS_TRANSACTION",
-            attr: {
-              address,
-              chain,
-              url: `${API_URL}/api/webhook/tatum`,
-            },
-          },
-          CONFIG
-        )
-
-        const walletPayload: Wallet = {
-          address,
-          userId,
-          user: userDetail,
-          accountId,
-          coin,
-          isBlocked: false,
-          lastDeposit: 0,
-          lastWithdrawal: 0,
-          network: null,
-        };
-        const factory = await this.walletFactoryService.create({ ...walletPayload, destinationTag, memo, tatumMessage: message });
-        await this.dataServices.wallets.create(factory);
-        return;
-      }
-      const walletPayload: Wallet = {
-        address: "",
+    await this.walletQueue.add(
+      {
         userId,
-        user: userDetail,
-        accountId,
-        coin: COIN_TYPES.NGN,
-        isBlocked: false,
-        lastDeposit: 0,
-        lastWithdrawal: 0,
-        network: null,
-      };
-      const factory = await this.walletFactoryService.create(walletPayload);
-      await this.dataServices.wallets.create(factory);
-      return;
+        coin: COIN_TYPES.BTC,
+        accountId: TATUM_BTC_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.BTC,
+        userDetail
+      },
+      { delay: 5000 }
+    );
 
-    } catch (error) {
-      Logger.error(error);
-    }
+    await this.walletQueue.add(
+      {
+        userId,
+        coin: COIN_TYPES.USDT,
+        accountId: TATUM_USDT_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.ETH,
+        userDetail
+      },
+      { delay: 5000 }
+    );
+
+    await this.walletQueue.add(
+      {
+        userId,
+        coin: COIN_TYPES.USDC,
+        accountId: TATUM_USDC_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.ETH,
+        userDetail
+
+      },
+      { delay: 15000 }
+    );
+
+    await this.walletQueue.add(
+      {
+        userId,
+        coin: COIN_TYPES.USDT_TRON,
+        accountId: TATUM_USDT_TRON_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.TRON,
+        userDetail
+      },
+      { delay: 25000 }
+    );
+
+    await this.walletQueue.add(
+      {
+        userId,
+        coin: COIN_TYPES.NGN,
+        accountId: "",
+        chain: "",
+        userDetail
+      },
+      { delay: 35000 }
+    );
+
+
+
   }
 
+
+  @OnEvent("send.webhook.subscription", { async: true })
+  async handleWebhookSubscriptionEvent(event: any) {
+    const { chain, address } = event
+    await this.walletWebhookQueue.add(
+      { chain, address },
+      { delay: 35000 }
+    );
+
+  }
   @OnEvent("created.wallet", { async: true })
   async handleWalletCreatedEvent() { }
 }

@@ -11,7 +11,7 @@ export abstract class IGenericRepository<T> {
 
   abstract findOne(key: FilterQuery<T>, session?: ClientSession);
 
-  abstract create(payload: T, session?: ClientSession);
+  abstract create(payload: T | T[], session?: ClientSession);
 
   abstract update(key: FilterQuery<T>, payload: UpdateQuery<T>, session?: ClientSession);
 }

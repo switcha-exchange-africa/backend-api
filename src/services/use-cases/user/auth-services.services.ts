@@ -1,5 +1,4 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
-import { WalletServices } from 'src/services/use-cases/wallet/wallet-services.services';
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LOCK, USER_SIGNUP_STATUS_TYPE } from "src/lib/constants";
@@ -20,6 +19,7 @@ import { CreateUserDto } from 'src/core/dtos/user.dto';
 import { UserFactoryService } from './user-factory.service';
 import { ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class AuthServices {
@@ -27,9 +27,8 @@ export class AuthServices {
     private dataServices: IDataServices,
     private discordServices: INotificationServices,
     private inMemoryServices: IInMemoryServices,
-    private walletServices: WalletServices,
     private factory: UserFactoryService,
-
+    private emitter: EventEmitter2,
   ) { }
 
   async createUser(data: CreateUserDto, res: Response): Promise<ResponsesType<User>> {
@@ -123,8 +122,9 @@ export class AuthServices {
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
-        this.walletServices.create(authUser?._id)
+        this.emitter.emit("create.wallet", { userId: authUser?._id })
       ])
+
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
       return { status: 200, message: 'User email is verified successfully', token: `Bearer ${token}`, data: jwtPayload, verification }
