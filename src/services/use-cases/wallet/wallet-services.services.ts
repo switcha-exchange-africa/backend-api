@@ -2,7 +2,7 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-import { COIN_TYPES } from "src/lib/constants";
+import { BLOCKCHAIN_CHAIN, COIN_TYPES } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { MONO_SECRET_KEY, TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
@@ -20,22 +20,28 @@ export class WalletServices {
       {
         userId,
         coin: COIN_TYPES.BTC,
-        accountId: TATUM_BTC_ACCOUNT_ID
+        accountId: TATUM_BTC_ACCOUNT_ID,
+        chain:BLOCKCHAIN_CHAIN.BTC
       },
       {
         userId,
         coin: COIN_TYPES.USDT,
-        accountId: TATUM_USDT_ACCOUNT_ID
+        accountId: TATUM_USDT_ACCOUNT_ID,
+        chain:BLOCKCHAIN_CHAIN.ETH
       },
       {
         userId,
         coin: COIN_TYPES.USDC,
-        accountId: TATUM_USDC_ACCOUNT_ID
+        accountId: TATUM_USDC_ACCOUNT_ID,
+        chain:BLOCKCHAIN_CHAIN.ETH
+
       },
       {
         userId,
         coin: COIN_TYPES.USDT_TRON,
-        accountId: TATUM_USDT_TRON_ACCOUNT_ID
+        accountId: TATUM_USDT_TRON_ACCOUNT_ID,
+        chain:BLOCKCHAIN_CHAIN.TRON
+
       },
       {
         userId,

@@ -173,6 +173,20 @@ export enum COIN_TYPES {
 }
 
 
+export enum BLOCKCHAIN_CHAIN {
+  SOL = "SOL",
+  ETH = "ETH",
+  MATIC = "MATIC",
+  KLAY = "KLAY",
+  CELO = "CELO",
+  BTC = "BTC",
+  LTC = "LTC",
+  LUNA = "LUNA",
+  BCH = "BCH",
+  DOGE = "DOGE",
+  TRON = "TRON"
+}
+
 export const COIN_TYPES_LIST = [
   COIN_TYPES.BTC,
   COIN_TYPES.ETH,
