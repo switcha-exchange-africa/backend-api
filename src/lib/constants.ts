@@ -168,6 +168,7 @@ export enum COIN_TYPES {
   ETH = "ETH",
   USDT = "USDT",
   USDC = "USDC",
+  USDT_TRON = "USDT_TRON",
   NGN = "NGN",
 }
 

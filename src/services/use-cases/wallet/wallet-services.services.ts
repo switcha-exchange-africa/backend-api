@@ -2,14 +2,11 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-
-import { BLOCKCHAIN_NETWORK, NETWORK } from "src/lib/constants";
 import { COIN_TYPES } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
-import { env, MONO_SECRET_KEY } from "src/configuration";
+import { MONO_SECRET_KEY, TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
 
-const ETH_NETWORK = env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET;
 @Injectable()
 export class WalletServices {
   constructor(
@@ -18,39 +15,32 @@ export class WalletServices {
     private dataServices: IDataServices
   ) { }
 
-  async create(userId: string, phrase: string) {
+  async create(userId: string) {
     const coins = [
       {
-        userId: userId,
-        blockchain: BLOCKCHAIN_NETWORK.BITCOIN,
-        network: env.isProd ? NETWORK.MAINNET : NETWORK.TESTNET,
+        userId,
         coin: COIN_TYPES.BTC,
-        symbol : "BTC",
-        phrase
+        accountId: TATUM_BTC_ACCOUNT_ID
       },
       {
-        userId: userId,
-        blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
-        network: ETH_NETWORK,
-        coin: COIN_TYPES.ETH,
-        symbol : "ETH",
-        phrase
-      },
-      {
-        userId: userId,
-        blockchain: BLOCKCHAIN_NETWORK.ETHEREUM,
-        network: ETH_NETWORK,
+        userId,
         coin: COIN_TYPES.USDT,
-        symbol : "ETH",
-        phrase
+        accountId: TATUM_USDT_ACCOUNT_ID
       },
       {
-        userId: userId,
-        blockchain: null,
-        network: null,
+        userId,
+        coin: COIN_TYPES.USDC,
+        accountId: TATUM_USDC_ACCOUNT_ID
+      },
+      {
+        userId,
+        coin: COIN_TYPES.USDT_TRON,
+        accountId: TATUM_USDT_TRON_ACCOUNT_ID
+      },
+      {
+        userId,
         coin: COIN_TYPES.NGN,
-        symbol : "NGN",
-        phrase
+        accountId: ""
       },
     ];
     coins.map((coin) => this.emitter.emit("create.wallet", coin));

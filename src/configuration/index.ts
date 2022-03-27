@@ -48,4 +48,9 @@ export const TATUM_API_KEY = getEnv('TATUM_API_KEY')!
 export const ADMIN_CYPHER_SECRET = getEnv('ADMIN_CYPHER_SECRET')!
 export const TATUM_BASE_URL = getEnv('TATUM_BASE_URL')!
 export const API_URL = getEnv('API_URL')
+export const TATUM_USDT_ACCOUNT_ID = getEnv('TATUM_USDT_ACCOUNT_ID')!
+export const TATUM_USDC_ACCOUNT_ID = getEnv('TATUM_USDC_ACCOUNT_ID')!
+export const TATUM_BTC_ACCOUNT_ID = getEnv('TATUM_BTC_ACCOUNT_ID')!
+export const TATUM_USDT_TRON_ACCOUNT_ID = getEnv('TATUM_USDT_TRON_ACCOUNT_ID')!
+
 

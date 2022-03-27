@@ -31,15 +31,6 @@ export class Wallet {
   user: UserDetail;
 
   @Prop()
-  phrase: string
-
-  @Prop()
-  secret: string;
-
-  @Prop()
-  xpub: string;
-
-  @Prop()
   accountId: string;
 
   @Prop({ enum: BLOCKCHAIN_NETWORK_LIST })
@@ -65,9 +56,6 @@ export class Wallet {
 
   @Prop()
   isBlocked: boolean;
-
-  @Prop()
-  derivationKey: string;
 
 
   @Prop()

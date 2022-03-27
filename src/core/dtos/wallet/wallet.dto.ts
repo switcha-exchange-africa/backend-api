@@ -15,10 +15,7 @@ export class PhraseDto{
 }
 
 export class WalletDto {
-  @IsNumber()
-  @IsNotEmpty()
-  balance: Number;
-
+  
   @IsString()
   @IsNotEmpty()
   address: string;
@@ -30,15 +27,6 @@ export class WalletDto {
   user: UserDetail;
 
   @IsString()
-  phrase: string;
-
-  @IsNotEmpty()
-  secret: string;
-
-  @IsString()
-  xpub: string;
-
-  @IsString()
   accountId:string;
 
   @IsOptional()
@@ -47,7 +35,6 @@ export class WalletDto {
 
   @IsNotEmpty()
   coin: string;
-
 
   @IsOptional()
   @IsNumber()

@@ -5,15 +5,8 @@ import {
 
 import { UserDetail } from "src/core/entities/user.entity";
 export class Wallet {
-  balance: Number;
 
   address: string;
-
-  secret: string;
-
-  phrase: string;
-
-  xpub: string;
 
   accountId: string;
 
@@ -36,8 +29,6 @@ export class Wallet {
   updatedAt?: Date;
 
   isBlocked?: boolean;
-
-  derivationKey?: string;
 
   destinationTag?: string;
 

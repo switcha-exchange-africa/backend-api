@@ -86,8 +86,8 @@ export class AuthServices {
   }
 
   async verifyEmail(req: Request, res: Response, body: VerifyUserDto): Promise<ResponsesType<User>> {
-    let { code, phrase } = body;
-    code = String(code);
+    const { code } = body;
+
     try {
       const authUser = req?.user!;
 
@@ -123,7 +123,7 @@ export class AuthServices {
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
-        this.walletServices.create(authUser?._id, phrase)
+        this.walletServices.create(authUser?._id)
       ])
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);

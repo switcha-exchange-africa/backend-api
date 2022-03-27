@@ -5,7 +5,5 @@ export class VerifyUserDto {
   @IsNotEmpty()
   code: string;
 
-  @IsString()
-  @IsNotEmpty()
-  phrase:string
+
 }
