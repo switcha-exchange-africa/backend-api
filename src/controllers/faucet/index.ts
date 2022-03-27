@@ -7,6 +7,9 @@ import {
   Res,
   Req,
   UseGuards,
+  Query,
+  Get,
+  Param,
 } from "@nestjs/common";
 import {
   CreateFaucetDto,
@@ -23,7 +26,7 @@ import { FaucetServices } from "src/services/use-cases/faucet/faucet-services.se
 
 @Controller()
 export class FaucetController {
-  constructor(private faucetServices: FaucetServices) {}
+  constructor(private faucetServices: FaucetServices) { }
 
   @Post(FAUCET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
@@ -45,6 +48,44 @@ export class FaucetController {
     }
   }
 
+  @Get(FAUCET_ROUTE.ROUTE)
+  @UseGuards(StrictAuthGuard)
+  @UseGuards(BypassGuard)
+  async findAll(
+    @Res() res: Response,
+    @Query() query
+  ) {
+    try {
+      const response = await this.faucetServices.findAll(query);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error.message);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error.message);
+    }
+  }
+
+  @Get(FAUCET_ROUTE.SINGLE_ROUTE)
+  @UseGuards(StrictAuthGuard)
+  @UseGuards(BypassGuard)
+  async findOne(
+    @Res() res: Response,
+    @Param() params
+  ) {
+    try {
+      const { id } = params;
+      const response = await this.faucetServices.findOne(id);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error.message);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error.message);
+    }
+  }
+
+  
   @Post(FAUCET_ROUTE.FUND)
   @UseGuards(StrictAuthGuard)
   @UseGuards(BypassGuard)
