@@ -10,6 +10,7 @@ export class TransactionFactoryService {
     if (data.txRefId) transaction.txRefId = data.txRefId;
     if (data.currency) transaction.currency = data.currency;
     if (data.signedAmount) transaction.signedAmount = data.signedAmount;
+    if (data.amount) transaction.amount = data.amount;
     if (data.type) transaction.type = data.type;
     if (data.subType) transaction.subType = data.subType;
     if (data.user) transaction.user = data.user;

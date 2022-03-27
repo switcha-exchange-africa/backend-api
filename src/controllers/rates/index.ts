@@ -93,4 +93,17 @@ export class RatesController {
       return res.status(error.status || 500).json(error);
     }
   }
+  
+  @Get(RATES_ROUTE.EXCHANGE_RATE)
+  async exchangeRate(@Res() res: Response, @Query() query: any) {
+    const { coin, base } = query;
+    try {
+      const response = await this.rateServices.exchangeRate(coin, base);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+    }
+  }
 }

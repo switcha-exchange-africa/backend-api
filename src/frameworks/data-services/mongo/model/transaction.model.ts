@@ -84,6 +84,8 @@ export class Transaction {
 
   @Prop()
   hash: string
+
+
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
