@@ -158,7 +158,7 @@ export class SwapServices {
     await databaseHelper.executeTransaction(atomicTransaction, this.connection);
     return {
       message: `swap successful`,
-      data: { ...txFactory, currency1Rate: value1, currency2Rate: value2 },
+      data: {  },
       status: 200,
     };
   }
