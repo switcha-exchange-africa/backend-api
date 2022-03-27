@@ -25,7 +25,7 @@ export class WalletCreateListener {
 
   @OnEvent("create.wallet", { async: true })
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
-    const { userId, coin, accountId } = event;
+    const { userId, coin, accountId,chain } = event;
 
     try {
       const [user, wallet] = await Promise.all([
@@ -55,7 +55,7 @@ export class WalletCreateListener {
             type: "ADDRESS_TRANSACTION",
             attr: {
               address,
-              chain: coin,
+              chain,
               url: `${API_URL}/api/webhook/tatum`,
             },
           },
