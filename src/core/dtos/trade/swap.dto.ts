@@ -8,9 +8,9 @@ export class SwapDto {
 
   @IsNotEmpty()
   @IsString()
-  currency1: COIN_TYPES;
+  sourceCoin: COIN_TYPES;
 
   @IsNotEmpty()
   @IsString()
-  currency2: COIN_TYPES;
+  destinationCoin: COIN_TYPES;
 }

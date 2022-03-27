@@ -172,6 +172,7 @@ export enum COIN_TYPES {
   USDC = "USDC",
   USDT_TRON = "USDT_TRON",
   NGN = "NGN",
+  USD = "USD"
 }
 
 
