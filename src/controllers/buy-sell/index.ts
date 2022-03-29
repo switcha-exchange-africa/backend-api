@@ -16,12 +16,15 @@ import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
 import { BuySellServices } from "src/services/use-cases/trade/buy-sell-services.services";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { SwapServices } from "src/services/use-cases/trade/swap/swap-services.services";
+import { TransferDto } from "src/core/dtos/trade/transfer.dto";
+import { TransferServices } from "src/services/use-cases/trade/transfer/transfer-services.services";
 
 @Controller()
 export class BuySellController {
   constructor(
     private buySellServices: BuySellServices,
-    private swapServices: SwapServices
+    private swapServices: SwapServices,
+    private transferServices: TransferServices
   ) {}
 
   @Post(TRADE_ROUTE.BUY)
@@ -37,7 +40,8 @@ export class BuySellController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -55,7 +59,8 @@ export class BuySellController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -69,7 +74,27 @@ export class BuySellController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Post(TRADE_ROUTE.TRANSFER)
+  @UseGuards(StrictAuthGuard)
+  async transfer(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: TransferDto
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const response = await this.transferServices.transfer(body, userId);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }

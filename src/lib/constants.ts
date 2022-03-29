@@ -45,7 +45,8 @@ export enum RATES_ROUTE {
 export enum TRADE_ROUTE {
   BUY = "/api/trade/buy",
   SELL = "/api/trade/sell",
-  SWAP = "/api/trade/swap"
+  SWAP = "/api/trade/swap",
+  TRANSFER ="/api/trade/transfer"
 }
 
 export enum WEBHOOK_ROUTE {
@@ -250,7 +251,8 @@ export enum CUSTOM_TRANSACTION_TYPE {
   WITHDRAWAL = 'withdrawal',
   P2P = 'p2p',
   SWAP = 'swap',
-  FAUCET = 'faucet'
+  FAUCET = 'faucet',
+  TRANSFER = 'transfer'
 }
 
 export const CUSTOM_TRANSACTION_TYPES = [
@@ -260,7 +262,8 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
   CUSTOM_TRANSACTION_TYPE.P2P,
   CUSTOM_TRANSACTION_TYPE.SWAP,
-  CUSTOM_TRANSACTION_TYPE.FAUCET
+  CUSTOM_TRANSACTION_TYPE.FAUCET,
+  CUSTOM_TRANSACTION_TYPE.TRANSFER
 ]
 
 export const PLATFORM_NAME = "switcha";
