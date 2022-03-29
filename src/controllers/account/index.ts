@@ -39,9 +39,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -63,9 +62,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -86,9 +84,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -110,9 +107,9 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      Logger.error(error);
+      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 }
