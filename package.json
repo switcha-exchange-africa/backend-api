@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "generate-docs": "npx insomnia-documenter --config docs.json --output docs"
   },
   "dependencies": {
     "@nestjs-modules/ioredis": "^1.0.0",
@@ -30,6 +31,7 @@
     "@nestjs/mapped-types": "^1.0.1",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/serve-static": "^2.2.2",
     "@nestjs/swagger": "^5.2.0",
     "@types/uuid": "^8.3.4",
     "axios": "^0.26.1",
