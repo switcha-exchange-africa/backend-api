@@ -8,8 +8,8 @@ import {
 } from "src/lib/constants";
 
 export interface Rates {
-  buyRate: number,
-  sellRate: number
+  pair: string,
+  rate: number
 }
 
 export class Transaction {

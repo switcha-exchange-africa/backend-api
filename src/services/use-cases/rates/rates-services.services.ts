@@ -1,7 +1,8 @@
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ForbiddenRequestException } from "../user/exceptions";
 import { ResponsesType } from "src/core/types/response";
+import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 
 const CURRENCY_IDS: string = "bitcoin,ethereum,ripple,stellar,celo";
 const COINGGECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
@@ -21,7 +22,11 @@ const config = {
 @Injectable()
 export class RatesServices {
   constructor(private http: IHttpServices) { }
-
+  private TATUM_CONFIG = {
+    headers: {
+      "X-API-Key": TATUM_API_KEY,
+    },
+  };
   async findAll(): Promise<ResponsesType<any>> {
     try {
       const url = `${COINGGECKO_BASE_URL}/simple/price?ids=${CURRENCY_IDS}&vs_currencies=${VS_CURRENCY}`;
@@ -104,6 +109,18 @@ export class RatesServices {
     try {
       const data = await this.http.get(url, config);
       return Promise.resolve({ message: `data retrieved successfully`, status: 200, data });
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error;
+    }
+  }
+
+  async exchangeRate(coin: string, base: string) {
+    try {
+      const url = `${TATUM_BASE_URL}/tatum/rate/${coin}?basePair=${base}`;
+      const rate = await this.http.get(url, this.TATUM_CONFIG)
+      return { message: "Exchange rate recieved successfully", rate, status: HttpStatus.OK }
     } catch (error) {
       Logger.error(error)
       if (error.name === 'TypeError') throw new HttpException(error.message, 500)

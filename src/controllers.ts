@@ -1,5 +1,5 @@
 import { WebhookController } from './controllers/webhooks/index';
-import { TradeController } from './controllers/trade/index';
+import { BuySellController } from './controllers/buy-sell/index';
 import { AccountController } from "./controllers/account";
 import { AuthenticationController } from "./controllers/authentication";
 import { FaucetController } from "./controllers/faucet";
@@ -15,7 +15,7 @@ export default [
   TransactionController,
   FaucetController,
   RatesController,
-  TradeController,
+  BuySellController,
   WebhookController,
   HomeController
 ]

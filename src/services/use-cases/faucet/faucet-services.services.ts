@@ -28,7 +28,7 @@ export class FaucetServices {
     private txRefFactoryServices: TransactionReferenceFactoryService,
 
     @InjectConnection() private readonly connection: mongoose.Connection
-  ) {}
+  ) { }
 
   async create(body: {
     amount: number;
@@ -111,18 +111,17 @@ export class FaucetServices {
       if (!faucet || !wallet)
         throw new DoesNotExistsException("Wallet or Faucet does not exist");
 
-      let updatedWallet: any;
       const processAtomicAction = async (
         session: mongoose.ClientSession
       ) => {
         try {
-          const updatedFaucet = await this.data.faucets.update(
+          const debitFaucet = await this.data.faucets.update(
             { _id: faucet._id },
             { $set: { lastWithdrawal: amount }, $inc: { balance: -amount } },
             session
           );
 
-          updatedWallet = await this.data.wallets.update(
+          const creditWallet = await this.data.wallets.update(
             { _id: walletId },
             { $set: { lastDeposit: amount }, $inc: { balance: amount } },
             session
@@ -137,24 +136,24 @@ export class FaucetServices {
             session
           );
 
-          const txFaucetPayload: Transaction = {
+          const txDebitFaucetPayload: Transaction = {
             userId,
             walletId: "faucet",
             txRefId: txRef?._id,
             currency: coin as COIN_TYPES,
             amount,
-            signedAmount: amount,
+            signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: "debited faucet",
             status: TRANSACTION_STATUS.COMPLETED,
-            balanceAfter: updatedFaucet?.balance,
+            balanceAfter: debitFaucet?.balance,
             balanceBefore: faucet?.balance,
             hash: txRef.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
 
-          const txWalletPayload: Transaction = {
+          const txWalletCreditPayload: Transaction = {
             userId,
             walletId,
             txRefId: txRef?._id,
@@ -164,22 +163,22 @@ export class FaucetServices {
             type: TRANSACTION_TYPE.CREDIT,
             description: "credited wallet",
             status: TRANSACTION_STATUS.COMPLETED,
-            balanceAfter: updatedWallet?.balance,
+            balanceAfter: creditWallet?.balance,
             balanceBefore: wallet?.balance,
             hash: txRef.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
 
-          const txFaucetFactory = await this.txFactoryServices.create(
-            txFaucetPayload
+          const txDebitFaucetFactory = await this.txFactoryServices.create(
+            txDebitFaucetPayload
           );
-          const txWalletFactory = await this.txFactoryServices.create(
-            txWalletPayload
+          const txCreditWalletFactory = await this.txFactoryServices.create(
+            txWalletCreditPayload
           );
           await Promise.all([
-            await this.data.transactions.create(txFaucetFactory, session),
-            await this.data.transactions.create(txWalletFactory, session),
+            await this.data.transactions.create(txDebitFaucetFactory, session),
+            await this.data.transactions.create(txCreditWalletFactory, session),
           ]);
         } catch (error) {
           throw new HttpException(error.message, 500);
@@ -190,10 +189,37 @@ export class FaucetServices {
         this.connection
       );
       return {
-        message: "Transaction successful",
-        data: { ...updatedWallet },
+        message: "Wallet funded successfully",
+        data: {},
         status: HttpStatus.CREATED,
       };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+
+  async findAll(query: any): Promise<ResponsesType<Faucet>> {
+    try {
+      const { data, pagination } = await this.data.faucets.findAllWithPagination({
+        query, queryFields: {}
+      });
+      return { status: 200, message: 'Faucets retrieved successfully', data, pagination }
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+
+  async findOne(id: string): Promise<ResponsesType<Faucet>> {
+    try {
+      const data = await this.data.faucets.findOne({ _id: id });
+      if (!data) throw new DoesNotExistsException('faucet does not exist')
+      return { status: 200, message: 'Faucet retrieved successfully', data }
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")

@@ -8,7 +8,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
-import { CRYPTO_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import {
   COIN_TYPES,
@@ -23,6 +23,11 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 import { ResponsesType } from "src/core/types/response";
 
+const TATUM_CONFIG = {
+  headers: {
+    "X-API-Key": TATUM_API_KEY,
+  },
+};
 @Injectable()
 export class SwapServices {
   constructor(
@@ -30,101 +35,121 @@ export class SwapServices {
     private http: IHttpServices,
     private txFactoryServices: TransactionFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection
-  ) {}
+  ) { }
 
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
-    const { amount, currency1, currency2 } = body;
-    const [user, buyCryptoWallet, sellCryptoWallet] = await Promise.all([
+    const { amount, sourceCoin, destinationCoin } = body;
+    const [user, sourceWallet, destinationWallet] = await Promise.all([
       this.dataServices.users.findOne({ _id: userId }),
       this.dataServices.wallets.findOne({
         userId,
-        coin: currency1,
+        coin: sourceCoin,
       }),
       this.dataServices.wallets.findOne({
         userId,
-        coin: currency2,
+        coin: destinationCoin,
       }),
     ]);
     if (!user) throw new DoesNotExistsException("user does not exist");
-    if (!buyCryptoWallet || !sellCryptoWallet)
-      throw new DoesNotExistsException("wallet does not exist");
-    const url1 = `${TATUM_BASE_URL}/rate/${buyCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
-    const url2 = `${TATUM_BASE_URL}/rate/${sellCryptoWallet.coin}?basePair=${COIN_TYPES.NGN}`;
-    const config = {
-      headers: {
-        "X-API-Key": CRYPTO_API_KEY,
-      },
-    };
-    const [{ value: value1 }, { value: value2 }] = await Promise.all([
-      this.http.get(url1, config),
-      this.http.get(url2, config),
+
+    if (!sourceWallet) throw new DoesNotExistsException(`${sourceWallet} does not exists`);
+    if (!destinationWallet) throw new DoesNotExistsException(`${destinationWallet} does not exists`);
+
+
+    const sourceRateUrl = `${TATUM_BASE_URL}/rate/${sourceCoin}?basePair=${COIN_TYPES.USD}`;
+    const destinationRateUrl = `${TATUM_BASE_URL}/rate/${destinationCoin}?basePair=${COIN_TYPES.USD}`;
+
+
+    const [{ value: sourceRate }, { value: destinationRate }] = await Promise.all([
+      this.http.get(sourceRateUrl, TATUM_CONFIG),
+      this.http.get(destinationRateUrl, TATUM_CONFIG),
     ]);
 
-    const currencyAmount = parseFloat(((value1 * amount) / value2).toFixed(4));
+    const destinationAmount = parseFloat(((sourceRate / destinationRate) * amount).toFixed(4));
 
-    let updatedBuyCryptoWallet, updatedSellCryptoWallet, txFactory: any;
     const atomicTransaction = async (session: mongoose.ClientSession) => {
       try {
-        updatedBuyCryptoWallet = await this.dataServices.wallets.update(
+        const creditDestinationWallet = await this.dataServices.wallets.update(
           {
-            _id: buyCryptoWallet._id,
+            _id: destinationWallet._id,
           },
           {
             $inc: {
-              balance: amount,
+              balance: destinationAmount,
             },
           },
           session
         );
 
-        if (!updatedBuyCryptoWallet) {
+        if (!creditDestinationWallet) {
           Logger.error("Error Occurred");
           throw new BadRequestsException("Error Occurred");
         }
 
-        updatedSellCryptoWallet = await this.dataServices.wallets.update(
+        const debitSourceWallet = await this.dataServices.wallets.update(
           {
-            _id: sellCryptoWallet,
-            balance: { $gt: 0, $gte: currencyAmount },
+            _id: sourceWallet.id,
+            balance: { $gt: 0, $gte: amount },
           },
           {
             $inc: {
-              balance: -currencyAmount,
+              balance: -amount,
             },
           },
           session
         );
-        if (!updatedSellCryptoWallet) {
+        if (!debitSourceWallet) {
           Logger.error("Error Occurred");
           throw new BadRequestsException("Error Occurred");
         }
-        const txRefPayload: TransactionReference = {
+        const txRefPayload: TransactionReference = { userId, amount };
+        const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
+
+
+        const txCreditPayload: Transaction = {
           userId,
-          amount,
-        };
-        const txRef = await this.dataServices.transactionReferences.create(
-          txRefPayload,
-          session
-        );
-        const txPayload: Transaction = {
-          userId,
-          walletId: updatedBuyCryptoWallet?._id,
+          walletId: destinationWallet?._id,
           txRefId: txRef?._id,
-          currency: currency1,
-          amount,
-          signedAmount: amount,
+          currency: destinationCoin,
+          amount: destinationAmount,
+          signedAmount: destinationAmount,
           type: TRANSACTION_TYPE.CREDIT,
           description: "swap currency",
           status: TRANSACTION_STATUS.COMPLETED,
-          balanceAfter: updatedBuyCryptoWallet?.balance,
-          balanceBefore: buyCryptoWallet?.balance,
+          balanceAfter: destinationWallet?.balance,
+          balanceBefore: creditDestinationWallet?.balance,
           hash: txRef?.hash,
           subType: TRANSACTION_SUBTYPE.CREDIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
         };
 
-        txFactory = await this.txFactoryServices.create(txPayload);
-        await this.dataServices.transactions.create(txFactory, session);
+        const txDebitPayload: Transaction = {
+          userId,
+          walletId: sourceWallet?._id,
+          txRefId: txRef?._id,
+          currency: sourceCoin,
+          amount: amount,
+          signedAmount: -amount,
+          type: TRANSACTION_TYPE.DEBIT,
+          description: "swap currency",
+          status: TRANSACTION_STATUS.COMPLETED,
+          balanceAfter: sourceWallet?.balance,
+          balanceBefore: debitSourceWallet?.balance,
+          hash: txRef?.hash,
+          subType: TRANSACTION_SUBTYPE.DEBIT,
+          customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+        };
+
+        const [txCreditFactory, txDebitFactory] = await Promise.all([
+          this.txFactoryServices.create(txCreditPayload),
+          this.txFactoryServices.create(txDebitPayload)
+        ])
+
+        await Promise.all([
+          this.dataServices.transactions.create(txCreditFactory, session),
+          this.dataServices.transactions.create(txDebitFactory, session)
+        ])
+
       } catch (error) {
         Logger.error(error);
         throw new Error(error);
@@ -133,7 +158,7 @@ export class SwapServices {
     await databaseHelper.executeTransaction(atomicTransaction, this.connection);
     return {
       message: `swap successful`,
-      data: { ...txFactory, currency1Rate: value1, currency2Rate: value2 },
+      data: {  },
       status: 200,
     };
   }
