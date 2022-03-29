@@ -1,16 +1,16 @@
 export enum AUTHENTICATION_ROUTE {
-  SIGNUP = "/api/v1/auth/signup",
-  LOGIN = "/api/v1/auth/login",
-  ISSUE_VERIFICATION_CODE = "/api/v1/auth/verify-email",
-  VERIFY_USER = "/api/v1/auth/verify-email",
-  RESET_PASSWORD = "/api/v1/auth/reset-password",
-  RECOVER_PASSWORD = "/api/v1/auth/recover-password",
+  SIGNUP = "/api/auth/signup",
+  LOGIN = "/api/auth/login",
+  ISSUE_VERIFICATION_CODE = "/api/auth/verify-email",
+  VERIFY_USER = "/api/auth/verify-email",
+  RESET_PASSWORD = "/api/auth/reset-password",
+  RECOVER_PASSWORD = "/api/auth/recover-password",
 }
 
 export enum ACCOUNT_ROUTE {
-  KYC = "/api/v1/account/kyc",
-  UPLOAD_ID_CARD = "/api/v1/account/upload-id-card",
-  TRANSACTION_PIN = "/api/v1/account/transaction-pin",
+  KYC = "/api/account/kyc",
+  UPLOAD_ID_CARD = "/api/account/upload-id-card",
+  TRANSACTION_PIN = "/api/account/transaction-pin",
 }
 
 export enum TEST_ROUTE {
