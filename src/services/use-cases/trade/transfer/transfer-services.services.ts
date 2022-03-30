@@ -27,11 +27,11 @@ export class TransferServices {
   ) {}
 
   async transfer(body: TransferDto, userId: string) {
-    const { email, coin, address, amount } = body;
+    const { recipientEmail, coin, recipientAddress, amount } = body;
 
     try {
       const [recipient, sender] = await Promise.all([
-        this.data.users.findOne({ email }),
+        this.data.users.findOne({ recipientEmail }),
         this.data.users.findOne({ _id: userId }),
       ]);
       if (!recipient)
@@ -42,7 +42,7 @@ export class TransferServices {
         this.data.wallets.findOne({
           userId: String(recipient._id),
           coin,
-          address,
+          address: recipientAddress,
         }),
         this.data.wallets.findOne({
           userId,

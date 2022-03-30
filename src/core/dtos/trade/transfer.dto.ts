@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 export class TransferDto {
   @IsNotEmpty()
   @IsString()
-  email: string;
+  recipientEmail: string;
 
   @IsNotEmpty()
   @IsString()
@@ -12,7 +12,7 @@ export class TransferDto {
 
   @IsNotEmpty()
   @IsString()
-  address: string;
+  recipientAddress: string;
 
   @IsNumber()
   amount: number;
