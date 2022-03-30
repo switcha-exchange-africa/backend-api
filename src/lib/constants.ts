@@ -1,16 +1,16 @@
 export enum AUTHENTICATION_ROUTE {
-  SIGNUP = "/api/v1/auth/signup",
-  LOGIN = "/api/v1/auth/login",
-  ISSUE_VERIFICATION_CODE = "/api/v1/auth/verify-email",
-  VERIFY_USER = "/api/v1/auth/verify-email",
-  RESET_PASSWORD = "/api/v1/auth/reset-password",
-  RECOVER_PASSWORD = "/api/v1/auth/recover-password",
+  SIGNUP = "/api/auth/signup",
+  LOGIN = "/api/auth/login",
+  ISSUE_VERIFICATION_CODE = "/api/auth/verify-email",
+  VERIFY_USER = "/api/auth/verify-email",
+  RESET_PASSWORD = "/api/auth/reset-password",
+  RECOVER_PASSWORD = "/api/auth/recover-password",
 }
 
 export enum ACCOUNT_ROUTE {
-  KYC = "/api/v1/account/kyc",
-  UPLOAD_ID_CARD = "/api/v1/account/upload-id-card",
-  TRANSACTION_PIN = "/api/v1/account/transaction-pin",
+  KYC = "/api/account/kyc",
+  UPLOAD_ID_CARD = "/api/account/upload-id-card",
+  TRANSACTION_PIN = "/api/account/transaction-pin",
 }
 
 export enum TEST_ROUTE {
@@ -45,7 +45,8 @@ export enum RATES_ROUTE {
 export enum TRADE_ROUTE {
   BUY = "/api/trade/buy",
   SELL = "/api/trade/sell",
-  SWAP = "/api/trade/swap"
+  SWAP = "/api/trade/swap",
+  TRANSFER ="/api/trade/transfer"
 }
 
 export enum WEBHOOK_ROUTE {
@@ -250,7 +251,8 @@ export enum CUSTOM_TRANSACTION_TYPE {
   WITHDRAWAL = 'withdrawal',
   P2P = 'p2p',
   SWAP = 'swap',
-  FAUCET = 'faucet'
+  FAUCET = 'faucet',
+  TRANSFER = 'transfer'
 }
 
 export const CUSTOM_TRANSACTION_TYPES = [
@@ -260,7 +262,8 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
   CUSTOM_TRANSACTION_TYPE.P2P,
   CUSTOM_TRANSACTION_TYPE.SWAP,
-  CUSTOM_TRANSACTION_TYPE.FAUCET
+  CUSTOM_TRANSACTION_TYPE.FAUCET,
+  CUSTOM_TRANSACTION_TYPE.TRANSFER
 ]
 
 export const PLATFORM_NAME = "switcha";

@@ -12,6 +12,7 @@ import { BuySellServicesModule } from './services/use-cases/trade/buy-sell-servi
 import { SwapServicesModule } from './services/use-cases/trade/swap/swap-services.module';
 import { WebhookServicesModule } from './services/use-cases/webhook/webhook-services.module';
 import { BullServiceModule } from './frameworks/bull/bull-services.module';
+import { TransferServicesModule } from './services/use-cases/trade/transfer/transfer-services.module';
 
 export default [
   AxiosServiceModule,
@@ -27,6 +28,7 @@ export default [
   BuySellServicesModule,
   SwapServicesModule,
   WebhookServicesModule,
-  BullServiceModule
+  BullServiceModule,
+  TransferServicesModule
   
 ]
