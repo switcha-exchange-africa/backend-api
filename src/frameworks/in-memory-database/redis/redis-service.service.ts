@@ -11,7 +11,7 @@ export class CustomRedisService implements IInMemoryServices {
     @InjectRedis() private readonly redis: Redis,
   ) { }
 
-  async set(key: string, value: any, expiry: string | any[]) {
+  async set(key: string, value: any, expiry: string | number) {
     try {
       await this.redis.set(key, value, 'EX', expiry);
     } catch (e) {
