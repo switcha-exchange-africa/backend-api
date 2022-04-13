@@ -9,6 +9,6 @@ import { Module } from "@nestjs/common";
 
   ],
   providers: [WalletServices, WalletFactoryService],
-  exports: [WalletServices],
+  exports: [WalletServices, WalletFactoryService],
 })
 export class WalletServicesModule {}

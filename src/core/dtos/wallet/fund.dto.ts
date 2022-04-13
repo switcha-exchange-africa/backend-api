@@ -7,4 +7,6 @@ export class FundDto {
   @IsNumber()
   @IsNotEmpty()
   amount: number;
+
+  
 }

@@ -1,4 +1,3 @@
-import { EventEmitter2 } from "@nestjs/event-emitter";
 import { FundDto } from "src/core/dtos/wallet/fund.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 import {
@@ -24,7 +23,6 @@ import { Request, Response } from "express";
 export class WalletController {
   constructor(
     private walletServices: WalletServices,
-    private emitter: EventEmitter2
   ) {}
 
   @Post(WALLET_ROUTE.ROUTE)
@@ -32,8 +30,8 @@ export class WalletController {
   async create(@Req() req: Request, @Res() res: Response) {
     try {
       const userId = req?.user?._id;
-      await this.emitter.emit("create.wallet", { userId });
-      return res.status(201).json("Wallet Created Successfully");
+      const response = await this.walletServices.create( userId)
+      return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -72,7 +70,7 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.SINGLE_ROUTE)
+  @Post(WALLET_ROUTE.FUND)
   @UseGuards(StrictAuthGuard)
   async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
     try {
