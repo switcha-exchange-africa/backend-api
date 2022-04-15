@@ -18,6 +18,7 @@ export class UserFactoryService {
     if (data.country) user.country = data.country;
     if (data.isAdmin) user.isAdmin = data.isAdmin;
     if (data.phone) user.phone = data.phone;
+    
     user.emailVerified = false;
     user.phoneVerified = false
     user.authStatus = USER_SIGNUP_STATUS_TYPE.PENDING;

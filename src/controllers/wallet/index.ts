@@ -21,15 +21,17 @@ import { Request, Response } from "express";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) { }
+  constructor(
+    private walletServices: WalletServices,
+  ) {}
 
   @Post(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
   async create(@Req() req: Request, @Res() res: Response) {
     try {
       const userId = req?.user?._id;
-      await this.walletServices.create(userId);
-      return res.status(201).json("Wallet Created Successfully");
+      const response = await this.walletServices.create( userId)
+      return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -55,10 +57,7 @@ export class WalletController {
 
   @Get(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
-  async detail(
-    @Res() res: Response,
-    @Param() param: { id }
-  ) {
+  async detail(@Res() res: Response, @Param() param: { id }) {
     try {
       const { id } = param;
       const response = await this.walletServices.details(id);
@@ -71,11 +70,11 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.SINGLE_ROUTE)
+  @Post(WALLET_ROUTE.FUND)
   @UseGuards(StrictAuthGuard)
   async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
     try {
-      const userId = req?.user?._id
+      const userId = req?.user?._id;
       const response = await this.walletServices.fund(body, userId);
       return res.status(response.status).json(response);
     } catch (error) {

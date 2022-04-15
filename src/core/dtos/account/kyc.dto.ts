@@ -45,3 +45,9 @@ export class UpdateTxPinDto{
   @IsNotEmpty()
   oldPin: string;
 }
+
+export class UploadAvatarDto{
+  @IsString()
+  @IsNotEmpty()
+  url: string
+}
