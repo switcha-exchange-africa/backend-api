@@ -86,6 +86,9 @@ export class User {
   @Prop({ enum: USER_LEVEL_LIST })
   level: USER_LEVEL_TYPE
 
+  @Prop()
+  avatar: string
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

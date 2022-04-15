@@ -12,6 +12,7 @@ export enum ACCOUNT_ROUTE {
   KYC = "/api/account/kyc",
   UPLOAD_ID_CARD = "/api/account/upload-id-card",
   TRANSACTION_PIN = "/api/account/transaction-pin",
+  UPLOAD_AVATAR = "/api/account/avatar"
 }
 
 export enum TEST_ROUTE {
@@ -21,7 +22,8 @@ export enum TEST_ROUTE {
 export enum WALLET_ROUTE {
   ROUTE = "/api/wallet",
   SINGLE_ROUTE = "/api/wallet/:id",
-  FUND = "/api/wallet/fund"
+  FUND = "/api/wallet/fund",
+  WITHDRAW = "/api/wallet/withdraw",
 }
 
 export enum TRANSACTION_ROUTE {

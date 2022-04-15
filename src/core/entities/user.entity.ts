@@ -46,6 +46,8 @@ export class User {
   transactionPin?: string
 
   document: UserIDDocumentType
+ 
+  avatar: string
 
 }
 
