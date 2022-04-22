@@ -96,7 +96,7 @@ export class WalletCreateListener {
     const { chain, address } = event
     await this.walletWebhookQueue.add(
       { chain, address },
-      { delay: 35000 }
+      { delay: 1000 }
     );
 
   }
