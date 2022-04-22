@@ -170,7 +170,7 @@ export const WALLET_STATUS_LIST = [
   WALLET_STATUS.INACTIVE,
 ];
 
-export enum COIN_TYPES {
+export enum CoinType {
   BTC = "BTC",
   ETH = "ETH",
   USDT = "USDT",
@@ -195,11 +195,14 @@ export enum BLOCKCHAIN_CHAIN {
 }
 
 export const COIN_TYPES_LIST = [
-  COIN_TYPES.BTC,
-  COIN_TYPES.ETH,
-  COIN_TYPES.USDT,
-  COIN_TYPES.USDC,
-  COIN_TYPES.NGN,
+  CoinType.BTC,
+  CoinType.ETH,
+  CoinType.USDT,
+  CoinType.USDC,
+  CoinType.NGN,
+  CoinType.USDT_TRON,
+  CoinType.USD
+
 ];
 
 export enum NETWORK {

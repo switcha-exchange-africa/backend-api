@@ -18,19 +18,24 @@ import { WALLET_ROUTE } from "src/lib/constants";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
+import { CreateWalletDto } from "src/core/dtos/wallet/wallet.dto";
 
 @Controller()
 export class WalletController {
   constructor(
     private walletServices: WalletServices,
-  ) {}
+  ) { }
 
   @Post(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
-  async create(@Req() req: Request, @Res() res: Response) {
+  async create(@Req() req: Request, @Body() body: CreateWalletDto, @Res() res: Response) {
     try {
-      const userId = req?.user?._id;
-      const response = await this.walletServices.create( userId)
+      const user = req?.user!
+      const payload = { userId: user._id, fullName: user.fullName, email: user.email }
+
+      const { coin } = body
+      const response = await this.walletServices.create(payload, coin)
+
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);

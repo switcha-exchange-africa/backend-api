@@ -1,4 +1,4 @@
-import { COIN_TYPES } from "src/lib/constants";
+import { CoinType } from "src/lib/constants";
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class FaucetDto {
@@ -7,7 +7,7 @@ export class FaucetDto {
   amount: number;
 
   @IsNotEmpty()
-  coin: COIN_TYPES;
+  coin: CoinType;
 
   @IsOptional()
   description: string;
@@ -27,7 +27,7 @@ export class CreateFaucetDto {
   amount: number;
 
   @IsNotEmpty()
-  coin: COIN_TYPES;
+  coin: CoinType;
 
   @IsOptional()
   description: string;
@@ -36,7 +36,7 @@ export class CreateFaucetDto {
 export class FundFaucetDto{
 
   @IsNotEmpty()
-  coin: COIN_TYPES
+  coin: CoinType
 
   @IsNotEmpty()
   walletId: string

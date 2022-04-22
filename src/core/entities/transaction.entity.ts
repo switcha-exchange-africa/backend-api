@@ -1,6 +1,6 @@
 import { UserDetail } from "src/core/entities/user.entity";
 import {
-  COIN_TYPES,
+  CoinType,
   TRANSACTION_TYPE,
   TRANSACTION_SUBTYPE,
   TRANSACTION_STATUS,
@@ -16,7 +16,7 @@ export class Transaction {
   userId: string;
   walletId?: string;
   txRefId: string;
-  currency: COIN_TYPES;
+  currency: CoinType;
   amount: number;
   signedAmount: number;
   type: TRANSACTION_TYPE;

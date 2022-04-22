@@ -19,7 +19,7 @@ import { CreateUserDto } from 'src/core/dtos/user.dto';
 import { UserFactoryService } from './user-factory.service';
 import { ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
-import { EventEmitter2 } from "@nestjs/event-emitter";
+// import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class AuthServices {
@@ -28,7 +28,7 @@ export class AuthServices {
     private discordServices: INotificationServices,
     private inMemoryServices: IInMemoryServices,
     private factory: UserFactoryService,
-    private emitter: EventEmitter2,
+    // private emitter: EventEmitter2,
   ) { }
 
   async createUser(data: CreateUserDto, res: Response): Promise<ResponsesType<User>> {
@@ -122,7 +122,7 @@ export class AuthServices {
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
-        this.emitter.emit("create.wallet", { userId: authUser?._id })
+        // this.emitter.emit("create.wallet", { userId: authUser?._id })
       ])
 
 

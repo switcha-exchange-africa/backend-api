@@ -4,7 +4,7 @@ import { OnEvent } from "@nestjs/event-emitter";
 
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { BLOCKCHAIN_CHAIN, COIN_TYPES } from "src/lib/constants";
+import { BLOCKCHAIN_CHAIN, CoinType } from "src/lib/constants";
 import { TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
 import { UserDetail } from "src/core/entities/user.entity";
 import { IDataServices } from "src/core/abstracts";
@@ -33,7 +33,7 @@ export class WalletCreateListener {
     await this.walletQueue.add(
       {
         userId,
-        coin: COIN_TYPES.BTC,
+        coin: CoinType.BTC,
         accountId: TATUM_BTC_ACCOUNT_ID,
         chain: BLOCKCHAIN_CHAIN.BTC,
         userDetail
@@ -44,7 +44,7 @@ export class WalletCreateListener {
     await this.walletQueue.add(
       {
         userId,
-        coin: COIN_TYPES.USDT,
+        coin: CoinType.USDT,
         accountId: TATUM_USDT_ACCOUNT_ID,
         chain: BLOCKCHAIN_CHAIN.ETH,
         userDetail
@@ -55,7 +55,7 @@ export class WalletCreateListener {
     await this.walletQueue.add(
       {
         userId,
-        coin: COIN_TYPES.USDC,
+        coin: CoinType.USDC,
         accountId: TATUM_USDC_ACCOUNT_ID,
         chain: BLOCKCHAIN_CHAIN.ETH,
         userDetail
@@ -67,7 +67,7 @@ export class WalletCreateListener {
     await this.walletQueue.add(
       {
         userId,
-        coin: COIN_TYPES.USDT_TRON,
+        coin: CoinType.USDT_TRON,
         accountId: TATUM_USDT_TRON_ACCOUNT_ID,
         chain: BLOCKCHAIN_CHAIN.TRON,
         userDetail
@@ -78,7 +78,7 @@ export class WalletCreateListener {
     await this.walletQueue.add(
       {
         userId,
-        coin: COIN_TYPES.NGN,
+        coin: CoinType.NGN,
         accountId: "",
         chain: "",
         userDetail

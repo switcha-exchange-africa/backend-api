@@ -1,10 +1,10 @@
-import { BadRequestsException } from "./../user/exceptions";
+import { AlreadyExistsException, BadRequestsException } from "./../user/exceptions";
 import { Wallet } from "./../../../core/entities/wallet.entity";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-import { BLOCKCHAIN_CHAIN, COIN_TYPES } from "src/lib/constants";
+import { BLOCKCHAIN_CHAIN,  CoinType } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import {
@@ -12,6 +12,7 @@ import {
   TATUM_API_KEY,
   TATUM_BASE_URL,
   TATUM_BTC_ACCOUNT_ID,
+  TATUM_ETH_ACCOUNT_ID,
   TATUM_USDC_ACCOUNT_ID,
   TATUM_USDT_ACCOUNT_ID,
   TATUM_USDT_TRON_ACCOUNT_ID,
@@ -19,6 +20,60 @@ import {
 import { WalletFactoryService } from "./wallet-factory.service";
 import { UserDetail } from "src/core/entities/user.entity";
 
+
+const generateTatumWalletPayload = (coin: CoinType, userId: string) => {
+  let payload: any
+
+  switch (coin) {
+    case CoinType.BTC:
+      payload = {
+        userId,
+        coin: CoinType.BTC,
+        accountId: TATUM_BTC_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.BTC,
+      }
+      break;
+
+      case CoinType.ETH:
+        payload = {
+          userId,
+          coin: CoinType.ETH,
+          accountId: TATUM_ETH_ACCOUNT_ID,
+          chain: BLOCKCHAIN_CHAIN.ETH,
+        }
+        break;
+    case CoinType.USDT:
+      payload = {
+        userId,
+        coin: CoinType.USDT,
+        accountId: TATUM_USDT_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.ETH,
+      }
+      break;
+
+    case CoinType.USDC:
+      payload = {
+        userId,
+        coin: CoinType.USDC,
+        accountId: TATUM_USDC_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.ETH,
+      }
+      break;
+
+    case CoinType.USDT_TRON:
+      payload =
+      {
+        userId,
+        coin: CoinType.USDT_TRON,
+        accountId: TATUM_USDT_TRON_ACCOUNT_ID,
+        chain: BLOCKCHAIN_CHAIN.TRON,
+      }
+      break;
+
+
+  }
+  return payload;
+};
 @Injectable()
 export class WalletServices {
   constructor(
@@ -26,9 +81,80 @@ export class WalletServices {
     private http: IHttpServices,
     private dataServices: IDataServices,
     private walletFactory: WalletFactoryService
-  ) {}
+  ) { }
 
-  async create(userId: string) {
+  async create(userPayload: { email: string, userId: string, fullName: string }, coin: CoinType) {
+    try {
+      const { email, userId, fullName } = userPayload
+      const user: UserDetail = { email, fullName }
+      const walletExists = await this.dataServices.wallets.findOne({ userId, coin });
+      if (walletExists) throw new AlreadyExistsException('wallet already exists')
+
+      if (coin === CoinType.NGN) {
+        const walletPayload: Wallet = {
+          address: "",
+          userId,
+          user,
+          accountId: "",
+          coin: CoinType.NGN,
+          isBlocked: false,
+          network: null,
+        };
+        const factory = await this.walletFactory.create(walletPayload);
+        const data = await this.dataServices.wallets.create(factory);
+        return { message: "wallet created successfully", data, status: HttpStatus.CREATED };
+      }
+      if (coin === CoinType.USD) {
+        const walletPayload: Wallet = {
+          address: "",
+          userId,
+          user,
+          accountId: "",
+          coin: CoinType.USD,
+          isBlocked: false,
+          network: null,
+        };
+        const factory = await this.walletFactory.create(walletPayload);
+        const data = await this.dataServices.wallets.create(factory);
+        return { message: "wallet created successfully", data, status: HttpStatus.CREATED };
+      }
+      const tatumPayload = generateTatumWalletPayload(coin, userId)
+      const CONFIG = {
+        headers: {
+          "X-API-Key": TATUM_API_KEY,
+        },
+      };
+      const { address, destinationTag, memo, message } = await this.http.post(
+        `${TATUM_BASE_URL}/offchain/account/${tatumPayload.accountId}/address`,
+        {},
+        CONFIG
+      );
+      this.emitter.emit("send.webhook.subscription", { chain: tatumPayload.chain, address });
+
+      const walletPayload: Wallet = {
+        address,
+        userId,
+        user: user,
+        accountId: tatumPayload.accountId,
+        coin,
+        isBlocked: false,
+        network: null,
+      };
+      const factory = await this.walletFactory.create({
+        ...walletPayload,
+        destinationTag,
+        memo,
+        tatumMessage: message,
+      });
+      await this.dataServices.wallets.create(factory);
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+  async createMultipleWallet(userId: string) {
     try {
       const user = await this.dataServices.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("User does not exist");
@@ -41,35 +167,35 @@ export class WalletServices {
       const wallets = [
         {
           userId,
-          coin: COIN_TYPES.BTC,
+          coin: CoinType.BTC,
           accountId: TATUM_BTC_ACCOUNT_ID,
           chain: BLOCKCHAIN_CHAIN.BTC,
           userDetail,
         },
         {
           userId,
-          coin: COIN_TYPES.USDT,
+          coin: CoinType.USDT,
           accountId: TATUM_USDT_ACCOUNT_ID,
           chain: BLOCKCHAIN_CHAIN.ETH,
           userDetail,
         },
         {
           userId,
-          coin: COIN_TYPES.USDC,
+          coin: CoinType.USDC,
           accountId: TATUM_USDC_ACCOUNT_ID,
           chain: BLOCKCHAIN_CHAIN.ETH,
           userDetail,
         },
         {
           userId,
-          coin: COIN_TYPES.USDT_TRON,
+          coin: CoinType.USDT_TRON,
           accountId: TATUM_USDT_TRON_ACCOUNT_ID,
           chain: BLOCKCHAIN_CHAIN.TRON,
           userDetail,
         },
         {
           userId,
-          coin: COIN_TYPES.NGN,
+          coin: CoinType.NGN,
           accountId: "",
           chain: "",
           userDetail,
@@ -83,13 +209,13 @@ export class WalletServices {
             coin,
           });
           if (!wallet) {
-            if (coin === COIN_TYPES.NGN) {
+            if (coin === CoinType.NGN) {
               const walletPayload: Wallet = {
                 address: "",
                 userId,
                 user: userDetail,
                 accountId: "",
-                coin: COIN_TYPES.NGN,
+                coin: CoinType.NGN,
                 isBlocked: false,
                 lastDeposit: 0,
                 lastWithdrawal: 0,
@@ -191,7 +317,7 @@ export class WalletServices {
       if (!user) throw new DoesNotExistsException("user does not exist");
       const wallet = await this.dataServices.wallets.findOne({
         userId: userId,
-        coin: COIN_TYPES.NGN,
+        coin: CoinType.NGN,
       });
       if (!wallet) throw new DoesNotExistsException("wallet does not exist");
       const url = "https://api.withmono.com/v1/payments/initiate";

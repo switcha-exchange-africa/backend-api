@@ -1,6 +1,7 @@
-import { BLOCKCHAIN_NETWORK } from "src/lib/constants";
+import { BLOCKCHAIN_NETWORK, CoinType } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
 import {
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -25,4 +26,11 @@ export class WalletDto {
 
   @IsNotEmpty()
   coin: string;
+}
+
+export class CreateWalletDto {
+
+  @IsNotEmpty()
+  @IsEnum(CoinType)
+  coin: CoinType
 }

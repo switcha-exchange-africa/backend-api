@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsNumber } from "class-validator";
-import { COIN_TYPES } from "src/lib/constants";
+import { CoinType } from "src/lib/constants";
 export class SwapDto {
 
   @IsNotEmpty()
@@ -8,9 +8,9 @@ export class SwapDto {
 
   @IsNotEmpty()
   @IsString()
-  sourceCoin: COIN_TYPES;
+  sourceCoin: CoinType;
 
   @IsNotEmpty()
   @IsString()
-  destinationCoin: COIN_TYPES;
+  destinationCoin: CoinType;
 }
