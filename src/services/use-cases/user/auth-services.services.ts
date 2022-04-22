@@ -28,7 +28,6 @@ export class AuthServices {
     private discordServices: INotificationServices,
     private inMemoryServices: IInMemoryServices,
     private factory: UserFactoryService,
-    // private emitter: EventEmitter2,
   ) { }
 
   async createUser(data: CreateUserDto, res: Response): Promise<ResponsesType<User>> {
@@ -122,7 +121,6 @@ export class AuthServices {
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
-        // this.emitter.emit("create.wallet", { userId: authUser?._id })
       ])
 
 
