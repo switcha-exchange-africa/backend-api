@@ -1,6 +1,7 @@
 export enum AUTHENTICATION_ROUTE {
   SIGNUP = "/api/auth/signup",
   LOGIN = "/api/auth/login",
+  GOOGLE = "/api/auth/google",
   ISSUE_VERIFICATION_CODE = "/api/auth/verify-email",
   VERIFY_USER = "/api/auth/verify-email",
   RESET_PASSWORD = "/api/auth/reset-password",
@@ -11,6 +12,7 @@ export enum ACCOUNT_ROUTE {
   KYC = "/api/account/kyc",
   UPLOAD_ID_CARD = "/api/account/upload-id-card",
   TRANSACTION_PIN = "/api/account/transaction-pin",
+  UPLOAD_AVATAR = "/api/account/avatar"
 }
 
 export enum TEST_ROUTE {
@@ -19,18 +21,20 @@ export enum TEST_ROUTE {
 
 export enum WALLET_ROUTE {
   ROUTE = "/api/wallet",
-  SINGLE_ROUTE = "/api/wallet/:id"
+  SINGLE_ROUTE = "/api/wallet/:id",
+  FUND = "/api/wallet/fund",
+  WITHDRAW = "/api/wallet/withdraw",
 }
 
 export enum TRANSACTION_ROUTE {
   GET = "/api/transactions",
-  GET_SINGLE = "/api/transactions/:id"
+  GET_SINGLE = "/api/transactions/:id",
 }
 
 export enum FAUCET_ROUTE {
   ROUTE = "/api/faucet",
   SINGLE_ROUTE = "/api/faucet/:id",
-  FUND = "/api/faucet/fund"
+  FUND = "/api/faucet/fund",
 }
 
 export enum RATES_ROUTE {
@@ -39,18 +43,18 @@ export enum RATES_ROUTE {
   MARKETS = "/api/rates/markets",
   MARKETS_SINGLE = "/api/rates/markets/:coin/:baseCurrency/:pricePercentage",
   HISTORICAL_MARKETS_DATA = "/api/rates/historic-data",
-  EXCHANGE_RATE = "/api/exchange-rate"
+  EXCHANGE_RATE = "/api/exchange-rate",
 }
 
 export enum TRADE_ROUTE {
   BUY = "/api/trade/buy",
   SELL = "/api/trade/sell",
   SWAP = "/api/trade/swap",
-  TRANSFER ="/api/trade/transfer"
+  TRANSFER = "/api/trade/transfer",
 }
 
 export enum WEBHOOK_ROUTE {
-  ROUTE = "/api/webhook/tatum"
+  ROUTE = "/api/webhook/tatum",
 }
 
 export enum SwitchaDeviceType {
@@ -147,13 +151,13 @@ export const USER_LEVEL_LIST = [
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
   ETHEREUM = "ethereum",
-  TRON = "tron"
+  TRON = "tron",
 }
 
 export const BLOCKCHAIN_NETWORK_LIST = [
   BLOCKCHAIN_NETWORK.BITCOIN,
   BLOCKCHAIN_NETWORK.ETHEREUM,
-  BLOCKCHAIN_NETWORK.TRON
+  BLOCKCHAIN_NETWORK.TRON,
 ];
 
 export enum WALLET_STATUS {
@@ -166,16 +170,15 @@ export const WALLET_STATUS_LIST = [
   WALLET_STATUS.INACTIVE,
 ];
 
-export enum COIN_TYPES {
+export enum CoinType {
   BTC = "BTC",
   ETH = "ETH",
   USDT = "USDT",
   USDC = "USDC",
   USDT_TRON = "USDT_TRON",
   NGN = "NGN",
-  USD = "USD"
+  USD = "USD",
 }
-
 
 export enum BLOCKCHAIN_CHAIN {
   SOL = "SOL",
@@ -188,19 +191,19 @@ export enum BLOCKCHAIN_CHAIN {
   LUNA = "LUNA",
   BCH = "BCH",
   DOGE = "DOGE",
-  TRON = "TRON"
+  TRON = "TRON",
 }
 
 export const COIN_TYPES_LIST = [
-  COIN_TYPES.BTC,
-  COIN_TYPES.ETH,
-  COIN_TYPES.USDT,
-  COIN_TYPES.USDC,
-  COIN_TYPES.NGN,
+  CoinType.BTC,
+  CoinType.ETH,
+  CoinType.USDT,
+  CoinType.USDC,
+  CoinType.NGN,
+  CoinType.USDT_TRON,
+  CoinType.USD
+
 ];
-
-
-
 
 export enum NETWORK {
   ROPSTEN = "ropsten",
@@ -215,8 +218,8 @@ export enum TRANSACTION_TYPE {
 
 export const TRANSACTION_TYPE_LIST = [
   TRANSACTION_TYPE.DEBIT,
-  TRANSACTION_TYPE.CREDIT
-]
+  TRANSACTION_TYPE.CREDIT,
+];
 
 export enum TRANSACTION_SUBTYPE {
   DEBIT = "debit",
@@ -229,30 +232,30 @@ export const TRANSACTION_SUBTYPE_LIST = [
   TRANSACTION_SUBTYPE.DEBIT,
   TRANSACTION_SUBTYPE.CREDIT,
   TRANSACTION_SUBTYPE.FEE,
-  TRANSACTION_SUBTYPE.REVERSAL
-]
+  TRANSACTION_SUBTYPE.REVERSAL,
+];
 
 export enum TRANSACTION_STATUS {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  REJECTED = 'rejected'
+  PENDING = "pending",
+  COMPLETED = "completed",
+  REJECTED = "rejected",
 }
 
 export const TRANSACTION_STATUS_LIST = [
   TRANSACTION_STATUS.PENDING,
   TRANSACTION_STATUS.COMPLETED,
-  TRANSACTION_STATUS.REJECTED
-]
+  TRANSACTION_STATUS.REJECTED,
+];
 
 export enum CUSTOM_TRANSACTION_TYPE {
-  DEPOSIT = 'deposit',
-  BUY = 'buy',
-  SELL = 'sell',
-  WITHDRAWAL = 'withdrawal',
-  P2P = 'p2p',
-  SWAP = 'swap',
-  FAUCET = 'faucet',
-  TRANSFER = 'transfer'
+  DEPOSIT = "deposit",
+  BUY = "buy",
+  SELL = "sell",
+  WITHDRAWAL = "withdrawal",
+  P2P = "p2p",
+  SWAP = "swap",
+  FAUCET = "faucet",
+  TRANSFER = "transfer",
 }
 
 export const CUSTOM_TRANSACTION_TYPES = [
@@ -263,8 +266,8 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.P2P,
   CUSTOM_TRANSACTION_TYPE.SWAP,
   CUSTOM_TRANSACTION_TYPE.FAUCET,
-  CUSTOM_TRANSACTION_TYPE.TRANSFER
-]
+  CUSTOM_TRANSACTION_TYPE.TRANSFER,
+];
 
 export const PLATFORM_NAME = "switcha";
 export const GITHUB_LINK =

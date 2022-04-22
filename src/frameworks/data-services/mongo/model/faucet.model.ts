@@ -1,5 +1,5 @@
 import {
-  COIN_TYPES,
+  CoinType,
   COIN_TYPES_LIST,
 } from "src/lib/constants";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
@@ -13,7 +13,7 @@ export class Faucet {
   amount: number;
 
   @Prop({ enum: COIN_TYPES_LIST })
-  coin: COIN_TYPES;
+  coin: CoinType;
 
   @Prop()
   description: string

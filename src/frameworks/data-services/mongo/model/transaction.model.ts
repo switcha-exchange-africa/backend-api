@@ -1,7 +1,7 @@
 import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import {
-  COIN_TYPES,
+  CoinType,
   COIN_TYPES_LIST,
   TRANSACTION_TYPE,
   TRANSACTION_TYPE_LIST,
@@ -41,7 +41,7 @@ export class Transaction {
   txRefId: string;
 
   @Prop({ enum: COIN_TYPES_LIST })
-  currency: COIN_TYPES;
+  currency: CoinType;
 
   @Prop()
   signedAmount: number;

@@ -18,18 +18,25 @@ import { WALLET_ROUTE } from "src/lib/constants";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
+import { CreateWalletDto } from "src/core/dtos/wallet/wallet.dto";
 
 @Controller()
 export class WalletController {
-  constructor(private walletServices: WalletServices) { }
+  constructor(
+    private walletServices: WalletServices,
+  ) { }
 
   @Post(WALLET_ROUTE.ROUTE)
   @UseGuards(StrictAuthGuard)
-  async create(@Req() req: Request, @Res() res: Response) {
+  async create(@Req() req: Request, @Body() body: CreateWalletDto, @Res() res: Response) {
     try {
-      const userId = req?.user?._id;
-      await this.walletServices.create(userId);
-      return res.status(201).json("Wallet Created Successfully");
+      const user = req?.user!
+      const payload = { userId: user._id, fullName: user.fullName, email: user.email }
+
+      const { coin } = body
+      const response = await this.walletServices.create(payload, coin)
+
+      return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -55,10 +62,7 @@ export class WalletController {
 
   @Get(WALLET_ROUTE.SINGLE_ROUTE)
   @UseGuards(StrictAuthGuard)
-  async detail(
-    @Res() res: Response,
-    @Param() param: { id }
-  ) {
+  async detail(@Res() res: Response, @Param() param: { id }) {
     try {
       const { id } = param;
       const response = await this.walletServices.details(id);
@@ -71,11 +75,11 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.SINGLE_ROUTE)
+  @Post(WALLET_ROUTE.FUND)
   @UseGuards(StrictAuthGuard)
   async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
     try {
-      const userId = req?.user?._id
+      const userId = req?.user?._id;
       const response = await this.walletServices.fund(body, userId);
       return res.status(response.status).json(response);
     } catch (error) {

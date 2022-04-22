@@ -11,7 +11,7 @@ import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import {
-  COIN_TYPES,
+  CoinType,
   CUSTOM_TRANSACTION_TYPE,
   TRANSACTION_STATUS,
   TRANSACTION_SUBTYPE,
@@ -56,8 +56,8 @@ export class SwapServices {
     if (!destinationWallet) throw new DoesNotExistsException(`${destinationWallet} does not exists`);
 
 
-    const sourceRateUrl = `${TATUM_BASE_URL}/rate/${sourceCoin}?basePair=${COIN_TYPES.USD}`;
-    const destinationRateUrl = `${TATUM_BASE_URL}/rate/${destinationCoin}?basePair=${COIN_TYPES.USD}`;
+    const sourceRateUrl = `${TATUM_BASE_URL}/rate/${sourceCoin}?basePair=${CoinType.USD}`;
+    const destinationRateUrl = `${TATUM_BASE_URL}/rate/${destinationCoin}?basePair=${CoinType.USD}`;
 
 
     const [{ value: sourceRate }, { value: destinationRate }] = await Promise.all([

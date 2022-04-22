@@ -16,6 +16,7 @@ import {
   KycDto,
   TxPinDto,
   UpdateTxPinDto,
+  UploadAvatarDto,
   UploadIdDto,
 } from "src/core/dtos/account/kyc.dto";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
@@ -39,7 +40,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -62,7 +64,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -84,7 +87,8 @@ export class AccountController {
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -108,7 +112,32 @@ export class AccountController {
     } catch (error) {
       Logger.error(error);
       Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Put(ACCOUNT_ROUTE.UPLOAD_AVATAR)
+  @UseGuards(StrictAuthGuard)
+  async uploadAvatar(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: UploadAvatarDto
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const { url } = body;
+      const response = await this.accountServices.uploadAvatar({
+        userId,
+        url,
+      });
+      return res.status(response.status).json(response);
+    } catch (error) {
+      Logger.error(error);
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }

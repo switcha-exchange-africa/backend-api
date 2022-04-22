@@ -1,7 +1,7 @@
-import { COIN_TYPES } from "src/lib/constants";
+import { CoinType } from "src/lib/constants";
 export class Faucet {
   amount: number;
-  coin: COIN_TYPES | string
+  coin: CoinType | string
   description: string
   balance?: number
   userId: string

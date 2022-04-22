@@ -1,50 +1,36 @@
-import { BLOCKCHAIN_NETWORK } from "src/lib/constants";
+import { BLOCKCHAIN_NETWORK, CoinType } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
 import {
-  IsBoolean,
+  IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from "class-validator";
 
-export class PhraseDto{
+export class PhraseDto {
   @IsString()
   @IsNotEmpty()
   phrase: string;
 }
 
+// deprecated, dont use
 export class WalletDto {
-  
-  @IsString()
-  @IsNotEmpty()
-  address: string;
+
+  userDetail: UserDetail;
 
   @IsString()
-  userId: string;
-
-  @IsNotEmpty()
-  user: UserDetail;
-
-  @IsString()
-  accountId:string;
+  accountId: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  network: BLOCKCHAIN_NETWORK;
+  chain: BLOCKCHAIN_NETWORK;
 
   @IsNotEmpty()
   coin: string;
+}
 
-  @IsOptional()
-  @IsNumber()
-  lastDeposit: number;
+export class CreateWalletDto {
 
-  @IsOptional()
-  @IsNumber()
-  lastWithdrawal: number;
-
-  @IsOptional()
-  @IsBoolean()
-  isBlocked: boolean;
+  @IsNotEmpty()
+  @IsEnum(CoinType)
+  coin: CoinType
 }

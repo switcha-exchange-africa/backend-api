@@ -21,7 +21,7 @@ export class WalletWebhookSubscriptionConsumer {
 
   @OnQueueActive()
   onActive(job: Job) {
-    console.log(
+    Logger.log(
       `Processing job ${job.id} of type ${job.name} with data ${job.data}...`,
     );
   }

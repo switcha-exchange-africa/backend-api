@@ -8,7 +8,7 @@ import { TransactionReference } from "src/core/entities/transaction-reference.en
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { Transaction } from "src/core/entities/transaction.entity";
 import {
-  COIN_TYPES,
+  CoinType,
   CUSTOM_TRANSACTION_TYPE,
   TRANSACTION_STATUS,
   TRANSACTION_SUBTYPE,
@@ -58,7 +58,7 @@ export class FaucetServices {
             userId,
             walletId: "faucet",
             txRefId: txRef?._id,
-            currency: coin as COIN_TYPES,
+            currency: coin as CoinType,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
@@ -140,7 +140,7 @@ export class FaucetServices {
             userId,
             walletId: "faucet",
             txRefId: txRef?._id,
-            currency: coin as COIN_TYPES,
+            currency: coin as CoinType,
             amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -157,7 +157,7 @@ export class FaucetServices {
             userId,
             walletId,
             txRefId: txRef?._id,
-            currency: coin as COIN_TYPES,
+            currency: coin as CoinType,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
