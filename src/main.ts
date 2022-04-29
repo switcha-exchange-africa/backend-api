@@ -1,7 +1,7 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { PORT } from './configuration';
+import { env, PORT } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -24,7 +24,7 @@ async function bootstrap() {
   app.enableCors();
 
   await app.listen(PORT)
-    .then(() => Logger.log(`server running on port ${PORT}`))
+    .then(() => Logger.log(`server running on port ${PORT} :- ENVIRONMENT ${env.env}`))
 }
 bootstrap();
 
