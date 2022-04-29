@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common";
 import { REDIS_CLIENT_NAME, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT } from "src/configuration";
 
 
@@ -19,7 +20,9 @@ export default {
   host: String(REDIS_HOST),
   auth_pass: String(REDIS_PASSWORD),
   password: String(REDIS_PASSWORD),
+  lazyConnect: false,
   // ioredis setup
+  connectTimeout: 3000000,
   reconnectOnError(err: any) {
     const targetError = 'READONLY';
     if (err.message.includes(targetError)) {
@@ -29,18 +32,18 @@ export default {
   },
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
-  // onClientReady: (client) => {
-  //   client.on("connect", function () {
-  //     Logger.log("@redis", "Redis connected successfully")
-  //   });
-  //   client.watch("signupcode", function (watchError: any) {
-  //     if (watchError) throw watchError;
-  //   })
-  //   client.on("error", function (error: any) {
-  //     Logger.error(error)
-  //   })
+  onClientReady: (client) => {
+    client.on("connect", function () {
+      Logger.log("@redis", "Redis connected successfully")
+    });
+    client.watch("signupcode", function (watchError: any) {
+      if (watchError) throw watchError;
+    })
+    client.on("error", function (error: any) {
+      Logger.error(error)
+    })
 
-  // },
+  },
 
 
 }
