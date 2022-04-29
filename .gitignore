@@ -5,3 +5,7 @@ dist/
 notes.md
 docs/
 docs
+docker-compose.yml
+nginx-conf
+.vscode
+proxy.conf
