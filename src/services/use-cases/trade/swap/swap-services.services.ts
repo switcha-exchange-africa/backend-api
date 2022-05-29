@@ -56,8 +56,8 @@ export class SwapServices {
     if (!destinationWallet) throw new DoesNotExistsException(`${destinationWallet} does not exists`);
 
 
-    const sourceRateUrl = `${TATUM_BASE_URL}/rate/${sourceCoin}?basePair=${CoinType.USD}`;
-    const destinationRateUrl = `${TATUM_BASE_URL}/rate/${destinationCoin}?basePair=${CoinType.USD}`;
+    const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
+    const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
 
 
     const [{ value: sourceRate }, { value: destinationRate }] = await Promise.all([
