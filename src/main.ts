@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PORT } from './configuration';
@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn','log','debug','verbose'],
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
 
@@ -23,7 +23,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
 
-  await app.listen(PORT);
+  await app.listen(PORT)
+    .then(() => Logger.log(`server running on port ${PORT}`))
 }
 bootstrap();
 
