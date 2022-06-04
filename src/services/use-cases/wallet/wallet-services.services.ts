@@ -87,8 +87,9 @@ export class WalletServices {
     try {
       const { email, userId, fullName } = userPayload
       const user: UserDetail = { email, fullName }
+
       const walletExists = await this.dataServices.wallets.findOne({ userId, coin });
-      if (walletExists) throw new AlreadyExistsException('wallet already exists')
+      if (walletExists) throw new AlreadyExistsException('Wallet already exists')
 
       if (coin === CoinType.NGN) {
         const walletPayload: Wallet = {
@@ -102,7 +103,7 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.dataServices.wallets.create(factory);
-        return { message: "wallet created successfully", data, status: HttpStatus.CREATED };
+        return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
       }
       if (coin === CoinType.USD) {
         const walletPayload: Wallet = {
@@ -116,8 +117,9 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.dataServices.wallets.create(factory);
-        return { message: "wallet created successfully", data, status: HttpStatus.CREATED };
+        return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
       }
+
       const tatumPayload = generateTatumWalletPayload(coin, userId)
       const CONFIG = {
         headers: {
@@ -146,8 +148,9 @@ export class WalletServices {
         memo,
         tatumMessage: message,
       });
+      
       const data = await this.dataServices.wallets.create(factory);
-      return { message: "wallet created successfully", data, status: HttpStatus.CREATED };
+      return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
 
     } catch (error) {
       Logger.error(error);
