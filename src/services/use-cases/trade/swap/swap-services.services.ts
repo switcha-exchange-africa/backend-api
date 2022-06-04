@@ -85,7 +85,7 @@ export class SwapServices {
 
         if (!creditDestinationWallet) {
           Logger.error("Error Occurred");
-          throw new BadRequestsException("Error Occurred");
+          throw new BadRequestsException("Destination wallet does not match criteria");
         }
 
         const debitSourceWallet = await this.dataServices.wallets.update(
@@ -103,7 +103,7 @@ export class SwapServices {
         );
         if (!debitSourceWallet) {
           Logger.error("Error Occurred");
-          throw new BadRequestsException("Error Occurred");
+          throw new BadRequestsException("Source wallet does not match criteria");
         }
         const txRefPayload: TransactionReference = { userId, amount };
         const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
