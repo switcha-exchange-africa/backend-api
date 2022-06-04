@@ -5,6 +5,7 @@ import {
   HttpException,
   Logger,
   Param,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -16,13 +17,13 @@ import { TransactionServices } from "src/services/use-cases/transaction/transact
 
 @Controller()
 export class TransactionController {
-  constructor(private transactionServices: TransactionServices) {}
+  constructor(private transactionServices: TransactionServices) { }
   @Get(TRANSACTION_ROUTE.GET)
   @UseGuards(StrictAuthGuard)
-  async findAll(@Req() req: Request, @Res() res: Response) {
+  async findAll(@Req() req: Request, @Query() query: any, @Res() res: Response) {
     try {
       const userId = req?.user?._id;
-      const response = await this.transactionServices.findAll(userId);
+      const response = await this.transactionServices.findAll(query, userId);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -32,7 +33,7 @@ export class TransactionController {
     }
   }
 
-  
+
   @Get(TRANSACTION_ROUTE.GET_SINGLE)
   @UseGuards(StrictAuthGuard)
   async detail(

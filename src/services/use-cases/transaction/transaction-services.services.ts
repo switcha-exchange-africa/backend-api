@@ -4,16 +4,19 @@ import { HttpException, Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
 export class TransactionServices {
-  constructor(private dataServices: IDataServices) {}
+  constructor(private dataServices: IDataServices) { }
 
-  async findAll(userId: string) {
+  async findAll(query: Record<string, any>, userId: string) {
     try {
       const user = await this.dataServices.users.findOne({ _id: userId });
-      if (!user) throw new DoesNotExistsException("user does not exist");
+      if (!user) throw new DoesNotExistsException("User does not exist");
+      
       const transactions =
         await this.dataServices.transactions.findAllWithPagination({
-          query: { userId },
+          query,
+          queryFields: { userId: userId },
         });
+      
       return Promise.resolve({
         message: "Transaction retrieved successfully",
         status: 200,

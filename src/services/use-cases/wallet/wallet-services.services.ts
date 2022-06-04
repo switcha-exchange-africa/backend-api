@@ -148,7 +148,7 @@ export class WalletServices {
         memo,
         tatumMessage: message,
       });
-      
+
       const data = await this.dataServices.wallets.create(factory);
       return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
 
@@ -282,7 +282,7 @@ export class WalletServices {
     }
   }
 
-  async findAll(query, userId: string) {
+  async findAll(query: Record<string, any>, userId: string) {
     try {
       this.emitter.emit("create.wallet", { userId });
       const wallets = await this.dataServices.wallets.findAllWithPagination({
