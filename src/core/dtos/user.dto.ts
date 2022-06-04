@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsBoolean, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsEmail, IsOptional, IsEnum } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
 
@@ -14,7 +14,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
+  @IsEnum(SwitchaDeviceType)
   device: SwitchaDeviceType
 
   @IsString()

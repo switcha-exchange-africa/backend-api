@@ -92,14 +92,14 @@ export class AuthServices {
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
 
-      if (authUser.emailVerified) throw new AlreadyExistsException('user email already verified')
+      if (authUser.emailVerified) throw new AlreadyExistsException('User email already verified')
 
       const savedCode = await this.inMemoryServices.get(redisKey);
-      if (isEmpty(savedCode)) throw new BadRequestsException('code is incorrect, invalid or has expired')
+      if (isEmpty(savedCode)) throw new BadRequestsException('Code is incorrect, invalid or has expired')
 
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      if (!correctCode) throw new BadRequestsException('code is incorrect, invalid or has expired')
+      if (!correctCode) throw new BadRequestsException('Code is incorrect, invalid or has expired')
 
       const updatedUser = await this.dataServices.users.update({ _id: authUser?._id }, {
         $set: {
@@ -139,7 +139,7 @@ export class AuthServices {
       const authUser = req?.user!;
       if (authUser.emailVerified) return {
         status: HttpStatus.ACCEPTED,
-        message: `user already verified`,
+        message: `User already verified`,
         data: null
       }
 
@@ -166,7 +166,7 @@ export class AuthServices {
       // Remove email code for this user
       const [user,] = await Promise.all([this.dataServices.users.findOne({ email: authUser?.email }), this.inMemoryServices.del(redisKey)])
       if (!user.emailVerified) verification.push("email")
-      if (!user) throw new DoesNotExistsException('user does not exists')
+      if (!user) throw new DoesNotExistsException('User does not exists')
 
 
       // hash verification code in redis
@@ -181,7 +181,12 @@ export class AuthServices {
       ])
       // save hashed code to redis 
 
-      return { status: 200, message: 'new code was successfully generated', data: env.isProd ? null : String(emailCode), verification };
+      return {
+        status: HttpStatus.OK,
+        message: 'New code was successfully generated',
+        data: env.isProd ? null : String(emailCode),
+        verification
+      };
     } catch (error: Error | any | unknown) {
       Logger.error(error)
       if (error.name === 'TypeError') throw new HttpException(error.message, 500)
@@ -321,16 +326,17 @@ export class AuthServices {
     try {
       const { email, password } = payload
       const user = await this.dataServices.users.findOne({ email });
-      const verification: string[] = []
 
-      if (!user) throw new DoesNotExistsException('user does not exists')
-      if (user.lock === USER_LOCK.LOCK) throw new ForbiddenRequestException('account is temporary locked')
+      const verification: string[] = []
+      if (!user) throw new DoesNotExistsException('User does not exists')
+      if (user.lock === USER_LOCK.LOCK) throw new ForbiddenRequestException('Account is temporary locked')
 
 
       const correctPassword: boolean = await compareHash(password, user?.password!);
-      if (!correctPassword) throw new BadRequestsException('password is incorrect') //
+      if (!correctPassword) throw new BadRequestsException('Password is incorrect') //
 
       if (!user.emailVerified) {
+
         verification.push("email")
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
           _id: user?._id,
@@ -340,8 +346,15 @@ export class AuthServices {
           lock: user?.lock,
           emailVerified: user.emailVerified,
         }
+
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
-        return { status: 403, message: 'email is not verified', data: 'email is not verified', token: `Bearer ${token}`, verification }
+        return {
+          status: HttpStatus.FORBIDDEN,
+          message: 'Email is not verified',
+          data: 'Email is not verified',
+          token: `Bearer ${token}`,
+          verification
+        }
       }
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
@@ -354,14 +367,16 @@ export class AuthServices {
       }
       const token = await jwtLib.jwtSign(jwtPayload);
       res.set('Authorization', `Bearer ${token}`);
+
       await this.dataServices.users.update({ _id: user._id }, {
         $set: {
           lastLoginDate: new Date()
         }
       })
+
       return {
         status: 200,
-        message: 'user logged in successfully',
+        message: 'User logged in successfully',
         token: `Bearer ${token}`,
         data: jwtPayload,
         verification
