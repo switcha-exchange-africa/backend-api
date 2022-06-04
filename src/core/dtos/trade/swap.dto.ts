@@ -1,5 +1,11 @@
-import { IsNotEmpty, IsString, IsNumber } from "class-validator";
-import { CoinType } from "src/lib/constants";
+import { IsNotEmpty, IsNumber, IsEnum } from "class-validator";
+
+export enum SwapableCoin {
+  BTC = 'BTC',
+  USDT = 'USDT',
+  USDC = 'USDC',
+  ETH = 'ETh'
+}
 export class SwapDto {
 
   @IsNotEmpty()
@@ -7,10 +13,10 @@ export class SwapDto {
   amount: number;
 
   @IsNotEmpty()
-  @IsString()
-  sourceCoin: CoinType;
+  @IsEnum(SwapableCoin)
+  sourceCoin: SwapableCoin;
 
   @IsNotEmpty()
-  @IsString()
-  destinationCoin: CoinType;
+  @IsEnum(SwapableCoin)
+  destinationCoin: SwapableCoin;
 }

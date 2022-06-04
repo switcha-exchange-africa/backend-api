@@ -39,7 +39,6 @@ export class BuySellServices {
     const { amount, debitCoin, creditCoin } = body;
     try {
       const url = `${TATUM_BASE_URL}/tatum/rate/${creditCoin}?basePair=${debitCoin}`;
-
       const [user, creditWallet, debitWallet, { value }] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
@@ -53,15 +52,13 @@ export class BuySellServices {
         }),
         this.http.get(url, this.config),
       ]);
-      if (!user) throw new DoesNotExistsException("user does not exist");
+
+      if (!user) throw new DoesNotExistsException("User does not exist");
       if (!creditWallet || !debitWallet)
-        throw new DoesNotExistsException("wallet does not exist");
+        throw new DoesNotExistsException("Wallet does not exist");
 
       const rate = value
       const creditedAmount = parseFloat((amount / rate).toFixed(4));
-      Logger.log("RATE", rate)
-      Logger.log("DEDUCTED AMOUNT", amount)
-      Logger.log("CREDITED AMOUNT", creditedAmount)
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {

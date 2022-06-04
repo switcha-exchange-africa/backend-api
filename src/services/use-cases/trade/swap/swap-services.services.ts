@@ -50,7 +50,7 @@ export class SwapServices {
         coin: destinationCoin,
       }),
     ]);
-    if (!user) throw new DoesNotExistsException("user does not exist");
+    if (!user) throw new DoesNotExistsException("User does not exist");
 
     if (!sourceWallet) throw new DoesNotExistsException(`${sourceWallet} does not exists`);
     if (!destinationWallet) throw new DoesNotExistsException(`${destinationWallet} does not exists`);
@@ -77,6 +77,8 @@ export class SwapServices {
             $inc: {
               balance: destinationAmount,
             },
+            lastDeposit: destinationAmount
+
           },
           session
         );
@@ -95,6 +97,7 @@ export class SwapServices {
             $inc: {
               balance: -amount,
             },
+            lastWithdrawal: amount
           },
           session
         );
@@ -110,7 +113,7 @@ export class SwapServices {
           userId,
           walletId: destinationWallet?._id,
           txRefId: txRef?._id,
-          currency: destinationCoin,
+          currency: destinationCoin as unknown as CoinType,
           amount: destinationAmount,
           signedAmount: destinationAmount,
           type: TRANSACTION_TYPE.CREDIT,
@@ -127,7 +130,7 @@ export class SwapServices {
           userId,
           walletId: sourceWallet?._id,
           txRefId: txRef?._id,
-          currency: sourceCoin,
+          currency: sourceCoin as unknown as CoinType,
           amount: amount,
           signedAmount: -amount,
           type: TRANSACTION_TYPE.DEBIT,
@@ -158,7 +161,7 @@ export class SwapServices {
     await databaseHelper.executeTransaction(atomicTransaction, this.connection);
     return {
       message: `swap successful`,
-      data: {  },
+      data: {},
       status: 200,
     };
   }

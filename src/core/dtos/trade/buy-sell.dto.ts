@@ -1,7 +1,7 @@
 import {
   IsNotEmpty,
-  IsString,
-  IsNumber
+  IsNumber,
+  IsEnum
 } from "class-validator";
 import { CoinType } from "src/lib/constants";
 export class BuySellDto {
@@ -12,11 +12,11 @@ export class BuySellDto {
 
 
   @IsNotEmpty()
-  @IsString()
+  @IsEnum(CoinType)
   debitCoin: CoinType
 
   @IsNotEmpty()
-  @IsString()
+  @IsEnum(CoinType)
   creditCoin: CoinType
 
 }
