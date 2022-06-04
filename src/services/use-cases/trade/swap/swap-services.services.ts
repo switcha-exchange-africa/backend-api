@@ -160,7 +160,7 @@ export class SwapServices {
     };
     await databaseHelper.executeTransaction(atomicTransaction, this.connection);
     return {
-      message: `swap successful`,
+      message: `Swap successful`,
       data: {},
       status: 200,
     };
