@@ -1,5 +1,5 @@
 import { TransactionFactoryService } from "src/services/use-cases/transaction/transaction-factory.services";
-import { Transaction } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import {
   BadRequestsException,
@@ -10,18 +10,12 @@ import { IDataServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import {
-  CoinType,
-  CUSTOM_TRANSACTION_TYPE,
-  TRANSACTION_STATUS,
-  TRANSACTION_SUBTYPE,
-  TRANSACTION_TYPE,
-} from "src/lib/constants";
 
 import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 import { ResponsesType } from "src/core/types/response";
+import { CoinType } from "src/core/entities/wallet.entity";
 
 const TATUM_CONFIG = {
   headers: {

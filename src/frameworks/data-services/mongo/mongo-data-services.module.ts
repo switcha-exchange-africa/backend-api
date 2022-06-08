@@ -2,15 +2,15 @@ import {
   TransactionReference,
   TransactionReferenceSchema,
 } from "./model/transaction-reference.model";
-import { Transaction, TransactionSchema } from "./model/transaction.model";
+import { Transaction, TransactionSchema } from "./model/Transaction.model";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { MONGO_DB_URL } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
-import { User, UserSchema } from "./model/user.model";
-import { Wallet, WalletSchema } from "./model/wallet.model";
+import { User, UserSchema } from "./model/User";
+import { Wallet, WalletSchema } from "./model/Wallet";
 import { MongoDataServices } from "./mongo-data-services.service";
-import { Faucet, FaucetSchema } from "./model/faucet.model";
+import { Faucet, FaucetSchema } from "./model/Faucet";
 
 @Module({
   imports: [

@@ -1,6 +1,5 @@
-import { Wallet } from "src/core/entities/wallet.entity";
+import { Wallet, WALLET_STATUS } from "src/core/entities/wallet.entity";
 import { Injectable } from "@nestjs/common";
-import { WALLET_STATUS } from "src/lib/constants";
 
 @Injectable()
 export class WalletFactoryService {

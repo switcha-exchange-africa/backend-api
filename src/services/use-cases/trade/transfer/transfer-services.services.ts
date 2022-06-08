@@ -8,13 +8,8 @@ import { IDataServices } from "src/core/abstracts";
 import { TransferDto } from "src/core/dtos/trade/transfer.dto";
 import * as mongoose from "mongoose";
 import { TransactionReference } from "src/core/entities/transaction-reference.entity";
-import { Transaction } from "src/core/entities/transaction.entity";
-import {
-  CUSTOM_TRANSACTION_TYPE,
-  TRANSACTION_STATUS,
-  TRANSACTION_SUBTYPE,
-  TRANSACTION_TYPE,
-} from "src/lib/constants";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 

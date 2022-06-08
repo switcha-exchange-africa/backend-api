@@ -10,14 +10,8 @@ import {
   DoesNotExistsException,
 } from "../user/exceptions";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
-import {
-  CUSTOM_TRANSACTION_TYPE,
-  TRANSACTION_STATUS,
-  TRANSACTION_SUBTYPE,
-  TRANSACTION_TYPE,
-} from "src/lib/constants";
 import * as mongoose from "mongoose";
-import { Transaction } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { ResponsesType } from "src/core/types/response";
 
