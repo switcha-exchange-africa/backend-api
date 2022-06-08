@@ -1,4 +1,3 @@
-import { BLOCKCHAIN_NETWORK, CoinType } from "src/lib/constants";
 import { UserDetail } from "src/core/entities/user.entity";
 import {
   IsEnum,
@@ -6,6 +5,7 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { BLOCKCHAIN_NETWORK, CoinType } from "src/core/entities/wallet.entity";
 
 export class PhraseDto {
   @IsString()

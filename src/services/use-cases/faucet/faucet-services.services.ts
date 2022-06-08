@@ -6,18 +6,12 @@ import * as mongoose from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
 import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
-import { Transaction } from "src/core/entities/transaction.entity";
-import {
-  CoinType,
-  CUSTOM_TRANSACTION_TYPE,
-  TRANSACTION_STATUS,
-  TRANSACTION_SUBTYPE,
-  TRANSACTION_TYPE,
-} from "src/lib/constants";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionReferenceFactoryService } from "../transaction/transaction-reference.services";
 import { Faucet } from "src/core/entities/faucet.entity";
 import { ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
+import { CoinType } from "src/core/entities/wallet.entity";
 
 @Injectable()
 export class FaucetServices {

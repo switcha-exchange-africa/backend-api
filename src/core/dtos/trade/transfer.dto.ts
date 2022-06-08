@@ -1,5 +1,5 @@
-import { CoinType } from "src/lib/constants";
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { CoinType } from "src/core/entities/wallet.entity";
 
 export class TransferDto {
   @IsNotEmpty()

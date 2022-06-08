@@ -4,10 +4,10 @@ import { OnEvent } from "@nestjs/event-emitter";
 
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { BLOCKCHAIN_CHAIN, CoinType } from "src/lib/constants";
 import { TATUM_BTC_ACCOUNT_ID, TATUM_USDC_ACCOUNT_ID, TATUM_USDT_ACCOUNT_ID, TATUM_USDT_TRON_ACCOUNT_ID } from "src/configuration";
 import { UserDetail } from "src/core/entities/user.entity";
 import { IDataServices } from "src/core/abstracts";
+import { BLOCKCHAIN_CHAIN, CoinType } from "src/core/entities/wallet.entity";
 
 
 

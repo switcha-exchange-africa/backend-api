@@ -1,14 +1,8 @@
-import {
-  WALLET_STATUS_LIST,
-  WALLET_STATUS,
-  BLOCKCHAIN_NETWORK,
-  BLOCKCHAIN_NETWORK_LIST,
-  CoinType,
-  COIN_TYPES_LIST,
-} from "src/lib/constants";
+
 import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
+import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, CoinType, COIN_TYPES_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
 
 export type WalletDocument = Wallet & Document;
 

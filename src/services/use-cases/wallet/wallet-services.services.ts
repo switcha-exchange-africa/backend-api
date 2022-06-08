@@ -1,10 +1,9 @@
 import { AlreadyExistsException, BadRequestsException } from "./../user/exceptions";
-import { Wallet } from "./../../../core/entities/wallet.entity";
+import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "./../../../core/entities/wallet.entity";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-import { BLOCKCHAIN_CHAIN, CoinType } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import {

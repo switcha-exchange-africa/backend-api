@@ -1,4 +1,5 @@
-import { CoinType } from "src/lib/constants";
+import { CoinType } from "./wallet.entity";
+
 export class Faucet {
   amount: number;
   coin: CoinType | string

@@ -1,19 +1,9 @@
 import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import {
-  CoinType,
-  COIN_TYPES_LIST,
-  TRANSACTION_TYPE,
-  TRANSACTION_TYPE_LIST,
-  TRANSACTION_SUBTYPE_LIST,
-  CUSTOM_TRANSACTION_TYPE,
-  CUSTOM_TRANSACTION_TYPES,
-  TRANSACTION_STATUS,
-  TRANSACTION_STATUS_LIST,
-  TRANSACTION_SUBTYPE,
-} from "src/lib/constants";
+
 import { Types } from "mongoose";
-import { Rates } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_STATUS, TRANSACTION_STATUS_LIST, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
+import { COIN_TYPES_LIST, CoinType } from "src/core/entities/wallet.entity";
 
 export type TransactionDocument = Transaction & Document;
 
