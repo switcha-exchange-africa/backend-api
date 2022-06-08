@@ -9,7 +9,7 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ACCOUNT_ROUTE } from "src/lib/constants";
+import { ACCOUNT_ROUTE } from "src/lib/route-constant";
 import { AccountServices } from "src/services/use-cases/user/account/account.services";
 import { Response, Request } from "express";
 import {
@@ -23,7 +23,7 @@ import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 @Controller()
 export class AccountController {
-  constructor(private accountServices: AccountServices) {}
+  constructor(private accountServices: AccountServices) { }
 
   @Put(ACCOUNT_ROUTE.KYC)
   @UseGuards(StrictAuthGuard)

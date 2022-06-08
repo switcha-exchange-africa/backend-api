@@ -15,7 +15,7 @@ import {
   CreateFaucetDto,
   FundFaucetDto,
 } from "src/core/dtos/wallet/faucet.dto";
-import { FAUCET_ROUTE } from "src/lib/constants";
+import { FAUCET_ROUTE } from "src/lib/route-constant";
 
 import { Response, Request } from "express";
 import {

@@ -28,7 +28,6 @@ import { EmailChangeRequestSchema, EmailChangeRequest } from "./model/Email-Chan
       { name: Activity.name, schema: ActivitySchema },
       { name: Bank.name, schema: BankSchema },
       { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
-
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],

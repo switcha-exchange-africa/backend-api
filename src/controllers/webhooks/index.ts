@@ -5,7 +5,7 @@ import {
     Req,
     Res
 } from "@nestjs/common";
-import { WEBHOOK_ROUTE } from "src/lib/constants";
+import { WEBHOOK_ROUTE } from "src/lib/route-constant";
 import { Request, Response } from "express";
 import { WebhookServices } from "src/services/use-cases/webhook/webhook-services.services";
 

@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
-import { TRANSACTION_ROUTE } from "src/lib/constants";
+import { TRANSACTION_ROUTE } from "src/lib/route-constant";
 import { TransactionServices } from "src/services/use-cases/transaction/transaction-services.services";
 
 @Controller()

@@ -10,7 +10,6 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { AUTHENTICATION_ROUTE } from "src/lib/constants";
 import { Request, Response } from "express";
 import { AuthServices } from "src/services/use-cases/user/auth-services.services";
 import { CreateUserDto } from "src/core/dtos/user.dto";
@@ -23,6 +22,7 @@ import {
 import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto";
 import { LoginDto } from "src/core/dtos/authentication/login.dto";
 import { generateGoogleAuthUrl } from "src/lib/utils";
+import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 
 @Controller()
 export class AuthenticationController {

@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
-import { TRADE_ROUTE } from "src/lib/constants";
+import { TRADE_ROUTE } from "src/lib/route-constant";
 import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
 import { BuySellServices } from "src/services/use-cases/trade/buy-sell-services.services";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";

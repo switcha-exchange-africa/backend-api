@@ -7,7 +7,7 @@ import {
   Query,
   Res,
 } from "@nestjs/common";
-import { RATES_ROUTE } from "src/lib/constants";
+import { RATES_ROUTE } from "src/lib/route-constant";
 import { RatesServices } from "src/services/use-cases/rates/rates-services.services";
 import { Response } from "express";
 import { HistoricDataDto } from "src/core/dtos/rates/rates.dto";

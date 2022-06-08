@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 
-import { WALLET_ROUTE } from "src/lib/constants";
+import { WALLET_ROUTE } from "src/lib/route-constant";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
