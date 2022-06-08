@@ -56,3 +56,8 @@ export enum TRADE_ROUTE {
 export enum WEBHOOK_ROUTE {
   ROUTE = "/api/webhook/tatum",
 }
+
+
+export enum BANK_ROUTE {
+  ROUTE = "/api/bank",
+}
