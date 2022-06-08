@@ -1,10 +1,8 @@
 import { Module } from "@nestjs/common";
-import controllers from "./controllers";
 import { JWT_USER_PAYLOAD_TYPE } from "./lib/constants";
-import modules from './modules';
 import { HomeServices } from "./services/use-cases/home/home.service";
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import services from "./services";
+import controller from "./controllers";
 
 declare global {
   namespace Express {
@@ -16,14 +14,8 @@ declare global {
   var io: any;
 }
 @Module({
-  imports: [
-    ...modules,
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'docs'),
-      exclude: ['/api*'],
-    }),
-  ],
-  controllers: [...controllers],
+  imports: [...services],
+  controllers: [...controller],
   providers: [HomeServices],
 })
 
