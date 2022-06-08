@@ -1,5 +1,5 @@
 import { Activity } from '../entities/Activity';
-import { Bank } from '../entities/bank.entity';
+import { Bank } from '../entities/Bank';
 import { EmailChangeRequest } from '../entities/email-change-request.entity';
 import { Faucet } from '../entities/faucet.entity';
 import { TransactionReference } from '../entities/transaction-reference.entity';

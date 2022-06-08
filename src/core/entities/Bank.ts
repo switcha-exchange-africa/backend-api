@@ -1,6 +1,7 @@
 export class Bank {
-  bankName: string
-  bankCode: string
+  name: string
+  code: string
+  branch: string
   accountName: string
   accountNumber: string
   userId: string;

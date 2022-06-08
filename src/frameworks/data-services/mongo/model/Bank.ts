@@ -6,10 +6,13 @@ export type BankDocument = Bank & Document;
 @Schema()
 export class Bank {
   @Prop()
-  bankName: string
+  name: string
 
   @Prop()
-  bankCode: string
+  code: string
+
+  @Prop()
+  branch: string
 
   @Prop()
   accountName: string
