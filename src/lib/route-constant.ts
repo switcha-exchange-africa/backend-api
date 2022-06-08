@@ -60,4 +60,6 @@ export enum WEBHOOK_ROUTE {
 
 export enum BANK_ROUTE {
   ROUTE = "/api/bank",
+  NIGERIA_ROUTE = "/api/nigeria-banks",
+
 }

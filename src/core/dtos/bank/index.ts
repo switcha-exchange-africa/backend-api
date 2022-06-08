@@ -15,11 +15,11 @@ export class AddBankDto {
   @IsString()
   public readonly branch: string
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   public readonly accountName: string
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   public readonly accountNumber: string
 }

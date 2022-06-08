@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpException, Logger, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { AddBankDto, IBank } from "src/core/dtos/bank";
 import { BANK_ROUTE } from "src/lib/route-constant";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { Request, Response } from 'express';
 import { BankServices } from "src/services/use-cases/bank/bank-services.services";
+import { nigeriaBanks } from "src/lib/nigerian-banks";
 
 @Controller()
 export class BankController {
@@ -55,5 +56,23 @@ export class BankController {
       throw new HttpException(error.message, 500);
     }
   }
+
+  @Get(BANK_ROUTE.NIGERIA_ROUTE)
+  @UseGuards(StrictAuthGuard)
+  async getNigeriaBanks(
+    @Res() res: Response
+  ) {
+    try {
+
+      return res.status(HttpStatus.OK).json(nigeriaBanks);
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new HttpException(error.message, 500);
+    }
+  }
+
+
 
 }

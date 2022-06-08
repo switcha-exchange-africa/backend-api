@@ -7,7 +7,7 @@ import { User, UserDocument } from './model/User';
 import { Wallet, WalletDocument } from './model/Wallet';
 import { IDataServices } from 'src/core/abstracts';
 import { TransactionReference, TransactionReferenceDocument } from './model/transaction-reference.model';
-import { FaucetDocument,Faucet } from './model/Faucet';
+import { FaucetDocument, Faucet } from './model/Faucet';
 import { Withdrawal, WithdrawalDocument } from './model/Withdrawal';
 import { Bank, BankDocument } from './model/Bank';
 import { Activity, ActivityDocument } from './model/Activity';
@@ -67,10 +67,10 @@ export class MongoDataServices
     this.transactionReferences = new MongoGenericRepository<TransactionReference>(this.TransactionReferenceRepository)
     this.faucets = new MongoGenericRepository<Faucet>(this.FaucetRepository)
     this.withdrawals = new MongoGenericRepository<Withdrawal>(this.WithdrawalRepository)
-    this.banks = new MongoGenericRepository<Bank>(this.BankRepository)
+    this.banks = new MongoGenericRepository<Bank>(this.BankRepository, ['userId'])
     this.activities = new MongoGenericRepository<Activity>(this.ActivityRepository)
     this.emailChangeRequests = new MongoGenericRepository<EmailChangeRequest>(this.EmailChangeRequestRepository)
-    
+
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
     //   'genre',
