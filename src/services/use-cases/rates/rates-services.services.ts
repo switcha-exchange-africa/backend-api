@@ -1,16 +1,16 @@
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { ForbiddenRequestException } from "../user/exceptions";
 import { ResponsesType } from "src/core/types/response";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { SingleRateDto } from "src/core/dtos/rates/rates.dto";
 
 const CURRENCY_IDS: string = "bitcoin,ethereum,ripple,stellar,celo";
-const COINGGECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
+const COIN_GECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
 const VS_CURRENCY: string = "ngn";
 const ORDER: string = "market_cap_desc";
 const PERPAGE: number = 100;
 const PAGE = 1;
-const SPARKLINE: boolean = false;
+const SPARK_LINE: boolean = false;
 // e.g 1h, 24h, 7d, 30d
 const price_change_percentage = "24h";
 const config = {
@@ -27,9 +27,9 @@ export class RatesServices {
       "X-API-Key": TATUM_API_KEY,
     },
   };
-  async findAll(): Promise<ResponsesType<any>> {
+  async findAll(base: string): Promise<ResponsesType<any>> {
     try {
-      const url = `${COINGGECKO_BASE_URL}/simple/price?ids=${CURRENCY_IDS}&vs_currencies=${VS_CURRENCY}`;
+      const url = `${COIN_GECKO_BASE_URL}/simple/price?ids=${CURRENCY_IDS}&vs_currencies=${base}`;
 
       const rates = await this.http.get(url, config);
       return Promise.resolve({
@@ -44,21 +44,14 @@ export class RatesServices {
     }
   }
 
-  async findOne(asset: string): Promise<ResponsesType<any>> {
-    const supportedAssetsList = [
-      "bitcoin",
-      "ethereum",
-      "stellar",
-      "ripple",
-      "celo",
-    ];
+  async findOne(payload: SingleRateDto): Promise<ResponsesType<any>> {
+
     try {
-      if (!supportedAssetsList.includes(asset))
-        throw new ForbiddenRequestException("Asset is not supported yet");
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${asset}&vs_currencies=ngn`;
+      const { base, sub } = payload
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${sub}&vs_currencies=${base}`;
       const rate = await this.http.get(url, config);
       return Promise.resolve({
-        message: `${asset} rate retrieved successfully`,
+        message: `${sub} rate retrieved successfully`,
         status: 200,
         data: rate,
       });
@@ -70,7 +63,7 @@ export class RatesServices {
   }
   async allCryptoMarketCharts(): Promise<ResponsesType<any>> {
     try {
-      const url = `${COINGGECKO_BASE_URL}/coins/markets?vs_currency=${VS_CURRENCY}&ids=${CURRENCY_IDS}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&sparkline=${SPARKLINE}&price_change_percentage=${price_change_percentage}`;
+      const url = `${COIN_GECKO_BASE_URL}/coins/markets?vs_currency=${VS_CURRENCY}&ids=${CURRENCY_IDS}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&SPARK_LINE=${SPARK_LINE}&price_change_percentage=${price_change_percentage}`;
       const data = await this.http.get(url, config);
       return Promise.resolve({
         message: `data retrieved successfully`,
@@ -89,7 +82,7 @@ export class RatesServices {
     coin: string,
     priceChangePercentage: string
   ): Promise<ResponsesType<any>> {
-    const url = `${COINGGECKO_BASE_URL}/coins/markets?vs_currency=${base}&ids=${coin}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&sparkline=${SPARKLINE}&price_change_percentage=${priceChangePercentage}`;
+    const url = `${COIN_GECKO_BASE_URL}/coins/markets?vs_currency=${base}&ids=${coin}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&SPARK_LINE=${SPARK_LINE}&price_change_percentage=${priceChangePercentage}`;
     try {
       const data = await this.http.get(url, config);
       return Promise.resolve({
@@ -105,7 +98,7 @@ export class RatesServices {
   }
 
   async cryptoPrices(payload: { base: string, coin: string, days: string, interval: string }): Promise<ResponsesType<any>> {
-    const url = `${COINGGECKO_BASE_URL}/coins/${payload.coin}/market_chart?vs_currency=${payload.base}&days=${payload.days}&interval=${payload.interval}`;
+    const url = `${COIN_GECKO_BASE_URL}/coins/${payload.coin}/market_chart?vs_currency=${payload.base}&days=${payload.days}&interval=${payload.interval}`;
     try {
       const data = await this.http.get(url, config);
       return Promise.resolve({ message: `data retrieved successfully`, status: 200, data });

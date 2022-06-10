@@ -10,16 +10,17 @@ import {
 import { RATES_ROUTE } from "src/lib/route-constant";
 import { RatesServices } from "src/services/use-cases/rates/rates-services.services";
 import { Response } from "express";
-import { HistoricDataDto } from "src/core/dtos/rates/rates.dto";
+import { ExchangeRateDto, HistoricDataDto, SingleRateDto } from "src/core/dtos/rates/rates.dto";
 
 @Controller()
 export class RatesController {
   constructor(private rateServices: RatesServices) { }
 
   @Get(RATES_ROUTE.PRICES)
-  async findAll(@Res() res: Response) {
+  async findAll(@Res() res: Response, @Query() query: any) {
     try {
-      const response = await this.rateServices.findAll();
+      const base = query.base
+      const response = await this.rateServices.findAll(base);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -82,10 +83,10 @@ export class RatesController {
   }
 
   @Get(RATES_ROUTE.SINGLE_PRICES)
-  async single(@Res() res: Response, @Param() param: { asset: string }) {
-    const { asset } = param;
+  async single(@Res() res: Response, @Query() query: SingleRateDto) {
+
     try {
-      const response = await this.rateServices.findOne(asset);
+      const response = await this.rateServices.findOne(query);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
@@ -93,9 +94,9 @@ export class RatesController {
       return res.status(error.status || 500).json(error);
     }
   }
-  
+
   @Get(RATES_ROUTE.EXCHANGE_RATE)
-  async exchangeRate(@Res() res: Response, @Query() query: any) {
+  async exchangeRate(@Res() res: Response, @Query() query: ExchangeRateDto) {
     const { coin, base } = query;
     try {
       const response = await this.rateServices.exchangeRate(coin, base);
