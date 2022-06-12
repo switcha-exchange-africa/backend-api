@@ -19,7 +19,7 @@ jobs:
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
-        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+        token: ${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }}
 
     - name: Log in to DigitalOcean Container Registry with short-lived credentials
       run: doctl registry login --expiry-seconds 600
@@ -30,11 +30,11 @@ jobs:
 
     - name: Build and tag the Docker image
       run: docker build ./ --file ./Dockerfile
-        --tag registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:${{steps.tag.outputs.IMG_TAG}}
-        --tag registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:latest
+        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:${{steps.tag.outputs.IMG_TAG}}
+        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:latest
 
     - name: Push the tagged Docker image
       run: |
-        docker push registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:${{steps.tag.outputs.IMG_TAG}}
-        docker push registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:latest
+        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:${{steps.tag.outputs.IMG_TAG}}
+        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:latest
 
