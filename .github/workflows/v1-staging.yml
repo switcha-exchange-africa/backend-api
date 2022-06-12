@@ -68,6 +68,7 @@ jobs:
             docker rm ${{secrets.IMAGE_NAME}}
 
             # pull latest image
+            docker pull registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
             # Run a new container from a new image
-            docker run -d --restart always --env-file .env --name ${{secrets.IMAGE_NAME}} registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:$(echo $GITHUB_SHA | head -c7) $(echo $COMMAND)
+            docker run -d registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
 
