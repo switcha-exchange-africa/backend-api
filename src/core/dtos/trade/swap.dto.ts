@@ -4,7 +4,7 @@ export enum SwapableCoin {
   BTC = 'BTC',
   USDT = 'USDT',
   USDC = 'USDC',
-  ETH = 'ETh'
+  ETH = 'ETH'
 }
 export class SwapDto {
 
