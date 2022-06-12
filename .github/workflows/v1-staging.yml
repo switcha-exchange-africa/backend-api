@@ -1,0 +1,40 @@
+name: comms-services staging continuous integration
+
+on:
+  push:
+    branches:
+      - v1
+    tags:
+      - v1-stage-*
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Log in to DigitalOcean Container Registry with short-lived credentials
+      run: doctl registry login --expiry-seconds 600
+
+    - name: Get the commit hash
+      id: tag
+      run: echo ::set-output name=IMG_TAG::$(echo $GITHUB_SHA)
+
+    - name: Build and tag the Docker image
+      run: docker build ./ --file ./Dockerfile
+        --tag registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:${{steps.tag.outputs.IMG_TAG}}
+        --tag registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:latest
+
+    - name: Push the tagged Docker image
+      run: |
+        docker push registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:${{steps.tag.outputs.IMG_TAG}}
+        docker push registry.digitalocean.com/${{ secrets.IMAGE_REPOSITORY }}/comms-services:latest
+
