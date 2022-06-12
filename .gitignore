@@ -9,3 +9,4 @@ docker-compose.yml
 nginx-conf
 .vscode
 proxy.conf
+env.txt

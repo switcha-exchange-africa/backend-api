@@ -7,6 +7,12 @@ on:
     tags:
       - v1-stage-*
 
+env:
+  REGISTRY: "registry.digitalocean.com/switcha-africa"
+  IMAGE_NAME: "switcha_staging-app"
+  COMMAND: "npm run start"
+
+
 jobs:
   build:
 
@@ -16,13 +22,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Download .env from url
+      uses: suisei-cn/actions-download-file@v1
+      id: downloadfile  # Remember to give an ID if you need the output
+      with:
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1655063501/switcha-staging-env/env_nhjnrz.txt"
+        target: ./
+
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }}
 
     - name: Log in to DigitalOcean Container Registry with short-lived credentials
-      run: doctl registry login --expiry-seconds 600
+      run: doctl ${{ secrets.CONTAINER_REGISTRY_NAME }} login --expiry-seconds 600
 
     - name: Get the commit hash
       id: tag
@@ -30,13 +43,13 @@ jobs:
 
     - name: Build and tag the Docker image
       run: docker build ./ --file ./Dockerfile
-        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:${{steps.tag.outputs.IMG_TAG}}
-        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:latest
+        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:${{steps.tag.outputs.IMG_TAG}}
+        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
 
     - name: Push the tagged Docker image
       run: |
-        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:${{steps.tag.outputs.IMG_TAG}}
-        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/switcha_staging-app:latest
+        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:${{steps.tag.outputs.IMG_TAG}}
+        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
 
     - name: Deploy to Digital Ocean droplet via SSH action
       uses: appleboy/ssh-action@v0.1.3
@@ -45,16 +58,18 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-        envs: IMAGE_NAME,REGISTRY,{{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }},GITHUB_SHA
+        envs: IMAGE_NAME,{{ secrets.CONTAINER_REGISTRY_NAME }},{{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }},GITHUB_SHA
         script: |
-          # Login to registry
-          docker login -u ${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }} registry.digitalocean.com
-          # Stop running container
-          docker stop $(echo $IMAGE_NAME)
-          # Remove old container
-          docker rm $(echo $IMAGE_NAME)
-          # Run a new container from a new image
-          docker run -d \
-          --restart always \
-          --name $(echo $IMAGE_NAME) \
-          $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+            # Stop running container
+            docker stop $(echo $IMAGE_NAME)
+
+            # Remove old container
+            docker rm $(echo $IMAGE_NAME)
+
+            # Run a new container from a new image
+            docker run -d \
+            --restart always \
+            --env-file .env \
+            --name $(echo $IMAGE_NAME) \
+            $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7) $(echo $COMMAND)
+
