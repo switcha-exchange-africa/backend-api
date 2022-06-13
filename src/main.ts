@@ -1,7 +1,7 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { PORT } from './configuration';
+import { env, PORT } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -11,7 +11,7 @@ async function bootstrap() {
 
 
   const options = new DocumentBuilder()
-    .setTitle('Switcha Api')
+    .setTitle(`Switcha ${env.env} Api`)
     .setDescription('Switcha API description')
     .setVersion('1.0')
     .addTag('cats')

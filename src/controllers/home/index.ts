@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { env } from 'src/configuration';
 
 import { HomeServices } from 'src/services/use-cases/home/home.service';
 
@@ -12,5 +13,10 @@ export class HomeController {
   @Get('/health')
   health(): string {
     return this.service.health();
+  }
+
+  @Get('/name')
+  name(): string {
+    return `${env.env.toUpperCase()} API`;
   }
 }
