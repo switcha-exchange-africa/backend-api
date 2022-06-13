@@ -16,6 +16,7 @@ FROM node:14-alpine as builder
 
 ENV NODE_ENV staging
 
+EXPOSE 3464
 USER node
 WORKDIR /home/node
 
