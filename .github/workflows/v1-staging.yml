@@ -61,11 +61,17 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         envs: ${{secrets.IMAGE_NAME}},${{ secrets.CONTAINER_REGISTRY_NAME }},${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }},GITHUB_SHA
         script: |
+            # docker image
+            docker image remove registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}
+            
             # Stop running container
             docker stop ${{secrets.IMAGE_NAME}}
 
             # Remove old container
             docker rm ${{secrets.IMAGE_NAME}}
+
+              # Remove old container
+            docker stop ${{secrets.IMAGE_NAME}}
 
             # pull latest image
             docker pull registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
