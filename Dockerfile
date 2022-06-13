@@ -14,8 +14,6 @@
 
 FROM node:14-alpine as builder
 
-ENV NODE_ENV staging
-
 EXPOSE 3464
 USER node
 WORKDIR /home/node
@@ -31,7 +29,6 @@ RUN npm run build \
 
 FROM node:14-alpine
 
-ENV NODE_ENV production
 
 USER node
 WORKDIR /home/node
