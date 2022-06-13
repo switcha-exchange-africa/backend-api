@@ -73,6 +73,13 @@ jobs:
               # Remove old container
             docker stop ${{secrets.IMAGE_NAME}}
 
+            ids=$(docker ps -a -q)
+            for id in $ids
+            do
+              echo "$id"
+              docker stop $id && docker rm $id
+            done
+            
             # pull latest image
             docker pull registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
             # Run a new container from a new image
