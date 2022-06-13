@@ -6,7 +6,6 @@ import { SingleRateDto } from "src/core/dtos/rates/rates.dto";
 
 const CURRENCY_IDS: string = "bitcoin,ethereum,ripple,stellar,celo";
 const COIN_GECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
-const VS_CURRENCY: string = "ngn";
 const ORDER: string = "market_cap_desc";
 const PERPAGE: number = 100;
 const PAGE = 1;
@@ -61,9 +60,9 @@ export class RatesServices {
       throw error;
     }
   }
-  async allCryptoMarketCharts(): Promise<ResponsesType<any>> {
+  async allCryptoMarketCharts(base: string): Promise<ResponsesType<any>> {
     try {
-      const url = `${COIN_GECKO_BASE_URL}/coins/markets?vs_currency=${VS_CURRENCY}&ids=${CURRENCY_IDS}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&SPARK_LINE=${SPARK_LINE}&price_change_percentage=${price_change_percentage}`;
+      const url = `${COIN_GECKO_BASE_URL}/coins/markets?vs_currency=${base}&ids=${CURRENCY_IDS}&order=${ORDER}&per_page=${PERPAGE}&page=${PAGE}&SPARK_LINE=${SPARK_LINE}&price_change_percentage=${price_change_percentage}`;
       const data = await this.http.get(url, config);
       return Promise.resolve({
         message: `data retrieved successfully`,

@@ -30,9 +30,10 @@ export class RatesController {
   }
 
   @Get(RATES_ROUTE.MARKETS)
-  async allMarketCharts(@Res() res: Response) {
+  async allMarketCharts(@Res() res: Response, @Query() query: any) {
     try {
-      const response = await this.rateServices.allCryptoMarketCharts();
+      const { base } = query
+      const response = await this.rateServices.allCryptoMarketCharts(base);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
