@@ -52,14 +52,12 @@ export class CustomLogger {
   @Prop({
     type: Types.ObjectId,
     ref: "User",
-    required: true
   })
   userId: string;
 
   @Prop({
     type: Types.ObjectId,
     ref: "Wallet",
-    required: true
   })
   walletId: string;
 

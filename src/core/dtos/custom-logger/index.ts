@@ -17,11 +17,11 @@ export const CustomLoggerOperationTypeList = [
 ]
 
 export enum CustomLoggerMethod {
-  PUT = 'put',
-  POST = 'post',
-  GET = 'get',
-  DELETE = 'delete',
-  PATCH = 'patch'
+  PUT = 'PUT',
+  POST = 'POST',
+  GET = 'GET',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH'
 }
 
 export const CustomLoggerMethodList = [
