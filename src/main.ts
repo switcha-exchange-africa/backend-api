@@ -3,11 +3,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { env, PORT } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import CustomLogger from './services/use-cases/customer-logger/custom-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    bufferLogs: true,
   });
+  app.useLogger(app.get(CustomLogger));
 
 
   const options = new DocumentBuilder()
@@ -24,7 +26,9 @@ async function bootstrap() {
   app.enableCors();
 
   await app.listen(PORT)
-    .then(() => Logger.log(`server running on port ${PORT}`))
+    .then(() => Logger.log(`server running on port ${PORT}`, 'context', {
+      
+    }))
 }
 bootstrap();
 

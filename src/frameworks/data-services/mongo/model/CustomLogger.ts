@@ -16,7 +16,7 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
-import { CustomLoggerErrorType, CustomLoggerMethod, CustomLoggerMethodList, CustomLoggerOperationType, CustomLoggerOperationTypeList, CustomLoggerType, CustomLoggerTypeList } from "src/core/dtos/custom-logger";
+import { CustomLoggerLevel, CustomLoggerLevelList, CustomLoggerErrorType, CustomLoggerMethod, CustomLoggerMethodList, CustomLoggerOperationType, CustomLoggerOperationTypeList, CustomLoggerType, CustomLoggerTypeList } from "src/core/entities/CustomLogger";
 
 export type CustomLoggerDocument = CustomLogger & Document;
 
@@ -40,6 +40,12 @@ export class CustomLogger {
   @Prop()
   ip: string
 
+  @Prop()
+  stack: string
+
+  @Prop()
+  context: string;
+
   @Prop({ enum: CustomLoggerTypeList })
   type: CustomLoggerType
 
@@ -48,6 +54,9 @@ export class CustomLogger {
 
   @Prop({ enum: CustomLoggerOperationTypeList })
   operationType: CustomLoggerOperationType
+
+  @Prop({ enum: CustomLoggerLevelList })
+  level: CustomLoggerLevel
 
   @Prop({
     type: Types.ObjectId,

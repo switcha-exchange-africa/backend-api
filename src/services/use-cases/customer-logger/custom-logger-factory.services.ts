@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { CustomLogger } from "src/core/entities/CustomLogger";
+import { CustomLoggerEntity } from "src/core/entities/CustomLogger";
 
 @Injectable()
 export class CustomLoggerFactoryServices {
-  create(data: CustomLogger) {
-    const logger = new CustomLogger();
+  create(data: CustomLoggerEntity) {
+    const logger = new CustomLoggerEntity();
     if (data.userId) logger.userId = data.userId;
     if (data.endpoint) logger.endpoint = data.endpoint;
     if (data.method) logger.method = data.method;

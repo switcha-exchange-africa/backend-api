@@ -1,6 +1,6 @@
 import { Activity } from '../entities/Activity';
 import { Bank } from '../entities/Bank';
-import { CustomLogger } from '../entities/CustomLogger';
+import { CustomLoggerEntity } from '../entities/CustomLogger';
 import { EmailChangeRequest } from '../entities/email-change-request.entity';
 import { Faucet } from '../entities/faucet.entity';
 import { TransactionReference } from '../entities/transaction-reference.entity';
@@ -20,5 +20,5 @@ export abstract class IDataServices {
   abstract banks: IGenericRepository<Bank>
   abstract activities: IGenericRepository<Activity>
   abstract emailChangeRequests: IGenericRepository<EmailChangeRequest>
-  abstract customLogger: IGenericRepository<CustomLogger>
+  abstract customLogger: IGenericRepository<CustomLoggerEntity>
 }

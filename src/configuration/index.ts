@@ -1,3 +1,5 @@
+import { LogLevel } from "@nestjs/common";
+
 require("dotenv").config()
 
 function getEnv(variable: string, optional: boolean = false) {
@@ -57,3 +59,9 @@ export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', true)!
 export const TATUM_ETH_ACCOUNT_ID = getEnv("TATUM_ETH_ACCOUNT_ID")
 
 
+export const LOGS_LEVEL = (): LogLevel[] => {
+
+  if (env.isProd) return ['log', 'warn', 'error'];
+  return ['error', 'warn', 'log', 'verbose', 'debug'];
+
+} 
