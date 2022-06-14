@@ -17,3 +17,4 @@ export const sendSms = async (payload: SMS_PAYLOAD_TYPE) => {
     Logger.error('@smsService', error.message);
   }
 }
+

@@ -1,20 +1,24 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { sendSms } from "src/lib/send-sms";
+import { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE } from "src/configuration";
+import twilio from "twilio";
 import { SmsSentEvent } from "../event/sms.event";
 
 @Injectable()
 export class SmsSentListener {
     @OnEvent('send.sms', { async: true })
     async handleSmsSendEvent(event: SmsSentEvent) {
-        //Handle and process sms sent event here
-        console.log("-------event works ----------")
-        console.log(event);
-        console.log("-------event works ----------")
-        console.log(event);
-        const { to, body, variables } = event;
-        await sendSms({ to, body, variables});
-        console.log("-------event works ----------")
+        try {
+            const { to, body } = event;
+            const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+            const message = await client.messages.create({ body, from: TWILIO_PHONE, to: to })
+            Logger.log(message)
+
+        } catch (e) {
+
+        }
+
     }
 
     @OnEvent('sent.sms')

@@ -12,6 +12,7 @@ import { Withdrawal, WithdrawalDocument } from './model/Withdrawal';
 import { Bank, BankDocument } from './model/Bank';
 import { Activity, ActivityDocument } from './model/Activity';
 import { EmailChangeRequest, EmailChangeRequestDocument } from './model/Email-Change-Request.model';
+import { CustomLogger, CustomLoggerDocument } from './model/CustomLogger';
 
 
 @Injectable()
@@ -26,7 +27,7 @@ export class MongoDataServices
   banks: MongoGenericRepository<Bank>;
   activities: MongoGenericRepository<Activity>;
   emailChangeRequests: MongoGenericRepository<EmailChangeRequest>;
-
+  customLogger: MongoGenericRepository<CustomLogger>;
 
 
   constructor(
@@ -57,6 +58,8 @@ export class MongoDataServices
     @InjectModel(EmailChangeRequest.name)
     private EmailChangeRequestRepository: Model<EmailChangeRequestDocument>,
 
+    @InjectModel(CustomLogger.name)
+    private CustomLoggerRepository: Model<CustomLoggerDocument>
   ) { }
 
 
@@ -70,7 +73,7 @@ export class MongoDataServices
     this.banks = new MongoGenericRepository<Bank>(this.BankRepository, ['userId'])
     this.activities = new MongoGenericRepository<Activity>(this.ActivityRepository)
     this.emailChangeRequests = new MongoGenericRepository<EmailChangeRequest>(this.EmailChangeRequestRepository)
-
+    this.customLogger = new MongoGenericRepository<CustomLogger>(this.CustomLoggerRepository)
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
     //   'genre',

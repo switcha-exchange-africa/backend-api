@@ -10,8 +10,8 @@ export class BankFactoryService {
     if (data.branch) bank.branch = data.branch;
     if (data.accountName) bank.accountName = data.accountName;
     if (data.accountNumber) bank.accountNumber = data.accountNumber;
-    if (data.createdAt) bank.createdAt = new Date();
-    if (data.updatedAt) bank.updatedAt = new Date();
+    bank.createdAt = new Date();
+    bank.updatedAt = new Date();
     return bank;
   }
 }
