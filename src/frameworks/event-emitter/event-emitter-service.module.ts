@@ -8,6 +8,7 @@ import { EmailSentListener } from "./listener/email.listener";
 import { SmsSentListener } from "./listener/sms.listener";
 import { BullModule } from '@nestjs/bull';
 import { CustomLoggerListener } from "./listener/custom-logger.listener";
+import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
 @Global()
 @Module({
@@ -35,6 +36,7 @@ import { CustomLoggerListener } from "./listener/custom-logger.listener";
     WalletCreateListener,
     WalletFactoryService,
     CustomLoggerListener,
+    CustomLoggerFactoryServices,
   ],
 })
 export class EventEmitterServiceModule { }
