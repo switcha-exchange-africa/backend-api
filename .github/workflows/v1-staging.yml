@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: "registry.digitalocean.com/switcha-africa"
   REGISTRY_NAME: "switcha-africa"
-  IMAGE_NAME: "switcha_staging-app"
+  IMAGE_NAME: "switcha-staging-api"
   COMMAND: "npm run start"
 
 
@@ -43,14 +43,12 @@ jobs:
       run: echo ::set-output name=IMG_TAG::$(echo $GITHUB_SHA)
 
     - name: Build and tag the Docker image
-      run: docker build ./ --file ./Dockerfile
-        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:${{steps.tag.outputs.IMG_TAG}}
-        --tag registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
+      run: docker build --rm ./ --file ./Dockerfile
+        --tag registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
     - name: Push the tagged Docker image
       run: |
-        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:${{steps.tag.outputs.IMG_TAG}}
-        docker push registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
+        docker push registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
     - name: Deploy to Digital Ocean droplet via SSH action
       uses: appleboy/ssh-action@v0.1.3
@@ -61,27 +59,20 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         envs: ${{secrets.IMAGE_NAME}},${{ secrets.CONTAINER_REGISTRY_NAME }},${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }},GITHUB_SHA
         script: |
-            # docker image
-            docker image remove registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}
-            
-            # Stop running container
-            docker stop ${{secrets.IMAGE_NAME}}
+            #docker stop container 
+            docker stop switcha-staging-api 
 
-            # Remove old container
-            docker rm ${{secrets.IMAGE_NAME}}
+            # rm
+            docker rm -f switcha-staging-api
 
-              # Remove old container
-            docker stop ${{secrets.IMAGE_NAME}}
+            # deleting untagged image
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 
-            ids=$(docker ps -a -q)
-            for id in $ids
-            do
-              echo "$id"
-              docker stop $id && docker rm $id
-            done
-            
             # pull latest image
-            docker pull registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
-            # Run a new container from a new image
-            docker run -d --restart always --publish 3464:3464 registry.digitalocean.com/${{ secrets.CONTAINER_REGISTRY_NAME }}/${{ secrets.IMAGE_NAME }}:latest
+            docker pull registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
+            # Run a new container from a new image
+            docker run --name switcha-staging-api -d --restart always --publish 3464:3464 registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
+
+            # deleting untagged image
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
