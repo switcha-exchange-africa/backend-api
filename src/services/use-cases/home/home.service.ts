@@ -6,7 +6,7 @@ export class HomeServices {
 
 
   health(): string {
-    return 'OK';
+    return 'OK UPDATE YEAH';
   }
 
 }
