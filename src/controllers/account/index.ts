@@ -119,7 +119,7 @@ export class AccountController {
   }
 
   @Put(ACCOUNT_ROUTE.UPLOAD_AVATAR)
-  @UseGuards(StrictAuthGuard)
+  @UseGuards(StrictAuthGuard) 
   async uploadAvatar(
     @Req() req: Request,
     @Res() res: Response,
