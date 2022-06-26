@@ -5,7 +5,7 @@ on:
     branches:
       - production
     tags:
-      - v1-prod-*
+      - prod-*
 
 env:
   REGISTRY: "registry.digitalocean.com/switcha-africa"
