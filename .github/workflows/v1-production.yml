@@ -3,9 +3,9 @@ name: Switcha Africa production continuous integration
 on:
   push:
     branches:
-      - v1
+      - production
     tags:
-      - v1-stage-*
+      - v1-prod-*
 
 env:
   REGISTRY: "registry.digitalocean.com/switcha-africa"
@@ -27,7 +27,7 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       id: downloadfile  # Remember to give an ID if you need the output
       with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1655076813/switcha-staging-env/env_r2vems.txt"
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1656281820/switcha-production-env/env-production_alpqsh.txt"
         target: ./
 
     - name: Install doctl
@@ -43,7 +43,7 @@ jobs:
       run: echo ::set-output name=IMG_TAG::$(echo $GITHUB_SHA)
 
     - name: Build and tag the Docker image
-      run: docker build --rm ./ --file ./Dockerfile
+      run: docker build --rm ./ --file ./Prod-Dockerfile
         --tag registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
     - name: Push the tagged Docker image
@@ -72,7 +72,7 @@ jobs:
             docker pull registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # Run a new container from a new image
-            docker run --name switcha-production-api -d --restart always --publish 3464:3464 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+            docker run --name switcha-production-api -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # deleting untagged image
             docker rmi $(docker images --filter "dangling=true" -q --no-trunc)

@@ -11,3 +11,4 @@ nginx-conf
 proxy.conf
 env.txt
 .env.production
+env-production.txt
