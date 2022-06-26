@@ -22,6 +22,7 @@ export class TransactionFactoryService {
     if (data.senderAddress) transaction.senderAddress = data.senderAddress
     if (data.reference) transaction.reference = data.reference
     if (data.generalTransactionReference) transaction.generalTransactionReference = data.generalTransactionReference
+    if (data.hash) transaction.hash = data.hash
     
     transaction.createdAt = new Date();
     transaction.updatedAt = new Date();

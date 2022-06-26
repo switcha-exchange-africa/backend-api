@@ -19,4 +19,5 @@ export class Notification {
   processedBy?: INotificationUserType
   createdAt?: Date
   updatedAt?: Date
+  userId?: string
 }

@@ -15,6 +15,7 @@ export class NotificationFactoryService {
     if (data.author) notification.author = data.author;
     if (data.github) notification.github = data.github;
     if (data.processedBy) notification.processedBy = data.processedBy;
+    if (data.userId) notification.userId = data.userId;
 
     notification.createdAt = new Date();
     notification.updatedAt = new Date();

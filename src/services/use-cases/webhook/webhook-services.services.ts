@@ -38,17 +38,20 @@ export class WebhookServices {
 
   async incomingTransactions(payload: Record<string, any>) {
     try {
-      const { amount, currency, reference, txId, from, to, blockHash } = payload
-      const [wallet, referenceAlreadyExists, transactionIdAlreadyExists] = await Promise.all([
-        this.data.wallets.findOne({ address: to }),
+      const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
+      const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
+        this.data.wallets.findOne({ address: to, accountId }),
         this.data.transactions.findOne({ reference }),
-        this.data.transactions.findOne({ tatumTransactionId: txId })
+        this.data.transactions.findOne({ tatumTransactionId: txId }),
+        this.data.transactions.findOne({ hash: blockHash })
       ])
 
       if (!wallet) throw new DoesNotExistsException("wallet does not exist");
       if (referenceAlreadyExists) throw new AlreadyExistsException("reference already exists")
       if (transactionIdAlreadyExists) throw new AlreadyExistsException("tatumTransactionId already exists")
+      if (transactionHashAlreadyExists) throw new AlreadyExistsException("Transaction hash already exists")
 
+      
       const user = await this.data.users.findOne({ userId: wallet.userId })
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -61,6 +64,7 @@ export class WebhookServices {
               $inc: {
                 balance: amount,
               },
+              lastDeposit: amount
             },
             session
           );
@@ -70,7 +74,7 @@ export class WebhookServices {
           }
 
           const txCreditPayload: OptionalQuery<Transaction> = {
-            userId: user.id,
+            userId: user._id,
             walletId: wallet?._id,
             currency,
             amount,
@@ -83,7 +87,9 @@ export class WebhookServices {
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
             senderAddress: from,
-            hash: blockHash
+            hash: blockHash,
+            reference,
+            tatumTransactionId: txId
           };
 
           const notificationPayload = {
