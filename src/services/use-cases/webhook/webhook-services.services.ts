@@ -10,7 +10,7 @@ import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_S
 import { OptionalQuery } from "src/core/types/database";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
-import { EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants";
+import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 
 Injectable()
 export class WebhookServices {
@@ -130,7 +130,7 @@ export class WebhookServices {
   
           BODY : ${JSON.stringify(payload)}
   `,
-          link: EXTERNAL_DEPOSIT_CHANNEL_LINK,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
         })
       ])
 

@@ -4,18 +4,19 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { IDataServices } from "src/core/abstracts";
+import { IDataServices, INotificationServices } from "src/core/abstracts";
 import {
   BadRequestsException,
   DoesNotExistsException,
 } from "../user/exceptions";
-import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import * as mongoose from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
+import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 
 @Injectable()
 export class BuySellServices {
@@ -28,6 +29,7 @@ export class BuySellServices {
     private http: IHttpServices,
     private dataServices: IDataServices,
     private txFactoryServices: TransactionFactoryService,
+    private discord: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -95,7 +97,7 @@ export class BuySellServices {
           const txRefPayload: TransactionReference = { userId, amount };
           const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
           const generalTransactionReference = generateReference('general')
-          
+
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(creditWallet?._id),
@@ -156,10 +158,27 @@ export class BuySellServices {
           throw new Error(error);
         }
       };
-      await databaseHelper.executeTransaction(
-        atomicTransaction,
-        this.connection
-      );
+
+      await Promise.all([
+        databaseHelper.executeTransaction(
+          atomicTransaction,
+          this.connection
+        ),
+        this.discord.inHouseNotification({
+          title: `External Deposit :- ${env.env} environment`,
+          message: `
+  
+          Bought Crypto
+
+          User: ${user.email}
+  
+          Bought ${amount} ${debitCoin} of ${creditCoin}
+          
+  `,
+          link: env.isProd ? BUY_SELL_CHANNEL_LINK_PRODUCTION : BUY_SELL_CHANNEL_LINK_DEVELOPMENT,
+        })
+      ])
+
       return {
         message: `${creditCoin} bought successfully`,
         data: {},
@@ -279,10 +298,27 @@ export class BuySellServices {
           throw new Error(error);
         }
       };
-      await databaseHelper.executeTransaction(
-        atomicTransaction,
-        this.connection
-      );
+
+      await Promise.all([
+        databaseHelper.executeTransaction(
+          atomicTransaction,
+          this.connection
+        ),
+        this.discord.inHouseNotification({
+          title: `External Deposit :- ${env.env} environment`,
+          message: `
+  
+          Sold Crypto
+
+          User: ${user.email}
+  
+          Sold ${amount} ${debitCoin} of ${creditCoin}
+          
+  `,
+          link: env.isProd ? BUY_SELL_CHANNEL_LINK_PRODUCTION : BUY_SELL_CHANNEL_LINK_DEVELOPMENT,
+        })
+      ])
+
       return {
         message: `${debitCoin} sold successfully`,
         data: {},

@@ -100,6 +100,17 @@ export const GITHUB_LINK =
 export const DISCORD_VERIFICATION_CHANNEL_LINK =
   "https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx";
 export const EXTERNAL_DEPOSIT_CHANNEL_LINK = 'https://discord.com/api/webhooks/990721058694901770/Feu-9cQAM-EuXqZLC2xDMKHX3yPEVGxnclk-wHX4mNoQqnXMOoR1FSlU8No2dV1jiFbo'
+export const EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990723155356188672/WAv3c_VWVAETzeETVxrKmemCO458jcC6_qwUKyo8KID0mJEmBInl_U1EJ3qnsJIgqE9e'
+export const BUY_SELL_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/990725024711331890/vnSnJGTcOaV4hdYN-n1HIo-Wq-Ypi93as-cTVUonxJChV_m6t_PSLyI1c2MWL5yjQMIe'
+export const BUY_SELL_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990725173558775808/T6Et7q4mtl1Rl-W45UAfoFlSYWlaR_x6-PKVVd5ftmiVM3EGMm288Egro2NQkytxV6ai'
+
+export const SWAP_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/990726127851024394/ORIUb74pKspIRL5DFLiPHwHNb3JdvOYeVm5dK-yVjGX9KMCi-Uf_AYylprhXr8jz_MLf'
+export const SWAP_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990726213423218698/p6FFlN_OrhCoPJnrDH2ZhG5pJlIj-wQ0qEG4JcthIzB8rfunCRwYn2bwimkl8PhuNUs-'
+
+export const WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/990726042031378482/zX-9vVzMwrehxFMs71mRGBHogyEsD3uo3s1r16y9kR4n5iOoXZ0b4Ur_8CzT45oFoiPC'
+export const WITHDRAWAL_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990725119288680468/a43in4GFIDXdEA8Sf0upYmsP-yM1Hxj_WPROaTGSiT3ThCzFzmtF-MVDFwv76WQYV6fG'
+
+
 
 export interface UserIDDocumentType {
   documentType: string;

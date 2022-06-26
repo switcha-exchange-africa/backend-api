@@ -5,9 +5,9 @@ import {
   DoesNotExistsException,
 } from "src/services/use-cases/user/exceptions";
 import { Injectable, Logger } from "@nestjs/common";
-import { IDataServices } from "src/core/abstracts";
+import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
-import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 
 import * as mongoose from "mongoose";
@@ -17,6 +17,7 @@ import { ResponsesType } from "src/core/types/response";
 import { CoinType } from "src/core/entities/wallet.entity";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
+import { SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 
 const TATUM_CONFIG = {
   headers: {
@@ -29,6 +30,7 @@ export class SwapServices {
     private dataServices: IDataServices,
     private http: IHttpServices,
     private txFactoryServices: TransactionFactoryService,
+    private discord: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -154,7 +156,26 @@ export class SwapServices {
         throw new Error(error);
       }
     };
-    await databaseHelper.executeTransaction(atomicTransaction, this.connection);
+
+    await Promise.all([
+      databaseHelper.executeTransaction(
+        atomicTransaction,
+        this.connection
+      ),
+      this.discord.inHouseNotification({
+        title: `Swap Coins :- ${env.env} environment`,
+        message: `
+
+        Swap Crypto
+
+        User: ${user.email}
+
+        Swapped ${amount} ${sourceCoin} to ${destinationCoin}
+        
+`,
+        link: env.isProd ? SWAP_CHANNEL_LINK_PRODUCTION : SWAP_CHANNEL_LINK_DEVELOPMENT,
+      })
+    ])
     return {
       message: `Swap successful`,
       data: {},
