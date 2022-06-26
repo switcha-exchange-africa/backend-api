@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { env } from 'src/configuration';
 
 @Injectable()
 export class HomeServices {
@@ -6,7 +7,7 @@ export class HomeServices {
 
 
   health(): string {
-    return 'OK UPDATE YEAH';
+    return `${env.env} OK `;
   }
 
 }
