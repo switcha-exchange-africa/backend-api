@@ -165,7 +165,7 @@ export class BuySellServices {
           this.connection
         ),
         this.discord.inHouseNotification({
-          title: `External Deposit :- ${env.env} environment`,
+          title: `Bought Crypto :- ${env.env} environment`,
           message: `
   
           Bought Crypto
@@ -305,7 +305,7 @@ export class BuySellServices {
           this.connection
         ),
         this.discord.inHouseNotification({
-          title: `External Deposit :- ${env.env} environment`,
+          title: `Sold Crypto :- ${env.env} environment`,
           message: `
   
           Sold Crypto
