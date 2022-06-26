@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 
-Injectable()
+@Injectable()
 export class NotificationServices {
   constructor(
     private data: IDataServices,
@@ -12,6 +12,7 @@ export class NotificationServices {
     try {
 
       const { query, userId } = payload
+      console.log(this.data)
       const { data, pagination } = await this.data.notifications.findAllWithPagination({
         query,
         queryFields: { userId: userId },
