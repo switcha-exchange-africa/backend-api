@@ -31,6 +31,10 @@ export enum TRANSACTION_ROUTE {
   GET_SINGLE = "/api/transactions/:id",
 }
 
+export enum NOTIFICATION_ROUTE {
+  GET = "/api/notifications",
+  GET_SINGLE = "/api/notifications/:id",
+}
 export enum FAUCET_ROUTE {
   ROUTE = "/api/faucet",
   SINGLE_ROUTE = "/api/faucet/:id",

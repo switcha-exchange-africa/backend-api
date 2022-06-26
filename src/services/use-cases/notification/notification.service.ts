@@ -26,6 +26,19 @@ export class NotificationServices {
   }
 
 
+  async detail(id: string) {
+    try {
+
+      const data = await this.data.notifications.findOne({ id });
+      return { message: "Notification received successfully", data, status: HttpStatus.OK }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
+
 
 
 }

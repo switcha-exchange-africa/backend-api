@@ -40,7 +40,7 @@ export class WebhookServices {
     try {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
-        this.data.wallets.findOne({ address: to, accountId }),
+        this.data.wallets.findOne({currency, address: to, accountId }),
         this.data.transactions.findOne({ reference }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
