@@ -56,6 +56,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       return Promise.reject(e);
     }
   }
+
   async findAllWithPagination(options: {
     query?: Record<string, any>,
     queryFields?: Record<string, any>

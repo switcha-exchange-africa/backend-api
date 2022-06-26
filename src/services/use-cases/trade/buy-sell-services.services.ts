@@ -14,6 +14,8 @@ import * as mongoose from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { ResponsesType } from "src/core/types/response";
+import { OptionalQuery } from "src/core/types/database";
+import { generateReference } from "src/lib/utils";
 
 @Injectable()
 export class BuySellServices {
@@ -76,7 +78,7 @@ export class BuySellServices {
 
           const creditedWallet = await this.dataServices.wallets.update(
             {
-              _id: creditWallet,
+              _id: creditWallet._id,
             },
             {
               $inc: {
@@ -92,11 +94,11 @@ export class BuySellServices {
 
           const txRefPayload: TransactionReference = { userId, amount };
           const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
-
-          const txCreditPayload: Transaction = {
+          const generalTransactionReference = generateReference('general')
+          
+          const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: creditWallet?._id,
-            txRefId: txRef?._id,
+            walletId: String(creditWallet?._id),
             currency: creditCoin,
             amount: creditedAmount,
             signedAmount: creditedAmount,
@@ -111,13 +113,15 @@ export class BuySellServices {
             rate: {
               pair: `${creditCoin}${debitCoin}`,
               rate: rate
-            }
+            },
+            generalTransactionReference,
+            reference: generateReference('credit'),
+
           };
 
-          const txDebitPayload: Transaction = {
+          const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: debitWallet?._id,
-            txRefId: txRef?._id,
             currency: debitCoin,
             amount: amount,
             signedAmount: -amount,
@@ -132,7 +136,10 @@ export class BuySellServices {
             rate: {
               pair: `${creditCoin}${debitCoin}`,
               rate: rate
-            }
+            },
+            generalTransactionReference,
+            reference: generateReference('debit'),
+
           };
 
           const [txCreditFactory, txDebitFactory] = await Promise.all([
@@ -223,31 +230,27 @@ export class BuySellServices {
             Logger.error("Error Occurred");
             throw new BadRequestsException("Error Occurred");
           }
-          const txRefPayload: TransactionReference = { userId, amount };
-          const txRef = await this.dataServices.transactionReferences.create(
-            txRefPayload,
-            session
-          );
-          const txDebitedPayload: Transaction = {
+          const generalTransactionReference = generateReference('general')
+
+          const txDebitedPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: debitWallet?._id,
-            txRefId: txRef?._id,
             currency: debitCoin,
             amount,
+            reference: generateReference('debit'),
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `${debitCoin} sold`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
-            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
+            generalTransactionReference,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
-          const txCreditedPayload: Transaction = {
+          const txCreditedPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: creditWallet?._id,
-            txRefId: txRef?._id,
             currency: creditCoin,
             amount: creditedAmount,
             signedAmount: creditedAmount,
@@ -256,8 +259,9 @@ export class BuySellServices {
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
-            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
+            generalTransactionReference,
+            reference: generateReference('credit'),
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
 

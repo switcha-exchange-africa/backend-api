@@ -1,4 +1,3 @@
-import { UserDetail } from "src/core/entities/user.entity";
 import { CoinType } from "./wallet.entity";
 
 
@@ -66,22 +65,24 @@ export interface Rates {
 
 export class Transaction {
   userId: string;
-  walletId?: string;
-  txRefId: string;
+  walletId: string;
   currency: CoinType;
   amount: number;
   signedAmount: number;
   type: TRANSACTION_TYPE;
   subType: TRANSACTION_SUBTYPE;
-  user?: UserDetail;
   status: TRANSACTION_STATUS;
   balanceAfter: number;
   balanceBefore: number;
   rate?: Rates;
   customTransactionType: CUSTOM_TRANSACTION_TYPE;
-  createdAt?: Date;
-  updatedAt?: Date;
-  description?: string
-  hash?: string
+  createdAt: Date;
+  updatedAt: Date;
+  description: string
+  hash: string
+  tatumTransactionId: string;
+  senderAddress: string
+  reference: string
+  generalTransactionReference: string
 }
 

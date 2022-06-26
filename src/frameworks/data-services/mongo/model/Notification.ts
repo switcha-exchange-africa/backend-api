@@ -3,7 +3,7 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { INotificationUserType } from 'src/core/entities/notification.entity';
+import { Types } from 'mongoose';
 
 
 export type NotificationDocument = Notification & Document;
@@ -35,20 +35,19 @@ export class Notification {
   video: string
   
   @Prop()
-  sentTo: INotificationUserType
-  
-  @Prop()
-  processedBy: INotificationUserType
-  
-  @Prop()
   createdAt: Date
 
   @Prop()
   updatedAt: Date
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: "User",
+    required: true
+  })
+  userId: string;
+
 
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
-
-  

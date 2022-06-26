@@ -137,6 +137,25 @@ export const generateTXHash = () => {
   const reference = key + generateRef(6);
   return reference;
 };
+export const generateReference = (type: string) => {
+  let ref = '';
+  const mode = env.isProd ? 'LIVE-' : 'TEST-';
+
+  switch (type) {
+    case 'general':
+      ref = `SWITCH-REF-${mode}${generateRef(10)}`.toLowerCase();
+      break;
+
+    case 'credit':
+      ref = `SWITCH-REF-${mode}CREDIT-${generateRef(10)}`.toLowerCase();
+      break;
+
+    case 'debit':
+      ref = `SWITCH-REF-${mode}DEBIT-${generateRef(10)}`.toLowerCase();
+      break;
+  }
+  return ref;
+};
 
 export const generateGoogleAuthUrl = ()=>{
   const oauth2Client = new google.auth.OAuth2(

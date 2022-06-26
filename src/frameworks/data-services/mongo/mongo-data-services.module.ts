@@ -16,6 +16,7 @@ import { Activity, ActivitySchema } from "./model/Activity";
 import { Bank, BankSchema } from "./model/Bank";
 import { EmailChangeRequestSchema, EmailChangeRequest } from "./model/Email-Change-Request.model";
 import { CustomLogger, CustomLoggerSchema } from "./model/CustomLogger";
+import { Notification, NotificationSchema } from "./model/Notification";
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { CustomLogger, CustomLoggerSchema } from "./model/CustomLogger";
       { name: Bank.name, schema: BankSchema },
       { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
       { name: CustomLogger.name, schema: CustomLoggerSchema },
-      
+      { name: Notification.name, schema: NotificationSchema },
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],

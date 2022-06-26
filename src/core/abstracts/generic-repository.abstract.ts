@@ -1,5 +1,7 @@
 import { ClientSession, FilterQuery, UpdateQuery } from "mongoose";
 
+
+
 export abstract class IGenericRepository<T> {
   abstract find(fields: FilterQuery<T>, options?: { select?: string, isLean?: boolean });
 

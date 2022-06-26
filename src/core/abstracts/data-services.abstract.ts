@@ -9,6 +9,7 @@ import { User } from '../entities/user.entity';
 import { Wallet } from '../entities/wallet.entity';
 import { Withdrawal } from '../entities/Withdrawal';
 import { IGenericRepository } from './generic-repository.abstract';
+import { Notification } from '../entities/notification.entity';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -21,4 +22,5 @@ export abstract class IDataServices {
   abstract activities: IGenericRepository<Activity>
   abstract emailChangeRequests: IGenericRepository<EmailChangeRequest>
   abstract customLogger: IGenericRepository<CustomLoggerEntity>
+  abstract notifications: IGenericRepository<Notification>
 }

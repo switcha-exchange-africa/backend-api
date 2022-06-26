@@ -23,18 +23,25 @@ export class Transaction {
   })
   walletId: string;
 
-  @Prop({
-    type: Types.ObjectId,
-    ref: "TransactionReference",
-    required: true,
-  })
-  txRefId: string;
 
   @Prop({ enum: COIN_TYPES_LIST })
   currency: CoinType;
 
   @Prop()
+  tatumTransactionId: string;
+
+  @Prop()
+  reference: string
+
+
+  @Prop()
+  generalTransactionReference: string
+
+  @Prop()
   signedAmount: number;
+
+  @Prop()
+  senderAddress: string
 
   @Prop()
   amount: number;

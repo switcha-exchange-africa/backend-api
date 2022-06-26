@@ -7,11 +7,11 @@ import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { TransferDto } from "src/core/dtos/trade/transfer.dto";
 import * as mongoose from "mongoose";
-import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
+import { generateReference } from "src/lib/utils";
+import { OptionalQuery } from "src/core/types/database";
 
 @Injectable()
 export class TransferServices {
@@ -19,7 +19,7 @@ export class TransferServices {
     private data: IDataServices,
     private txFactoryServices: TransactionFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection
-  ) {}
+  ) { }
 
   async transfer(body: TransferDto, userId: string) {
     const { recipientEmail, coin, recipientAddress, amount } = body;
@@ -49,7 +49,7 @@ export class TransferServices {
       if (!creditWallet) throw new DoesNotExistsException("Recipient Wallet does not exist");
       if (!debitWallet) throw new DoesNotExistsException("Sender Wallet does not exist");
 
-      
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const debitedWallet = await this.data.wallets.update(
@@ -79,16 +79,11 @@ export class TransferServices {
             throw new BadRequestsException("Error Occurred");
           }
 
-          const txRefPayload: TransactionReference = { userId, amount };
-          const txRef = await this.data.transactionReferences.create(
-            txRefPayload,
-            session
-          );
+          const generalTransactionReference = generateReference('general')
 
-          const txCreditPayload: Transaction = {
+          const txCreditPayload: OptionalQuery<Transaction> = {
             userId: recipient._id,
             walletId: creditWallet?._id,
-            txRefId: txRef?._id,
             currency: creditedWallet.coin,
             amount,
             signedAmount: amount,
@@ -97,15 +92,16 @@ export class TransferServices {
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
-            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.TRANSFER,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+
           };
 
-          const txDebitPayload: Transaction = {
+          const txDebitPayload: OptionalQuery<Transaction> = {
             userId: sender._id,
             walletId: debitWallet?._id,
-            txRefId: txRef?._id,
             currency: debitedWallet.coin,
             amount,
             signedAmount: amount,
@@ -114,9 +110,11 @@ export class TransferServices {
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
-            hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.TRANSFER,
+            generalTransactionReference,
+            reference: generateReference('debit'),
+
           };
 
           const [txCreditFactory, txDebitFactory] = await Promise.all([

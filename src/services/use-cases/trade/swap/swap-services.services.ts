@@ -1,6 +1,5 @@
 import { TransactionFactoryService } from "src/services/use-cases/transaction/transaction-factory.services";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import {
   BadRequestsException,
   DoesNotExistsException,
@@ -16,6 +15,8 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 import { ResponsesType } from "src/core/types/response";
 import { CoinType } from "src/core/entities/wallet.entity";
+import { generateReference } from "src/lib/utils";
+import { OptionalQuery } from "src/core/types/database";
 
 const TATUM_CONFIG = {
   headers: {
@@ -99,14 +100,12 @@ export class SwapServices {
           Logger.error("Error Occurred");
           throw new BadRequestsException("Source wallet does not match criteria");
         }
-        const txRefPayload: TransactionReference = { userId, amount };
-        const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
 
+        const generalTransactionReference = generateReference('general')
 
-        const txCreditPayload: Transaction = {
+        const txCreditPayload: OptionalQuery<Transaction> = {
           userId,
           walletId: destinationWallet?._id,
-          txRefId: txRef?._id,
           currency: destinationCoin as unknown as CoinType,
           amount: destinationAmount,
           signedAmount: destinationAmount,
@@ -115,15 +114,16 @@ export class SwapServices {
           status: TRANSACTION_STATUS.COMPLETED,
           balanceAfter: destinationWallet?.balance,
           balanceBefore: creditDestinationWallet?.balance,
-          hash: txRef?.hash,
           subType: TRANSACTION_SUBTYPE.CREDIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+          generalTransactionReference,
+          reference: generateReference('credit'),
+  
         };
 
-        const txDebitPayload: Transaction = {
+        const txDebitPayload: OptionalQuery<Transaction> = {
           userId,
           walletId: sourceWallet?._id,
-          txRefId: txRef?._id,
           currency: sourceCoin as unknown as CoinType,
           amount: amount,
           signedAmount: -amount,
@@ -132,9 +132,11 @@ export class SwapServices {
           status: TRANSACTION_STATUS.COMPLETED,
           balanceAfter: sourceWallet?.balance,
           balanceBefore: debitSourceWallet?.balance,
-          hash: txRef?.hash,
           subType: TRANSACTION_SUBTYPE.DEBIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+          generalTransactionReference,
+          reference: generateReference('debit'),
+  
         };
 
         const [txCreditFactory, txDebitFactory] = await Promise.all([

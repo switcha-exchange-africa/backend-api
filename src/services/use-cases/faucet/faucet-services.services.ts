@@ -4,14 +4,14 @@ import { FaucetFactoryServices } from "./faucet-factory.services";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import * as mongoose from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
-import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import { TransactionReferenceFactoryService } from "../transaction/transaction-reference.services";
 import { Faucet } from "src/core/entities/faucet.entity";
 import { ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
 import { CoinType } from "src/core/entities/wallet.entity";
+import { generateReference } from "src/lib/utils";
+import { OptionalQuery } from "src/core/types/database";
 
 @Injectable()
 export class FaucetServices {
@@ -19,7 +19,6 @@ export class FaucetServices {
     private data: IDataServices,
     private faucetFactoryServices: FaucetFactoryServices,
     private txFactoryServices: TransactionFactoryService,
-    private txRefFactoryServices: TransactionReferenceFactoryService,
 
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
@@ -39,28 +38,18 @@ export class FaucetServices {
           const faucetFactory = await this.faucetFactoryServices.create(body);
           faucet = await this.data.faucets.create(faucetFactory, session);
 
-          const txRefPayload: TransactionReference = { userId, amount };
-          const txRefFactory = await this.txRefFactoryServices.create(
-            txRefPayload
-          );
-          const txRef = await this.data.transactionReferences.create(
-            txRefFactory,
-            session
-          );
-
-          const txPayload: Transaction = {
+          const txPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: "faucet",
-            txRefId: txRef?._id,
             currency: coin as CoinType,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
             description,
+            reference: generateReference('credit'),
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: faucet?.balance,
             balanceBefore: faucet?.balance,
-            hash: txRef.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
@@ -120,20 +109,11 @@ export class FaucetServices {
             { $set: { lastDeposit: amount }, $inc: { balance: amount } },
             session
           );
+          const generalTransactionReference = generateReference('general')
 
-          const txRefPayload: TransactionReference = { userId, amount };
-          const txRefFactory = await this.txRefFactoryServices.create(
-            txRefPayload
-          );
-          const txRef = await this.data.transactionReferences.create(
-            txRefFactory,
-            session
-          );
-
-          const txDebitFaucetPayload: Transaction = {
+          const txDebitFaucetPayload:  OptionalQuery<Transaction>  = {
             userId,
             walletId: "faucet",
-            txRefId: txRef?._id,
             currency: coin as CoinType,
             amount,
             signedAmount: -amount,
@@ -142,15 +122,15 @@ export class FaucetServices {
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitFaucet?.balance,
             balanceBefore: faucet?.balance,
-            hash: txRef.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
+            reference: generateReference('debit'),
+            generalTransactionReference,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
 
-          const txWalletCreditPayload: Transaction = {
+          const txWalletCreditPayload:  OptionalQuery<Transaction>  = {
             userId,
             walletId,
-            txRefId: txRef?._id,
             currency: coin as CoinType,
             amount,
             signedAmount: amount,
@@ -159,7 +139,8 @@ export class FaucetServices {
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditWallet?.balance,
             balanceBefore: wallet?.balance,
-            hash: txRef.hash,
+            generalTransactionReference,
+            reference: generateReference('credit'),
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
