@@ -1,4 +1,3 @@
-import { FundDto } from "src/core/dtos/wallet/fund.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 import {
   Body,
@@ -75,18 +74,4 @@ export class WalletController {
     }
   }
 
-  @Post(WALLET_ROUTE.FUND)
-  @UseGuards(StrictAuthGuard)
-  async fund(@Req() req: Request, @Res() res: Response, @Body() body: FundDto) {
-    try {
-      const userId = req?.user?._id;
-      const response = await this.walletServices.fund(body, userId);
-      return res.status(response.status).json(response);
-    } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
-    }
-  }
 }

@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { env } from "src/configuration";
 
 @Injectable()
 export class CustomRedisService implements IInMemoryServices {
@@ -13,7 +14,7 @@ export class CustomRedisService implements IInMemoryServices {
 
   async set(key: string, value: any, expiry: string | number) {
     try {
-      await this.redis.set(key, value, 'EX', expiry);
+      await this.redis.set(key, `${env.env}-${value}`, 'EX', expiry);
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }
@@ -21,7 +22,7 @@ export class CustomRedisService implements IInMemoryServices {
   }
   async get(key: string) {
     try {
-      const value = await this.redis.get(key)
+      const value = await this.redis.get(`${env.env}-${key}`)
       return value;
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
@@ -30,7 +31,7 @@ export class CustomRedisService implements IInMemoryServices {
 
   async del(key: string) {
     try {
-      await this.redis.del(key);
+      await this.redis.del(`${env.env}-${key}`);
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }
@@ -38,7 +39,7 @@ export class CustomRedisService implements IInMemoryServices {
 
   async ttl(key: string) {
     try {
-      const value = await this.redis.ttl(key);
+      const value = await this.redis.ttl(`${env.env}-${key}`);
       return value;
 
     } catch (e) {

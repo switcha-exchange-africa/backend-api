@@ -1,13 +1,10 @@
 import { AlreadyExistsException, BadRequestsException } from "./../user/exceptions";
-import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "./../../../core/entities/wallet.entity";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { FundDto } from "./../../../core/dtos/wallet/fund.dto";
 import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import {
-  MONO_SECRET_KEY,
   TATUM_API_KEY,
   TATUM_BASE_URL,
   TATUM_BTC_ACCOUNT_ID,
@@ -18,6 +15,7 @@ import {
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
 import { UserDetail } from "src/core/entities/user.entity";
+import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "src/core/entities/wallet.entity";
 
 
 const generateTatumWalletPayload = (coin: CoinType, userId: string) => {
@@ -313,41 +311,41 @@ export class WalletServices {
     }
   }
 
-  async fund(body: FundDto, userId) {
-    try {
-      const { amount } = body;
-      const user = await this.dataServices.users.findOne({ _id: userId });
-      if (!user) throw new DoesNotExistsException("user does not exist");
-      const wallet = await this.dataServices.wallets.findOne({
-        userId: userId,
-        coin: CoinType.NGN,
-      });
-      if (!wallet) throw new DoesNotExistsException("wallet does not exist");
-      const url = "https://api.withmono.com/v1/payments/initiate";
-      const data = {
-        amount,
-        type: "onetime-debit",
-        description: "Wallet Deposit",
-        reference: `ref${String(wallet._id)}`,
-        meta: {
-          reference: `${String(wallet._id)}`,
-        },
-      };
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "mono-sec-key": MONO_SECRET_KEY,
-        },
-      };
-      const response = this.http.post(url, data, config);
-      Logger.log(response);
-      return response;
-    } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
-    }
-  }
+  // async fund(body: FundDto, userId) {
+  //   try {
+  //     const { amount } = body;
+  //     const user = await this.dataServices.users.findOne({ _id: userId });
+  //     if (!user) throw new DoesNotExistsException("user does not exist");
+  //     const wallet = await this.dataServices.wallets.findOne({
+  //       userId: userId,
+  //       coin: CoinType.NGN,
+  //     });
+  //     if (!wallet) throw new DoesNotExistsException("wallet does not exist");
+  //     const url = "https://api.withmono.com/v1/payments/initiate";
+  //     const data = {
+  //       amount,
+  //       type: "onetime-debit",
+  //       description: "Wallet Deposit",
+  //       reference: `ref${String(wallet._id)}`,
+  //       meta: {
+  //         reference: `${String(wallet._id)}`,
+  //       },
+  //     };
+  //     const config = {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Accept: "application/json",
+  //         "mono-sec-key": MONO_SECRET_KEY,
+  //       },
+  //     };
+  //     const response = this.http.post(url, data, config);
+  //     Logger.log(response);
+  //     return response;
+  //   } catch (error) {
+  //     Logger.error(error);
+  //     if (error.name === "TypeError")
+  //       throw new HttpException(error.message, 500);
+  //     throw new Error(error);
+  //   }
+  // }
 }

@@ -1,0 +1,78 @@
+name: Switcha Africa production continuous integration
+
+on:
+  push:
+    branches:
+      - v1
+    tags:
+      - v1-stage-*
+
+env:
+  REGISTRY: "registry.digitalocean.com/switcha-africa"
+  REGISTRY_NAME: "switcha-africa"
+  IMAGE_NAME: "switcha-production-api"
+  COMMAND: "npm run start"
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Download .env from url
+      uses: suisei-cn/actions-download-file@v1
+      id: downloadfile  # Remember to give an ID if you need the output
+      with:
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1655076813/switcha-staging-env/env_r2vems.txt"
+        target: ./
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }}
+
+    - name: Log in to DigitalOcean Container Registry with short-lived credentials
+      run: doctl registry login --expiry-seconds 600
+
+    - name: Get the commit hash
+      id: tag
+      run: echo ::set-output name=IMG_TAG::$(echo $GITHUB_SHA)
+
+    - name: Build and tag the Docker image
+      run: docker build --rm ./ --file ./Dockerfile
+        --tag registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+
+    - name: Push the tagged Docker image
+      run: |
+        docker push registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+
+    - name: Deploy to Digital Ocean droplet via SSH action
+      uses: appleboy/ssh-action@v0.1.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        envs: ${{secrets.IMAGE_NAME}},${{ secrets.CONTAINER_REGISTRY_NAME }},${{ secrets.DIGITAL_OCEAN_ACCESS_TOKEN }},GITHUB_SHA
+        script: |
+            #docker stop container 
+            docker stop switcha-production-api 
+
+            # rm
+            docker rm -f switcha-production-api
+
+            # deleting untagged image
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+
+            # pull latest image
+            docker pull registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+
+            # Run a new container from a new image
+            docker run --name switcha-production-api -d --restart always --publish 3464:3464 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+
+            # deleting untagged image
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
