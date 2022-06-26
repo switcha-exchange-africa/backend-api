@@ -57,7 +57,7 @@ export const TATUM_USDT_TRON_ACCOUNT_ID = getEnv('TATUM_USDT_TRON_ACCOUNT_ID')!
 export const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', true);
 export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', true)!
 export const TATUM_ETH_ACCOUNT_ID = getEnv("TATUM_ETH_ACCOUNT_ID")
-
+export const TATUM_WEBHOOK_SECRET = getEnv("TATUM_WEBHOOK_SECRET", true)!
 
 export const LOGS_LEVEL = (): LogLevel[] => {
 

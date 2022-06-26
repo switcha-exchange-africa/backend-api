@@ -55,6 +55,8 @@ export enum TRADE_ROUTE {
 
 export enum WEBHOOK_ROUTE {
   ROUTE = "/api/webhook/tatum",
+  INCOMING_TRANSACTION_ROUTE = '/api/webhook/tatum-incoming-transaction',
+  INCOMING_PENDING_TRANSACTION_ROUTE = '/api/webhook/tatum-pending-transaction'
 }
 
 

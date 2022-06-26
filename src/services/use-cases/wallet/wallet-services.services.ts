@@ -130,7 +130,6 @@ export class WalletServices {
         {},
         CONFIG
       );
-      this.emitter.emit("send.webhook.subscription", { chain: tatumPayload.chain, address });
 
       const walletPayload: Wallet = {
         address,

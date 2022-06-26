@@ -10,3 +10,4 @@ nginx-conf
 .vscode
 proxy.conf
 env.txt
+.env.production

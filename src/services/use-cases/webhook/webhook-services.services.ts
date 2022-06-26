@@ -23,4 +23,28 @@ export class WebhookServices {
   }
 
 
+  async incomingTransactions(payload: Record<string, any>) {
+    try {
+      const { } = payload
+      return { message: "Webhook received successfully", status: 200, data: payload }
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
+
+
+  async incomingPendingTransactions(payload: Record<string, any>) {
+    try {
+      const { } = payload
+      return { message: "Webhook received successfully", status: 200, data: payload }
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
 }
+
+
