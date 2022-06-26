@@ -231,6 +231,7 @@ export class BuySellServices {
               $inc: {
                 balance: creditedAmount,
               },
+              lastDeposit: creditedAmount
             },
             session
           );
@@ -250,6 +251,7 @@ export class BuySellServices {
               $inc: {
                 balance: -amount,
               },
+              lastWithdrawal: amount
             },
             session
           );
