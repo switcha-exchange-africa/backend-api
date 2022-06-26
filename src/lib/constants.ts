@@ -99,6 +99,7 @@ export const GITHUB_LINK =
   "https://github.com/switcha-exchange-africa/backend-api";
 export const DISCORD_VERIFICATION_CHANNEL_LINK =
   "https://discord.com/api/webhooks/942105718755045416/Mg84Lp40RtoVYzbZkdwG1Rfnuv_vd7cwAwJ2cz8p-ODOEFmB0Vow8zjNDYg2i7BLcwRx";
+export const EXTERNAL_DEPOSIT_CHANNEL_LINK = 'https://discord.com/api/webhooks/990721058694901770/Feu-9cQAM-EuXqZLC2xDMKHX3yPEVGxnclk-wHX4mNoQqnXMOoR1FSlU8No2dV1jiFbo'
 
 export interface UserIDDocumentType {
   documentType: string;

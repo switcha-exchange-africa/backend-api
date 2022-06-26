@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Request } from "express"
-import { IDataServices } from "src/core/abstracts";
+import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { AlreadyExistsException, BadRequestsException, DoesNotExistsException } from "../user/exceptions";
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
@@ -9,6 +9,8 @@ import { TransactionFactoryService } from "../transaction/transaction-factory.se
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { OptionalQuery } from "src/core/types/database";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
+import { env } from "src/configuration";
+import { EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants";
 
 Injectable()
 export class WebhookServices {
@@ -16,6 +18,7 @@ export class WebhookServices {
     private data: IDataServices,
     private txFactoryServices: TransactionFactoryService,
     private notificationFactory: NotificationFactoryService,
+    private discord: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -40,7 +43,7 @@ export class WebhookServices {
     try {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
-        this.data.wallets.findOne({currency, address: to, accountId }),
+        this.data.wallets.findOne({ currency, address: to, accountId }),
         this.data.transactions.findOne({ reference }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
@@ -51,7 +54,7 @@ export class WebhookServices {
       if (transactionIdAlreadyExists) throw new AlreadyExistsException("tatumTransactionId already exists")
       if (transactionHashAlreadyExists) throw new AlreadyExistsException("Transaction hash already exists")
 
-      
+
       const user = await this.data.users.findOne({ userId: wallet.userId })
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -112,10 +115,24 @@ export class WebhookServices {
           throw new Error(error);
         }
       };
-      await databaseHelper.executeTransaction(
-        atomicTransaction,
-        this.connection
-      );
+
+      await Promise.all([
+        databaseHelper.executeTransaction(
+          atomicTransaction,
+          this.connection
+        ),
+        this.discord.inHouseNotification({
+          title: `External Deposit :- ${env.env} environment`,
+          message: `
+  
+          External Deposit
+          Recieved ${amount} ${currency} from ${from}
+  
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+      ])
 
       return { message: "Webhook received successfully", status: 200, data: payload }
     } catch (error) {
