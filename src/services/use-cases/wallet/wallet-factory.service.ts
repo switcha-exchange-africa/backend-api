@@ -1,5 +1,6 @@
 import { Wallet, WALLET_STATUS } from "src/core/entities/wallet.entity";
 import { Injectable } from "@nestjs/common";
+import { generateReference } from "src/lib/utils";
 
 @Injectable()
 export class WalletFactoryService {
@@ -19,7 +20,7 @@ export class WalletFactoryService {
     wallet.createdAt = new Date();
     wallet.updatedAt = new Date();
     wallet.status = WALLET_STATUS.ACTIVE;
-
+    wallet.reference = generateReference('general')
     return wallet;
   }
 }

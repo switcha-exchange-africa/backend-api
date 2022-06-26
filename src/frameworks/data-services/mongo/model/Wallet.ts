@@ -45,6 +45,9 @@ export class Wallet {
   lastWithdrawal: number;
 
   @Prop()
+  reference:string
+
+  @Prop()
   createdAt: Date;
 
   @Prop()

@@ -94,5 +94,5 @@ export class Wallet {
   memo?: string;
 
   tatumMessage?: string;
-
+  reference?: string
 }
