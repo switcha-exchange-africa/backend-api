@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
-import { NOTIFICATION_ROUTE, TRANSACTION_ROUTE } from "src/lib/route-constant";
+import { NOTIFICATION_ROUTE } from "src/lib/route-constant";
 import { NotificationServices } from "src/services/use-cases/notification/notification.service";
 
 @Controller()
@@ -37,7 +37,7 @@ export class NotificationController {
   }
 
 
-  @Get(TRANSACTION_ROUTE.GET_SINGLE)
+  @Get(NOTIFICATION_ROUTE.GET_SINGLE)
   @UseGuards(StrictAuthGuard)
   async detail(
     @Res() res: Response,
