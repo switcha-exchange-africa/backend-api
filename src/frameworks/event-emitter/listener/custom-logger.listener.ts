@@ -14,8 +14,11 @@ export class CustomLoggerListener {
   }
   @OnEvent('log.entry', { async: true })
   async logEntry(event: CustomLoggerEntity) {
-    const factory = await this.factory.create(event)
-    await this.data.customLogger.create(factory)
+    try {
+      const factory = await this.factory.create(event)
+      await this.data.customLogger.create(factory)
+    }catch(e){console.error(e)}
+
   }
 
 } 

@@ -17,6 +17,7 @@ import { ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
 import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { NotificationFactoryService } from "../notification/notification-factory.service";
 
 @Injectable()
 export class BuySellServices {
@@ -30,6 +31,7 @@ export class BuySellServices {
     private dataServices: IDataServices,
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
+    private notificationFactory: NotificationFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -144,14 +146,19 @@ export class BuySellServices {
 
           };
 
-          const [txCreditFactory, txDebitFactory] = await Promise.all([
+          const [txCreditFactory, txDebitFactory, notificationFactory] = await Promise.all([
             this.txFactoryServices.create(txCreditPayload),
-            this.txFactoryServices.create(txDebitPayload)
+            this.txFactoryServices.create(txDebitPayload),
+            this.notificationFactory.create({
+              userId,
+              title: "Bought Crypto",
+              message: `Bought ${amount} ${debitCoin} of ${creditCoin}`
+            })
           ])
           await Promise.all([
             this.dataServices.transactions.create(txCreditFactory, session),
             this.dataServices.transactions.create(txDebitFactory, session),
-
+            this.dataServices.notifications.create(notificationFactory, session)
           ])
         } catch (error) {
           Logger.error(error);
@@ -193,6 +200,7 @@ export class BuySellServices {
 
   async sell(body: BuySellDto, userId: string): Promise<ResponsesType<any>> {
     const { amount, creditCoin, debitCoin } = body;
+
     try {
       const [user, debitWallet, creditWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -208,7 +216,6 @@ export class BuySellServices {
       if (!user) throw new DoesNotExistsException("user does not exist");
       if (!creditWallet) throw new DoesNotExistsException(`${creditCoin} does not exists`);
       if (!debitWallet) throw new DoesNotExistsException(`${debitCoin} does not exists`);
-
       const url = `${TATUM_BASE_URL}/tatum/rate/${debitCoin}?basePair=${creditCoin}`;
       const { value } = await this.http.get(url, this.config);
       const rate = value
@@ -229,7 +236,8 @@ export class BuySellServices {
           );
 
           if (!creditedWallet) {
-            Logger.error("Error Occurred");
+            console.error("AN error Occured");
+
             throw new BadRequestsException("Error Occurred");
           }
 
@@ -246,7 +254,8 @@ export class BuySellServices {
             session
           );
           if (!debitedWallet) {
-            Logger.error("Error Occurred");
+            console.error("AN error Occured");
+
             throw new BadRequestsException("Error Occurred");
           }
           const generalTransactionReference = generateReference('general')
@@ -284,17 +293,23 @@ export class BuySellServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
 
-          const [txDebitFactory, txCreditFactory] = await Promise.all([
+          const [txDebitFactory, txCreditFactory, notificationFactory] = await Promise.all([
             this.txFactoryServices.create(txDebitedPayload),
-            this.txFactoryServices.create(txCreditedPayload)
+            this.txFactoryServices.create(txCreditedPayload),
+            this.notificationFactory.create({
+              userId,
+              title: "Sold Crypto",
+              message: `Sold ${amount} ${debitCoin} of ${creditCoin}`
+            })
           ])
           await Promise.all([
             this.dataServices.transactions.create(txDebitFactory, session),
-            this.dataServices.transactions.create(txCreditFactory, session)
+            this.dataServices.transactions.create(txCreditFactory, session),
+            this.dataServices.notifications.create(notificationFactory, session)
           ])
 
         } catch (error) {
-          Logger.error(error);
+          console.error(error);
           throw new Error(error);
         }
       };
@@ -325,7 +340,7 @@ export class BuySellServices {
         status: HttpStatus.OK,
       };
     } catch (error) {
-      Logger.error(error);
+      console.error(error);
       if (error.name === "TypeError")
         throw new HttpException(error.message, 500);
       throw new Error(error);
