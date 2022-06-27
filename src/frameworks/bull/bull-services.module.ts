@@ -16,3 +16,4 @@ import { WalletWebhookSubscriptionConsumer } from './wallet-webhook-subsciption.
   providers: [ WalletWebhookSubscriptionConsumer, WalletFactoryService],
 })
 export class BullServiceModule { }
+
