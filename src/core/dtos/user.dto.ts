@@ -2,7 +2,7 @@ import { IsString, IsNotEmpty, IsBoolean, IsEmail, IsOptional, IsEnum } from 'cl
 import { PartialType } from '@nestjs/mapped-types';
 import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
 
-export class CreateUserDto {
+export class SignupDto {
   @IsString()
   @IsNotEmpty()
   firstName: string;
@@ -60,4 +60,4 @@ export class CreateUserDto {
   userType: USER_TYPE
 }
 
-export class UpdateUserDto extends PartialType(CreateUserDto) { }
+export class UpdateUserDto extends PartialType(SignupDto) { }

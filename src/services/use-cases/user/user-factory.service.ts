@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from 'src/core/dtos/user.dto';
+import { SignupDto } from 'src/core/dtos/user.dto';
 import { User } from 'src/core/entities/user.entity';
 import { USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
 import { hash } from 'src/lib/utils';
 
 @Injectable()
 export class UserFactoryService {
-  async createNewUser(data: CreateUserDto) {
+  async createNewUser(data: SignupDto) {
     const user = new User();
 
     if (data.firstName) user.firstName = data.firstName;
@@ -18,7 +18,7 @@ export class UserFactoryService {
     if (data.country) user.country = data.country;
     if (data.isAdmin) user.isAdmin = data.isAdmin;
     if (data.phone) user.phone = data.phone;
-    
+
     user.emailVerified = false;
     user.phoneVerified = false
     user.authStatus = USER_SIGNUP_STATUS_TYPE.PENDING;

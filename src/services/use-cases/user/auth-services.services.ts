@@ -15,7 +15,7 @@ import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { randomBytes } from 'crypto'
-import { CreateUserDto } from 'src/core/dtos/user.dto';
+import { SignupDto } from 'src/core/dtos/user.dto';
 import { UserFactoryService } from './user-factory.service';
 import { ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
@@ -32,7 +32,7 @@ export class AuthServices {
 
   ) { }
 
-  async createUser(data: CreateUserDto, res: Response): Promise<ResponsesType<User>> {
+  async signup(data: SignupDto, res: Response): Promise<ResponsesType<User>> {
     try {
 
       const [userExists, phoneExists] = await Promise.all([this.dataServices.users.findOne({ email: data.email }), this.dataServices.users.findOne({ email: data.phone })]);

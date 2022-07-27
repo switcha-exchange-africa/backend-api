@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthServices } from "src/services/use-cases/user/auth-services.services";
-import { CreateUserDto } from "src/core/dtos/user.dto";
+import { SignupDto } from "src/core/dtos/user.dto";
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto";
 import { LooseAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
@@ -29,9 +29,9 @@ export class AuthenticationController {
   constructor(private authServices: AuthServices) {}
 
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
-  async signup(@Res() res: Response, @Body() body: CreateUserDto) {
+  async signup(@Res() res: Response, @Body() body: SignupDto) {
     try {
-      const response = await this.authServices.createUser(body, res);
+      const response = await this.authServices.signup(body, res);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);
