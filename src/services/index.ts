@@ -5,7 +5,7 @@ import { RedisServiceModule } from "src/frameworks/in-memory-database/redis/redi
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { DataServicesModule } from "./data-services/data-services.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
-import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
+// import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
 import { RatesServicesModule } from "./use-cases/rates/rates-services.module";
@@ -34,6 +34,6 @@ export default [
   BullServiceModule,
   TransferServicesModule,
   BankServicesModule,
-  CustomLoggerServicesModule,
+  // CustomLoggerServicesModule,
   NotificationServicesModule
 ]

@@ -1,5 +1,3 @@
-
-import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, CoinType, COIN_TYPES_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
@@ -23,8 +21,6 @@ export class Wallet {
   })
   userId: string;
 
-  @Prop({ type: Object })
-  user: UserDetail;
 
   @Prop()
   accountId: string;
@@ -45,7 +41,7 @@ export class Wallet {
   lastWithdrawal: number;
 
   @Prop()
-  reference:string
+  reference: string
 
   @Prop()
   createdAt: Date;

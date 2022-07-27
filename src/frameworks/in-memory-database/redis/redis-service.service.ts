@@ -14,7 +14,7 @@ export class CustomRedisService implements IInMemoryServices {
 
   async set(key: string, value: any, expiry: string | number) {
     try {
-      await this.redis.set(key, `${env.env}-${value}`, 'EX', expiry);
+      await this.redis.set(`${env.env}-${key}`, `${value}`, 'EX', expiry);
     } catch (e) {
       Logger.error('@cache-manager-redis', e)
     }

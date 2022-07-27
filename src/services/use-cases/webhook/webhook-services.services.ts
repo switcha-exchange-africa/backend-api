@@ -1,16 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Request } from "express"
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { AlreadyExistsException, BadRequestsException, DoesNotExistsException } from "../user/exceptions";
+import { BadRequestsException } from "../user/exceptions";
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import { OptionalQuery } from "src/core/types/database";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { Wallet } from "src/core/entities/wallet.entity";
 
 Injectable()
 export class WebhookServices {
@@ -38,21 +38,30 @@ export class WebhookServices {
     }
   }
 
-
+  /**
+   * 
+   * @param payload 
+   * @desc
+   *  Enable HTTP POST JSON notifications on incoming blockchain transactions on virtual accounts. 
+   * This web hook will be invoked, when the transaction is credited to the virtual account. 
+   * Transaction is credited, when it has sufficient amount of blockchain confirmations. For BTC, LTC, BCH, DOGE - 2 confirmations, others - 1 confirmation. 
+   * Request body of the POST request will be JSON object with attributes:
+   * @returns 
+   */
   async incomingTransactions(payload: Record<string, any>) {
     try {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
-        this.data.wallets.findOne({ currency, address: to, accountId }),
+        this.data.wallets.findOne({ coin: currency.toUpperCase(), address: to, accountId }),
         this.data.transactions.findOne({ reference }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
-
-      if (!wallet) throw new DoesNotExistsException("wallet does not exist");
-      if (referenceAlreadyExists) throw new AlreadyExistsException("reference already exists")
-      if (transactionIdAlreadyExists) throw new AlreadyExistsException("tatumTransactionId already exists")
-      if (transactionHashAlreadyExists) throw new AlreadyExistsException("Transaction hash already exists")
+      console.log("WALLET", wallet)
+      if (!wallet) return Promise.resolve({ message: 'Wallet does not exists' })
+      if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
+      if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })
+      if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
 
 
       const user = await this.data.users.findOne({ userId: wallet.userId })
@@ -76,14 +85,14 @@ export class WebhookServices {
             throw new BadRequestsException("Error Occurred");
           }
 
-          const txCreditPayload: OptionalQuery<Transaction> = {
-            userId: user._id,
-            walletId: wallet?._id,
+          const txCreditPayload = {
+            userId: String(user._id),
+            walletId: String(wallet?._id),
             currency,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Recieved ${amount} ${currency} from ${from} `,
+            description: `Recieved ${amount} ${currency} from ${from}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: wallet?.balance,
@@ -145,8 +154,20 @@ export class WebhookServices {
 
   async incomingPendingTransactions(payload: Record<string, any>) {
     try {
-      const { } = payload
+
+      const { amount, currency, accountId, from, to } = payload
+      const wallet: Wallet = await this.data.wallets.findOne({ accountId, coin: currency.toUpperCase(), address: to })
+
+      if (!wallet) return Promise.resolve({ message: 'Wallet does not exists' })
+      const factory = await this.notificationFactory.create({
+        title: "Incoming Deposit",
+        message: `Incoming deposit of ${amount}${currency} from ${from}`,
+        userId: wallet.userId
+      })
+
+      await this.data.notifications.create(factory)
       return { message: "Webhook received successfully", status: 200, data: payload }
+
     } catch (error) {
       Logger.error(error)
       if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })

@@ -64,7 +64,7 @@ export interface Rates {
 }
 
 export class Transaction {
-  userId: string;
+  userId: string ;
   walletId: string;
   currency: CoinType;
   amount: number;

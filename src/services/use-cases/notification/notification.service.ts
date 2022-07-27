@@ -12,7 +12,6 @@ export class NotificationServices {
     try {
 
       const { query, userId } = payload
-      console.log(this.data)
       const { data, pagination } = await this.data.notifications.findAllWithPagination({
         query,
         queryFields: { userId: userId },

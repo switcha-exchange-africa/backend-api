@@ -8,7 +8,6 @@ import { hash } from 'src/lib/utils';
 export class UserFactoryService {
   async createNewUser(data: SignupDto) {
     const user = new User();
-
     if (data.firstName) user.firstName = data.firstName;
     if (data.lastName) user.lastName = data.lastName;
     if (data.email) user.email = data.email;
@@ -18,7 +17,6 @@ export class UserFactoryService {
     if (data.country) user.country = data.country;
     if (data.isAdmin) user.isAdmin = data.isAdmin;
     if (data.phone) user.phone = data.phone;
-
     user.emailVerified = false;
     user.phoneVerified = false
     user.authStatus = USER_SIGNUP_STATUS_TYPE.PENDING;

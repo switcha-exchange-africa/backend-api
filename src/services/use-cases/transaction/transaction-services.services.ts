@@ -1,27 +1,26 @@
-import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
 import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { Types } from "mongoose";
 
 @Injectable()
 export class TransactionServices {
-  constructor(private dataServices: IDataServices) { }
+  constructor(private data: IDataServices) { }
 
-  async findAll(query: Record<string, any>, userId: string) {
+  async getAllTransactions(payload: { perpage: string, page: string, dateFrom: string, dateTo: string, sortBy: string, orderBy: string, userId: string }) {
     try {
-      const user = await this.dataServices.users.findOne({ _id: userId });
-      if (!user) throw new DoesNotExistsException("User does not exist");
-      
-      const transactions =
-        await this.dataServices.transactions.findAllWithPagination({
-          query,
-          queryFields: { userId: userId },
-        });
-      
+
+      const { data, pagination } = await this.data.transactions.findAllWithPagination({
+        query: payload,
+        queryFields: {},
+      });
+
       return Promise.resolve({
         message: "Transaction retrieved successfully",
         status: 200,
-        transactions,
+        data,
+        pagination,
       });
+
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -30,17 +29,16 @@ export class TransactionServices {
     }
   }
 
-  async details(id: string) {
+  async getSingleTransaction(id: Types.ObjectId) {
     try {
-      const details =
-        await this.dataServices.transactions.findAllWithPagination({
-          query: { _id: id },
-        });
+
+      const data = await this.data.transactions.findOne({ _id: id });
       return Promise.resolve({
         message: "Transaction Details retrieved succesfully",
         status: 200,
-        details,
+        data,
       });
+
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")

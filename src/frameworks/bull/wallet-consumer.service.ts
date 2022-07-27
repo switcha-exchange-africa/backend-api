@@ -1,51 +1,43 @@
-
-// import { Processor, OnQueueActive, Process, OnGlobalQueueCompleted, OnQueueFailed } from '@nestjs/bull';
-// import { EventEmitter2 } from '@nestjs/event-emitter';
-// import { Job } from 'bull';
-// import { TATUM_API_KEY, TATUM_BASE_URL } from 'src/configuration';
-// import { IDataServices } from 'src/core/abstracts';
-// import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
-// import { Wallet } from 'src/core/entities/wallet.entity';
-// import { COIN_TYPES } from 'src/lib/constants';
-// import { WalletFactoryService } from 'src/services/use-cases/wallet/wallet-factory.service';
+import { Processor, OnQueueActive, Process, OnGlobalQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bull';
+import { WalletServices } from 'src/services/use-cases/wallet/wallet-services.services';
 
 
-// const CONFIG = {
-//   headers: {
-//     "X-API-Key": TATUM_API_KEY
-//   },
-// };
-// @Processor('wallet')
-// export class WalletTaskConsumer {
-//   constructor(
-//     private http: IHttpServices,
-//     private data: IDataServices,
-//     private walletFactory: WalletFactoryService,
-//     private emitter: EventEmitter2,
 
-//   ) { }
+@Processor('wallet')
+export class CreateWalletTaskConsumer {
+  constructor(
+    private walletService: WalletServices,
 
-//   @OnQueueActive()
-//   onActive(job: Job) {
-//     console.log(
-//       `Processing job ${job.id} of type ${job.name} with data ${job.data}...`,
-//     );
-//   }
+  ) { }
 
-//   @Process()
-//   async generateWallet(job: Job) {
-   
-//     }
-//   }
-//   @OnGlobalQueueCompleted()
-//   async onGlobalCompleted(job: Job<unknown>, result: any) {
-//     console.log('(Global) on completed: job ', job.id, ' -> result: ', result);
-//   }
+  @OnQueueActive()
+  onActive(job: Job) {
+    Logger.log(
+      `Processing job ${job.id} of type ${job.name} with data ${job.data}...`,
+    );
+  }
 
-//   @OnQueueFailed()
-//   async onQueueFailed(job: Job, err: Error) {
-//     console.log('JOB ID ', job.id);
-//     console.log(err)
-//   }
+  @Process()
+  async createWallet(job: Job) {
+    try {
+      const { coin, userId } = job.data
+      await this.walletService.create({ coin, userId })
+    } catch (e) {
+      Logger.error(e)
+    }
 
-// }
+  }
+  @OnGlobalQueueCompleted()
+  async onGlobalCompleted(job: Job<unknown>, result: any) {
+    console.log('(Global) on completed: job ', job.id, ' -> result: ', result);
+  }
+
+  @OnQueueFailed()
+  async onQueueFailed(job: Job, err: Error) {
+    console.log('JOB ID ', job.id);
+    console.log(err)
+  }
+
+}

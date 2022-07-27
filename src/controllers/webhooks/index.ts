@@ -68,19 +68,19 @@ export class WebhookController {
     ) {
         try {
 
-            const signature = req.headers['x-payload-hash']
-            const encryptedData = crypto
-                .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
-                .update(JSON.stringify(req.body))
-                .digest("hex");
-
-            if (env.isProd && (encryptedData !== signature)) {
-                Logger.warn('Wrong signature')
-                return res.status(200).json({ message: "Webhook discarded" })
-
+            if (env.isProd) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("hex");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
             }
-            const response = await this.services.incomingPendingTransactions(req.body)
 
+            const response = await this.services.incomingPendingTransactions(req.body)
             return res.status(200).json(response)
 
         } catch (error) {

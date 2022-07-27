@@ -14,6 +14,7 @@ import {
 import { Request, Response } from "express";
 import { TRANSACTION_ROUTE } from "src/lib/route-constant";
 import { TransactionServices } from "src/services/use-cases/transaction/transaction-services.services";
+import { FindByIdDto } from "src/core/dtos/user.dto";
 
 @Controller()
 export class TransactionController {
@@ -22,9 +23,13 @@ export class TransactionController {
   @UseGuards(StrictAuthGuard)
   async findAll(@Req() req: Request, @Query() query: any, @Res() res: Response) {
     try {
-      const userId = req?.user?._id;
-      const response = await this.transactionServices.findAll(query, userId);
+
+      const userId = req?.user?._id!;
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy } = query
+
+      const response = await this.transactionServices.getAllTransactions({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId });
       return res.status(response.status).json(response);
+
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")
@@ -36,13 +41,13 @@ export class TransactionController {
 
   @Get(TRANSACTION_ROUTE.GET_SINGLE)
   @UseGuards(StrictAuthGuard)
-  async detail(
+  async getSingleTransaction(
     @Res() res: Response,
-    @Param() param: { id }
+    @Param() param: FindByIdDto
   ) {
     try {
       const { id } = param;
-      const response = await this.transactionServices.details(id);
+      const response = await this.transactionServices.getSingleTransaction(id);
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);

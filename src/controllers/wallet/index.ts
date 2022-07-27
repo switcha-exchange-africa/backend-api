@@ -30,12 +30,13 @@ export class WalletController {
   async create(@Req() req: Request, @Body() body: CreateWalletDto, @Res() res: Response) {
     try {
       const user = req?.user!
-      const payload = { userId: user._id, fullName: user.fullName, email: user.email }
+      const userId = user._id
 
       const { coin } = body
-      const response = await this.walletServices.create(payload, coin)
+      const response = await this.walletServices.create({ userId, coin })
 
       return res.status(response.status).json(response);
+      
     } catch (error) {
       Logger.error(error);
       if (error.name === "TypeError")

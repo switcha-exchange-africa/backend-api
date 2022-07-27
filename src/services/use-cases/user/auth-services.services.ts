@@ -35,7 +35,10 @@ export class AuthServices {
   async signup(data: SignupDto, res: Response): Promise<ResponsesType<User>> {
     try {
 
-      const [userExists, phoneExists] = await Promise.all([this.dataServices.users.findOne({ email: data.email }), this.dataServices.users.findOne({ email: data.phone })]);
+      const [userExists, phoneExists] = await Promise.all([
+        this.dataServices.users.findOne({ email: data.email }),
+        this.dataServices.users.findOne({ email: data.phone })
+      ]);
       if (userExists) throw new AlreadyExistsException('User already exists')
       if (phoneExists) throw new AlreadyExistsException('User already exists')
 
@@ -86,20 +89,18 @@ export class AuthServices {
   }
 
   async verifyEmail(req: Request, res: Response, body: VerifyUserDto): Promise<ResponsesType<User>> {
-    const { code } = body;
-
     try {
+
+      const { code } = body;
       const authUser = req?.user!;
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
       const verification: string[] = []
 
       if (authUser.emailVerified) throw new AlreadyExistsException('User email already verified')
-
       const savedCode = await this.inMemoryServices.get(redisKey);
+
       if (isEmpty(savedCode)) throw new BadRequestsException('Code is incorrect, invalid or has expired')
-
-
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
       if (!correctCode) throw new BadRequestsException('Code is incorrect, invalid or has expired')
 
@@ -119,11 +120,15 @@ export class AuthServices {
         lock: updatedUser?.lock,
         emailVerified: updatedUser.emailVerified,
       }
-
       const [token, ,] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
-        this.emitter.emit("create.wallet", { userId: authUser?._id })
+        this.emitter.emit("create.wallet", {
+          userId: updatedUser._id,
+          email: updatedUser.email,
+          fullName: `${updatedUser.firstName} ${updatedUser.lastName}`
+
+        })
       ])
 
 

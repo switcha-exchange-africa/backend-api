@@ -7,8 +7,8 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { EmailSentListener } from "./listener/email.listener";
 import { SmsSentListener } from "./listener/sms.listener";
 import { BullModule } from '@nestjs/bull';
-import { CustomLoggerListener } from "./listener/custom-logger.listener";
-import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
+// import { CustomLoggerListener } from "./listener/custom-logger.listener";
+// import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
 @Global()
 @Module({
@@ -35,8 +35,8 @@ import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-log
     SmsSentListener,
     WalletCreateListener,
     WalletFactoryService,
-    CustomLoggerListener,
-    CustomLoggerFactoryServices,
+    // CustomLoggerListener,
+    // CustomLoggerFactoryServices,
   ],
 })
 export class EventEmitterServiceModule { }

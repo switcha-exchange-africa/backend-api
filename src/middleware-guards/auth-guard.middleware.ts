@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { ADMIN_CYPHER_SECRET } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
-import { USER_SIGNUP_STATUS_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { DoesNotExistsException, UnAuthorizedException } from "src/services/use-cases/user/exceptions";
 
@@ -27,7 +26,6 @@ export class StrictAuthGuard implements CanActivate {
       const user = await this.dataServices.users.findOne({ _id: decoded._id });
       if (!user) throw new DoesNotExistsException('unauthorized.User does not exists')
 
-      if (decoded.authStatus !== USER_SIGNUP_STATUS_TYPE.COMPLETED) throw new UnAuthorizedException('unauthorized. Please verify account')
       if (!decoded.emailVerified) throw new UnAuthorizedException('unauthorized. Please verify email')
       request.user = decoded;
 

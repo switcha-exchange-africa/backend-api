@@ -1,4 +1,3 @@
-import { UserDetail } from "src/core/entities/user.entity";
 
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
@@ -64,35 +63,19 @@ export enum NETWORK {
 }
 
 export class Wallet {
-
   address: string;
-
   accountId: string;
-
   userId: string;
-
-  user: UserDetail;
-
   network: BLOCKCHAIN_NETWORK;
-
-  coin?: string;
-
-  status?: WALLET_STATUS;
-
-  lastDeposit?: number;
-
-  lastWithdrawal?: number;
-
-  createdAt?: Date;
-
-  updatedAt?: Date;
-
-  isBlocked?: boolean;
-
-  destinationTag?: string;
-
-  memo?: string;
-
-  tatumMessage?: string;
-  reference?: string
+  coin: string;
+  status: WALLET_STATUS;
+  lastDeposit: number;
+  lastWithdrawal: number;
+  createdAt: Date;
+  updatedAt: Date;
+  isBlocked: boolean;
+  destinationTag: string;
+  memo: string;
+  tatumMessage: string;
+  reference: string
 }
