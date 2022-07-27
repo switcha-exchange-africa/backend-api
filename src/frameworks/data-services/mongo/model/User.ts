@@ -89,6 +89,9 @@ export class User {
   @Prop()
   avatar: string
 
+  @Prop()
+  roles: string[]
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
