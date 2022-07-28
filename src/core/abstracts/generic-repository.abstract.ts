@@ -8,7 +8,10 @@ export abstract class IGenericRepository<T> {
   abstract findAllWithPagination(
     options: {
       query?: Record<string, any>,
-      queryFields?: Record<string, any>
+      queryFields?: Record<string, any>,
+      misc?: {
+        populated?: any
+      }
     });
 
   abstract findOne(key: FilterQuery<T>, session?: ClientSession);

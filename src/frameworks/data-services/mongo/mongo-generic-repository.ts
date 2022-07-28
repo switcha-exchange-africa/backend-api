@@ -59,7 +59,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
   async findAllWithPagination(options: {
     query?: Record<string, any>,
-    queryFields?: Record<string, any>
+    queryFields?: Record<string, any>,
+    misc?: {
+      populated?: any
+    }
   }) {
     try {
       const { query, queryFields } = options
@@ -96,12 +99,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       const searchQuery = {
         $and: andArr
       };
-
+      const populated = !isEmpty(options) ? options.misc.populated || this._populateOnFind : this._populateOnFind
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository
         .find(filterQuery as any)
-        .populate(this._populateOnFind)
+        .populate(populated)
         .limit(perpage)
         .skip(page * perpage - perpage)
         .sort(sortQuery);

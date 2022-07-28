@@ -12,6 +12,12 @@ export class TransactionServices {
       const { data, pagination } = await this.data.transactions.findAllWithPagination({
         query: payload,
         queryFields: {},
+        misc: {
+          populated: {
+            path: 'userId',
+            select: '_id firstName lastName email phone'
+          }
+        }
       });
 
       return Promise.resolve({

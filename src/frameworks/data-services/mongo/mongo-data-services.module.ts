@@ -17,6 +17,7 @@ import { Bank, BankSchema } from "./model/Bank";
 import { EmailChangeRequestSchema, EmailChangeRequest } from "./model/Email-Change-Request.model";
 import { CustomLogger, CustomLoggerSchema } from "./model/CustomLogger";
 import { Notification, NotificationSchema } from "./model/Notification";
+import { QuickTrade, QuickTradeSchema } from "./model/Quick-Trade";
 
 @Module({
   imports: [
@@ -32,6 +33,8 @@ import { Notification, NotificationSchema } from "./model/Notification";
       { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
       { name: CustomLogger.name, schema: CustomLoggerSchema },
       { name: Notification.name, schema: NotificationSchema },
+      { name: QuickTrade.name, schema: QuickTradeSchema },
+
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],
