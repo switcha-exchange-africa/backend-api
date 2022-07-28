@@ -9,7 +9,7 @@ import { BankServicesModule } from "./use-cases/bank/bank-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
 import { RatesServicesModule } from "./use-cases/rates/rates-services.module";
-import { BuySellServicesModule } from "./use-cases/trade/buy-sell-services.module";
+import { BuySellServicesModule } from "./use-cases/trade/buy-sell/buy-sell-services.module";
 import { SwapServicesModule } from "./use-cases/trade/swap/swap-services.module";
 import { TransferServicesModule } from "./use-cases/trade/transfer/transfer-services.module";
 import { TransactionServicesModule } from "./use-cases/transaction/transaction-services.module";

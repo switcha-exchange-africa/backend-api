@@ -8,16 +8,16 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import {
   BadRequestsException,
   DoesNotExistsException,
-} from "../user/exceptions";
+} from "../../user/exceptions";
 import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import * as mongoose from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import { TransactionFactoryService } from "../transaction/transaction-factory.services";
+import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
 import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
-import { NotificationFactoryService } from "../notification/notification-factory.service";
+import { NotificationFactoryService } from "../../notification/notification-factory.service";
 
 @Injectable()
 export class BuySellServices {
