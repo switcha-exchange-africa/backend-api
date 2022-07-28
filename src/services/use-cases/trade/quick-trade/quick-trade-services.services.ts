@@ -17,6 +17,7 @@ import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANS
 import { env } from "src/configuration";
 import { QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT, QUICK_TRADE_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { User } from "src/core/entities/user.entity";
+import * as _ from 'lodash';
 
 @Injectable()
 export class QuickTradeServices {
@@ -210,6 +211,53 @@ export class QuickTradeServices {
             const buyerPendingTransaction = await this.data.transactions.findOne({ generalTransactionReference: matchingTradeContract.generalTransactionReference })
             if (!buyerPendingTransaction) throw new BadRequestsException(`Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`)
 
+            const buyerNotificationPayload = {
+              message: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
+              title: `Credit Alert:- Quick Trade`,
+              userId
+            }
+            const buyerNotificationFactory = await this.notificationFactory.create(buyerNotificationPayload)
+
+            const [, , buyerCreditedWallet, ,] = await Promise.all([
+              this.data.quickTradeContracts.update({ quickTradeId: String(matchingTrade._id) }, { status: QuickTradeContractStatus.COMPLETED }, session), // update contract
+              this.data.quickTrades.update({ _id: matchingTrade._id }, {
+                status: QuickTradeStatus.FILLED,
+                filledDate: new Date(),
+                sellerId: String(userId)
+              }, session),
+              this.data.wallets.update({ _id: buyerWallet._id }, {
+                $inc: {
+                  balance: amount,
+                },
+                lastDeposit: amount
+              }, session),
+              this.data.notifications.create(buyerNotificationFactory, session),
+              this.data.transactions.update({ _id: buyerPendingTransaction._id }, { status: TRANSACTION_STATUS.COMPLETED }, session)
+            ])
+            const buyerCreditTransactionPayload = {
+              userId: String(buyer._id),
+              walletId: buyerWallet?._id,
+              currency: buyerWallet.coin,
+              amount: amount,
+              signedAmount: amount,
+              type: TRANSACTION_TYPE.CREDIT,
+              description: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
+              status: TRANSACTION_STATUS.COMPLETED,
+              balanceAfter: buyerCreditedWallet?.balance,
+              balanceBefore: buyerWallet?.balance,
+              subType: TRANSACTION_SUBTYPE.CREDIT,
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
+              rate: {
+                pair,
+                rate: unitPrice
+              },
+              generalTransactionReference: matchingTradeContract.generalTransactionReference,
+              reference: generateReference('credit'),
+            }
+
+            const buyerCreditTransactionFactory = await this.transactionFactory.create(buyerCreditTransactionPayload)
+            this.data.transactions.create(buyerCreditTransactionFactory, session)
+
             if (matchingTrade.amount === amount) {
 
               const sellerNotificationPayload = {
@@ -217,42 +265,17 @@ export class QuickTradeServices {
                 title: `Credit Alert:- Quick Trade`,
                 userId
               }
-              const buyerNotificationPayload = {
-                message: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
-                title: `Credit Alert:- Quick Trade`,
-                userId
-              }
+              const sellerNotificationFactory = await this.notificationFactory.create(sellerNotificationPayload)
 
-
-              const [sellerNotificationFactory, buyerNotificationFactory] = await Promise.all([
-                this.notificationFactory.create(sellerNotificationPayload),
-                this.notificationFactory.create(buyerNotificationPayload),
-              ])
-
-              const [, , sellerCreditedWallet, buyerCreditedWallet, , ,] = await Promise.all([
-                this.data.quickTradeContracts.update({ quickTradeId: String(matchingTrade._id) }, { status: QuickTradeContractStatus.COMPLETED }, session), // update contract
-                this.data.quickTrades.update({ _id: matchingTrade._id }, {
-                  status: QuickTradeStatus.FILLED,
-                  filledDate: new Date(),
-                  sellerId: String(userId)
-                }, session),
+              const [sellerCreditedWallet,] = await Promise.all([
                 this.data.wallets.update({ _id: creditWallet._id }, {
                   $inc: {
                     balance: matchingTradeContract.price,
                   },
                   lastDeposit: matchingTradeContract.price
                 }, session),
-                this.data.wallets.update({ _id: buyerWallet._id }, {
-                  $inc: {
-                    balance: amount,
-                  },
-                  lastDeposit: amount
-                }, session),
                 this.data.notifications.create(sellerNotificationFactory, session),
-                this.data.notifications.create(buyerNotificationFactory, session),
-                this.data.transactions.update({ _id: buyerPendingTransaction._id }, { status: TRANSACTION_STATUS.COMPLETED }, session)
               ])
-
               const sellerCreditTransactionPayload = {
                 userId,
                 walletId: creditWallet?._id,
@@ -263,7 +286,7 @@ export class QuickTradeServices {
                 description: `Your sell ad of ${amount}${sell} has been matched and filled`,
                 status: TRANSACTION_STATUS.COMPLETED,
                 balanceAfter: sellerCreditedWallet?.balance,
-                balanceBefore: debitWallet?.balance,
+                balanceBefore: creditWallet?.balance,
                 subType: TRANSACTION_SUBTYPE.CREDIT,
                 customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
                 rate: {
@@ -273,60 +296,116 @@ export class QuickTradeServices {
                 generalTransactionReference,
                 reference: generateReference('credit'),
               }
-              const buyerCreditTransactionPayload = {
-                userId: String(buyer._id),
-                walletId: buyerWallet?._id,
-                currency: buyerWallet.coin,
-                amount: amount,
-                signedAmount: amount,
-                type: TRANSACTION_TYPE.CREDIT,
-                description: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
-                status: TRANSACTION_STATUS.COMPLETED,
-                balanceAfter: buyerCreditedWallet?.balance,
-                balanceBefore: buyerWallet?.balance,
-                subType: TRANSACTION_SUBTYPE.CREDIT,
-                customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
-                rate: {
-                  pair,
-                  rate: unitPrice
-                },
-                generalTransactionReference: matchingTradeContract.generalTransactionReference,
-                reference: generateReference('credit'),
-              }
 
-              const [sellerCreditTransactionFactory, buyerCreditTransactionFactory] = await Promise.all([
-                this.transactionFactory.create(sellerCreditTransactionPayload),
-                this.transactionFactory.create(buyerCreditTransactionPayload),
+              const sellerCreditTransactionFactory = await this.transactionFactory.create(sellerCreditTransactionPayload)
+              await this.data.transactions.create(sellerCreditTransactionFactory, session)
 
-              ])
-              await Promise.all([
-                this.data.transactions.create(sellerCreditTransactionFactory, session),
-                this.data.transactions.create(buyerCreditTransactionFactory, session),
-              ])
 
-              await this.discord.inHouseNotification({
-                title: `Quick Trade:- ${env.env} environment`,
-                message: `
-                
-                Quick Trade of type ${matchingTrade.type} and ID ${matchingTrade._id} has been matched and filled completely by ${fullName}
-                
-                Trading Pair:- ${matchingTrade.pair}
-                
-                Amount:- ${matchingTrade.amount}
-
-                Unit Price:- ${matchingTrade.unitPrice}
-
-                Price:- ${matchingTrade.price}
-
-                Creator/Buyer ID :- ${buyer.firstName} ${buyer.lastName}:- ${buyer._id}
-
-                Seller:- ${fullName}
-        `,
-                link: env.isProd ? QUICK_TRADE_CHANNEL_LINK_PRODUCTION : QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT,
-              })
               return
             }
+
+            const sellerNotificationPayload = {
+              message: `Your sell ad of ${amount}${sell} has been matched and partially filled`,
+              title: `Credit Alert:- Quick Trade`,
+              userId
+            }
+            const sellerNotificationFactory = await this.notificationFactory.create(sellerNotificationPayload)
+
+            const remainingAmount = Math.abs(_.subtract(amount, matchingTrade.amount))
+            const priceToPaySeller = _.multiply(matchingTrade.amount, unitPrice)
+
+            const [sellerCreditedWallet, ,] = await Promise.all([
+              this.data.wallets.update({ _id: creditWallet._id }, {
+                $inc: {
+                  balance: priceToPaySeller,
+                },
+                lastDeposit: priceToPaySeller
+              }, session),
+
+              this.data.notifications.create(sellerNotificationFactory, session),
+            ])
+            await Promise.all([
+              this.data.notifications.create(sellerNotificationFactory),
+              this.data.notifications.create(buyerNotificationFactory),
+
+            ])
+
+            const sellerCreditTransactionPayload = {
+              userId,
+              walletId: creditWallet?._id,
+              currency: creditWallet?.coin,
+              amount: priceToPaySeller,
+              signedAmount: priceToPaySeller,
+              type: TRANSACTION_TYPE.CREDIT,
+              description: `Your sell ad of ${amount}${sell} has been matched and partially filled`,
+              status: TRANSACTION_STATUS.COMPLETED,
+              balanceAfter: sellerCreditedWallet?.balance,
+              balanceBefore: creditWallet?.balance,
+              subType: TRANSACTION_SUBTYPE.CREDIT,
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
+              rate: {
+                pair,
+                rate: unitPrice
+              },
+              generalTransactionReference,
+              reference: generateReference('credit'),
+            }
+            const sellerCreditTransactionFactory = await this.transactionFactory.create(sellerCreditTransactionPayload)
+            await this.data.transactions.create(sellerCreditTransactionFactory, session)
+
+            await this.discord.inHouseNotification({
+              title: `Quick Trade:- ${env.env} environment`,
+              message: `
+              
+              Quick Trade of type ${matchingTrade.type} and ID ${matchingTrade._id} has been matched and filled completely by ${fullName}
+              
+              Trading Pair:- ${matchingTrade.pair}
+              
+              Amount:- ${matchingTrade.amount}
+
+              Unit Price:- ${matchingTrade.unitPrice}
+
+              Price:- ${matchingTrade.price}
+
+              Creator/Buyer ID :- ${buyer.firstName} ${buyer.lastName}:- ${buyer._id}
+
+              Seller:- ${fullName}
+
+              Remaining Amount To Sell:- ${remainingAmount}${sell}
+      `,
+              link: env.isProd ? QUICK_TRADE_CHANNEL_LINK_PRODUCTION : QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT,
+            })
+
+            // create sell ad for the remaining amount
+            const [quickTradeFactory, transactionFactory] = await Promise.all([
+              this.quickTradeFactory.create({
+                sellerId: userId,
+                type: QuickTradeType.SELL,
+                pair,
+                unitPrice,
+                price: _.multiply(remainingAmount, unitPrice),
+                amount: remainingAmount
+              }),
+              this.transactionFactory.create(debitTransactionPayload)
+            ])
+            const quickTrade = await this.data.quickTrades.create(quickTradeFactory, session)
+
+
+            const quickTradeContractPayload = {
+              quickTradeId: String(quickTrade._id),
+              price,
+              status: QuickTradeContractStatus.PENDING,
+              generalTransactionReference,
+
+            }
+            const quickTradeContractFactory = await this.quickTradeContractFactory.create(quickTradeContractPayload)
+            const [quickTradeContract,] = await Promise.all([
+              this.data.quickTradeContracts.create(quickTradeContractFactory, session),
+              this.data.transactions.create(transactionFactory, session)
+            ])
+            data = { quickTrade, quickTradeContract }
             return
+
 
           }
 
