@@ -57,7 +57,6 @@ export class WebhookServices {
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
-      console.log("WALLET", wallet)
       if (!wallet) return Promise.resolve({ message: 'Wallet does not exists' })
       if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
       if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })

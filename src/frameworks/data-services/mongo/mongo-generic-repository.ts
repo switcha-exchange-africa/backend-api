@@ -63,7 +63,6 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   }) {
     try {
       const { query, queryFields } = options
-      console.log(query)
       const perpage = Number(query.perpage) || 10;
       const page = Number(query.page) || 1;
       const dateFrom: any = query.dateFrom || 'Jan 1 1970';
@@ -99,7 +98,6 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       };
 
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
-      console.log("FILTER QUERY", filterQuery)
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository
         .find(filterQuery as any)

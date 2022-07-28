@@ -14,6 +14,7 @@ import { Activity, ActivityDocument } from './model/Activity';
 import { EmailChangeRequest, EmailChangeRequestDocument } from './model/Email-Change-Request.model';
 import { CustomLogger, CustomLoggerDocument } from './model/CustomLogger';
 import { Notification, NotificationDocument } from './model/Notification';
+import { QuickTrade, QuickTradeDocument } from './model/Quick-Trade';
 
 
 @Injectable()
@@ -29,7 +30,8 @@ export class MongoDataServices
   activities: MongoGenericRepository<Activity>;
   emailChangeRequests: MongoGenericRepository<EmailChangeRequest>;
   customLogger: MongoGenericRepository<CustomLogger>;
-  notifications:MongoGenericRepository<Notification>;
+  notifications: MongoGenericRepository<Notification>;
+  quickTrades: MongoGenericRepository<QuickTrade>;
 
   constructor(
     @InjectModel(User.name)
@@ -63,14 +65,19 @@ export class MongoDataServices
     private CustomLoggerRepository: Model<CustomLoggerDocument>,
 
     @InjectModel(Notification.name)
-    private NotificationRepository: Model<NotificationDocument>
+    private NotificationRepository: Model<NotificationDocument>,
+
+    @InjectModel(QuickTrade.name)
+    private QuickTradeRepository: Model<QuickTradeDocument>
+
+
   ) { }
 
 
   onApplicationBootstrap() {
     this.users = new MongoGenericRepository<User>(this.UserRepository);
     this.wallets = new MongoGenericRepository<Wallet>(this.WalletRepository)
-    this.transactions = new MongoGenericRepository<Transaction>(this.TransactionRepository)
+    this.transactions = new MongoGenericRepository<Transaction>(this.TransactionRepository, ['userId'])
     this.transactionReferences = new MongoGenericRepository<TransactionReference>(this.TransactionReferenceRepository)
     this.faucets = new MongoGenericRepository<Faucet>(this.FaucetRepository)
     this.withdrawals = new MongoGenericRepository<Withdrawal>(this.WithdrawalRepository)
@@ -79,7 +86,8 @@ export class MongoDataServices
     this.emailChangeRequests = new MongoGenericRepository<EmailChangeRequest>(this.EmailChangeRequestRepository)
     this.customLogger = new MongoGenericRepository<CustomLogger>(this.CustomLoggerRepository)
     this.notifications = new MongoGenericRepository<Notification>(this.NotificationRepository)
-    
+    this.quickTrades = new MongoGenericRepository<QuickTrade>(this.QuickTradeRepository, ['buyerId', 'sellerId'])
+
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
     //   'genre',
