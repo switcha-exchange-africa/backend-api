@@ -37,17 +37,23 @@ export class QuickTradeServices {
   async buyAd(payload: IQuickTradeBuy): Promise<ResponsesType<any>> {
     try {
       const { userId, buy, payingCoin, unitPrice, amount } = payload
+      const price = unitPrice * amount  // total price
+      const generalTransactionReference = generateReference('general')
+      const pair = `${buy}/${payingCoin}`
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
 
-          const price = unitPrice * amount  // total price
           const [creditWallet, debitWallet] = await Promise.all([
-            this.data.wallets.findOne({ userId, coin: buy, isBlocked: false }, session),
-            this.data.wallets.findOne({ userId, coin: payingCoin, balance: { $gte: price } }, session),
+            this.data.wallets.findOne({ userId, coin: buy, isBlocked: false }),
+            this.data.wallets.findOne({ userId, coin: payingCoin, balance: { $gte: price } }),
           ])
-
           if (!creditWallet) throw new BadRequestsException("Wallet does not exists")
           if (!debitWallet) throw new BadRequestsException("Insufficient Balance")
+
+
+          const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.SELL, unitPrice, pair, amount: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
+          const matchingTradeContract: mongoose.HydratedDocument<QuickTradeContract> = await this.data.quickTradeContracts.findOne({ quickTradeId: String(matchingTrade._id) }) // credit the user acceptingCoin wallet with the price
 
           // deducting the total price from the coin used to pay
           const debitedWallet = await this.data.wallets.update({ _id: debitWallet._id },
@@ -59,8 +65,6 @@ export class QuickTradeServices {
             },
             session
           );
-          const generalTransactionReference = generateReference('general')
-          const pair = `${buy}/${payingCoin}`
 
           const txDebitPayload = {
             userId,
@@ -89,6 +93,182 @@ export class QuickTradeServices {
             unitPrice,
             price,
             amount
+          }
+          if (matchingTrade) {
+
+            const seller = matchingTrade.sellerId as unknown as mongoose.HydratedDocument<User>
+            const sellerWallet = await this.data.wallets.findOne({ coin: buy, userId: String(seller._id) })
+            if (!sellerWallet) throw new BadRequestsException('Buyer wallet does not exists')
+
+            const sellerPendingTransaction = await this.data.transactions.findOne({ generalTransactionReference: matchingTradeContract.generalTransactionReference })
+            if (!sellerPendingTransaction) throw new BadRequestsException(`Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`)
+
+            const sellerNotificationPayload = {
+              message: `Your sell ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
+              title: `Credit Alert:- Quick Trade`,
+              userId
+            }
+            const sellerNotificationFactory = await this.notificationFactory.create(sellerNotificationPayload)
+
+            const [, , sellerCreditedWallet, ,] = await Promise.all([
+              this.data.quickTradeContracts.update({ quickTradeId: String(matchingTrade._id) }, { status: QuickTradeContractStatus.COMPLETED }, session), // update contract
+              this.data.quickTrades.update({ _id: matchingTrade._id }, {
+                status: QuickTradeStatus.FILLED,
+                filledDate: new Date(),
+                buyerId: String(userId)
+              }, session),
+              this.data.wallets.update({ _id: sellerWallet._id }, {
+                $inc: {
+                  balance: amount,
+                },
+                lastDeposit: amount
+              }, session),
+              this.data.notifications.create(sellerNotificationFactory, session),
+              this.data.transactions.update({ _id: sellerPendingTransaction._id }, { status: TRANSACTION_STATUS.COMPLETED }, session)
+            ])
+
+            const sellerCreditTransactionPayload = {
+              userId: String(seller._id),
+              walletId: sellerWallet?._id,
+              currency: sellerWallet.coin,
+              amount: amount,
+              signedAmount: amount,
+              type: TRANSACTION_TYPE.CREDIT,
+              description: `Your seller ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
+              status: TRANSACTION_STATUS.COMPLETED,
+              balanceAfter: sellerCreditedWallet?.balance,
+              balanceBefore: sellerWallet?.balance,
+              subType: TRANSACTION_SUBTYPE.CREDIT,
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
+              rate: {
+                pair,
+                rate: unitPrice
+              },
+              generalTransactionReference: matchingTradeContract.generalTransactionReference,
+              reference: generateReference('credit'),
+            }
+
+            const sellerCreditTransactionFactory = await this.transactionFactory.create(sellerCreditTransactionPayload)
+            this.data.transactions.create(sellerCreditTransactionFactory, session)
+
+            if (matchingTrade.amount === amount) {
+
+              const buyerNotificationPayload = {
+                message: `Your buy ad of ${amount}${buy} has been matched and filled`,
+                title: `Credit Alert:- Quick Trade`,
+                userId
+              }
+              const buyerNotificationFactory = await this.notificationFactory.create(buyerNotificationPayload)
+
+              const [buyerCreditedWallet,] = await Promise.all([
+                this.data.wallets.update({ _id: creditWallet._id }, {
+                  $inc: {
+                    balance: matchingTradeContract.price,
+                  },
+                  lastDeposit: matchingTradeContract.price
+                }, session),
+                this.data.notifications.create(buyerNotificationFactory, session),
+              ])
+              const buyerCreditTransactionPayload = {
+                userId,
+                walletId: creditWallet?._id,
+                currency: creditWallet?.coin,
+                amount: matchingTradeContract.price,
+                signedAmount: matchingTradeContract.price,
+                type: TRANSACTION_TYPE.CREDIT,
+                description: `Your buy ad of ${amount}${buy} has been matched and filled`,
+                status: TRANSACTION_STATUS.COMPLETED,
+                balanceAfter: buyerCreditedWallet?.balance,
+                balanceBefore: creditWallet?.balance,
+                subType: TRANSACTION_SUBTYPE.CREDIT,
+                customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
+                rate: {
+                  pair,
+                  rate: unitPrice
+                },
+                generalTransactionReference,
+                reference: generateReference('credit'),
+              }
+
+              const buyerCreditTransactionFactory = await this.transactionFactory.create(buyerCreditTransactionPayload)
+              await this.data.transactions.create(buyerCreditTransactionFactory, session)
+
+
+              return
+            }
+
+            const buyerNotificationPayload = {
+              message: `Your sell ad of ${amount}${buy} has been matched and partially filled`,
+              title: `Credit Alert:- Quick Trade`,
+              userId
+            }
+            const buyerNotificationFactory = await this.notificationFactory.create(buyerNotificationPayload)
+
+            const remainingAmount = Math.abs(_.subtract(amount, matchingTrade.amount))
+            const priceToPayBuyer = _.multiply(matchingTrade.amount, unitPrice)
+
+            const [buyerCreditedWallet, ,] = await Promise.all([
+              this.data.wallets.update({ _id: creditWallet._id }, {
+                $inc: {
+                  balance: priceToPayBuyer,
+                },
+                lastDeposit: priceToPayBuyer
+              }, session),
+
+              this.data.notifications.create(buyerNotificationFactory, session),
+            ])
+
+            const buyerCreditTransactionPayload = {
+              userId,
+              walletId: creditWallet?._id,
+              currency: creditWallet?.coin,
+              amount: priceToPayBuyer,
+              signedAmount: priceToPayBuyer,
+              type: TRANSACTION_TYPE.CREDIT,
+              description: `Your buy ad of ${amount}${buy} has been matched and partially filled`,
+              status: TRANSACTION_STATUS.COMPLETED,
+              balanceAfter: buyerCreditedWallet?.balance,
+              balanceBefore: creditWallet?.balance,
+              subType: TRANSACTION_SUBTYPE.CREDIT,
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.QUICK_TRADE,
+              rate: {
+                pair,
+                rate: unitPrice
+              },
+              generalTransactionReference,
+              reference: generateReference('credit'),
+            }
+            const buyerCreditTransactionFactory = await this.transactionFactory.create(buyerCreditTransactionPayload)
+            await this.data.transactions.create(buyerCreditTransactionFactory, session)
+
+            // create buy ad for the remaining amount
+            const [quickTradeFactory, transactionFactory] = await Promise.all([
+              this.quickTradeFactory.create({
+                sellerId: userId,
+                type: QuickTradeType.SELL,
+                pair,
+                unitPrice,
+                price: _.multiply(remainingAmount, unitPrice),
+                amount: remainingAmount
+              }),
+              this.transactionFactory.create(txDebitPayload)
+            ])
+            const quickTrade = await this.data.quickTrades.create(quickTradeFactory, session)
+
+
+            const quickTradeContractPayload = {
+              quickTradeId: String(quickTrade._id),
+              price,
+              status: QuickTradeContractStatus.PENDING,
+              generalTransactionReference,
+
+            }
+            const quickTradeContractFactory = await this.quickTradeContractFactory.create(quickTradeContractPayload)
+            await Promise.all([
+              this.data.quickTradeContracts.create(quickTradeContractFactory, session),
+              this.data.transactions.create(transactionFactory, session)
+            ])
+            return
           }
 
           const [quickTradeFactory, transactionFactory] = await Promise.all([
@@ -158,7 +338,7 @@ export class QuickTradeServices {
           if (!debitWallet) throw new BadRequestsException("Insufficient Balance")
 
 
-          const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.BUY, unitPrice, pair, balance: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
+          const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.BUY, unitPrice, pair, amount: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
           const matchingTradeContract: mongoose.HydratedDocument<QuickTradeContract> = await this.data.quickTradeContracts.findOne({ quickTradeId: String(matchingTrade._id) }) // credit the user acceptingCoin wallet with the price
 
           const generalTransactionReference = generateReference('general')
@@ -324,11 +504,7 @@ export class QuickTradeServices {
 
               this.data.notifications.create(sellerNotificationFactory, session),
             ])
-            await Promise.all([
-              this.data.notifications.create(sellerNotificationFactory),
-              this.data.notifications.create(buyerNotificationFactory),
 
-            ])
 
             const sellerCreditTransactionPayload = {
               userId,
