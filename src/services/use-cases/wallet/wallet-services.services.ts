@@ -271,6 +271,12 @@ export class WalletServices {
       const wallets = await this.dataServices.wallets.findAllWithPagination({
         query,
         queryFields: { userId: userId },
+        misc: {
+          populated: {
+            path: 'userId',
+            select: '_id firstName lastName email phone'
+          }
+        }
       });
       return {
         status: 200,

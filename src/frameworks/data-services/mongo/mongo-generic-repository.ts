@@ -99,7 +99,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       const searchQuery = {
         $and: andArr
       };
-      const populated = !isEmpty(options) ? options.misc.populated || this._populateOnFind : this._populateOnFind
+      const populated = !isEmpty(options) ? options.misc.populated || [] : this._populateOnFind
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository

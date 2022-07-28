@@ -5,6 +5,7 @@ import { BuySellController } from "./buy-sell";
 import { FaucetController } from "./faucet";
 import { HomeController } from "./home";
 import { NotificationController } from "./notification";
+import { QuickTradeController } from "./quick-trade";
 import { RatesController } from "./rates";
 import { TransactionController } from "./transaction";
 import { WalletController } from "./wallet";
@@ -21,5 +22,6 @@ export default [
   WebhookController,
   HomeController,
   BankController,
-  NotificationController
+  NotificationController,
+  QuickTradeController
 ]

@@ -16,8 +16,9 @@ import * as mongoose from 'mongoose';
 const databaseHelper = {
   runTransactionWithRetry: async (txnFunc: any, session: ClientSession) => {
     try {
-      let retries = 0
+      let retries = 1
       while (retries < 3) {
+        if (retries < 1) break
         try {
           Logger.log("-------- runTransactionWithRetry function ----------")
           await txnFunc(session);  // performs transaction
@@ -55,6 +56,7 @@ const databaseHelper = {
     session.startTransaction();
     try {
       await databaseHelper.runTransactionWithRetry(transactionProcess, session);
+      await session.endSession();
     } catch (error: any) {
       throw new Error(error);
     } finally {

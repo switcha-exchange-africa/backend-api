@@ -34,7 +34,8 @@ export class WalletCreateListener {
       this.walletQueue.add({ userId, coin: CoinType.USDT }, { delay: 5000 }),
       this.walletQueue.add({ userId, coin: CoinType.USDC }, { delay: 15000 }),
       this.walletQueue.add({ userId, coin: CoinType.USDT_TRON }, { delay: 25000 }),
-      this.walletQueue.add({ userId, coin: CoinType.NGN }, { delay: 35000 })
+      this.walletQueue.add({ userId, coin: CoinType.NGN }, { delay: 35000 }),
+      this.walletQueue.add({ userId, coin: CoinType.ETH }, { delay: 45000 })
     ])
 
   }

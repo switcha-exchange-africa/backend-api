@@ -11,7 +11,7 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
-import { QUICK_TRADE_TYPE_LIST, QuickTradeType } from "src/core/entities/QuickTrade";
+import { QUICK_TRADE_TYPE_LIST, QuickTradeType, QuickTradeStatus, QUICK_TRADE_STATUS_LIST } from "src/core/entities/QuickTrade";
 
 export type QuickTradeDocument = QuickTrade & Document;
 
@@ -22,19 +22,20 @@ export class QuickTrade {
   @Prop({
     type: Types.ObjectId,
     ref: "User",
-    required: true
   })
   buyerId: string;
 
   @Prop({
     type: Types.ObjectId,
     ref: "User",
-    required: true
   })
   sellerId: string;
 
   @Prop({ enum: QUICK_TRADE_TYPE_LIST })
   type: QuickTradeType;
+
+  @Prop({ enum: QUICK_TRADE_STATUS_LIST })
+  status: QuickTradeStatus
 
   @Prop()
   pair: string
@@ -42,8 +43,12 @@ export class QuickTrade {
   @Prop()
   price: number
 
+
   @Prop()
-  amount: string;
+  unitPrice: number
+
+  @Prop()
+  amount: number;
 
   @Prop()
   partialFilledDate: Date

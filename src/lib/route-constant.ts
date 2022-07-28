@@ -53,6 +53,8 @@ export enum RATES_ROUTE {
 export enum TRADE_ROUTE {
   BUY = "/api/trade/buy",
   SELL = "/api/trade/sell",
+  QUICK_TRADE_BUY = '/api/trade/quick-trade-buy',
+  QUICK_TRADE_SELL = '/api/trade/quick-trade-sell',
   SWAP = "/api/trade/swap",
   TRANSFER = "/api/trade/transfer",
 }

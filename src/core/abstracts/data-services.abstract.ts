@@ -10,7 +10,7 @@ import { Wallet } from '../entities/wallet.entity';
 import { Withdrawal } from '../entities/Withdrawal';
 import { IGenericRepository } from './generic-repository.abstract';
 import { Notification } from '../entities/notification.entity';
-import { QuickTrade } from '../entities/QuickTrade';
+import { QuickTrade, QuickTradeContract } from '../entities/QuickTrade';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -25,6 +25,6 @@ export abstract class IDataServices {
   abstract customLogger: IGenericRepository<CustomLoggerEntity>
   abstract notifications: IGenericRepository<Notification>
   abstract quickTrades: IGenericRepository<QuickTrade>
+  abstract quickTradeContracts: IGenericRepository<QuickTradeContract>
 
-  
 }

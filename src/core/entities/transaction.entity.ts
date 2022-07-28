@@ -46,6 +46,7 @@ export enum CUSTOM_TRANSACTION_TYPE {
   SWAP = "swap",
   FAUCET = "faucet",
   TRANSFER = "transfer",
+  QUICK_TRADE = 'quick-trade'
 }
 
 export const CUSTOM_TRANSACTION_TYPES = [
@@ -57,6 +58,7 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.SWAP,
   CUSTOM_TRANSACTION_TYPE.FAUCET,
   CUSTOM_TRANSACTION_TYPE.TRANSFER,
+  CUSTOM_TRANSACTION_TYPE.QUICK_TRADE
 ];
 export interface Rates {
   pair: string,
@@ -64,7 +66,7 @@ export interface Rates {
 }
 
 export class Transaction {
-  userId: string ;
+  userId: string;
   walletId: string;
   currency: CoinType;
   amount: number;

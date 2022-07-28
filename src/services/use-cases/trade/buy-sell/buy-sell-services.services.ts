@@ -165,7 +165,7 @@ export class BuySellServices {
           throw new Error(error);
         }
       };
-
+      
       await Promise.all([
         databaseHelper.executeTransaction(
           atomicTransaction,

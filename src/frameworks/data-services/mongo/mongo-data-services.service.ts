@@ -15,6 +15,7 @@ import { EmailChangeRequest, EmailChangeRequestDocument } from './model/Email-Ch
 import { CustomLogger, CustomLoggerDocument } from './model/CustomLogger';
 import { Notification, NotificationDocument } from './model/Notification';
 import { QuickTrade, QuickTradeDocument } from './model/Quick-Trade';
+import { QuickTradeContract, QuickTradeContractDocument } from './model/Quick-Trade-Contract';
 
 
 @Injectable()
@@ -32,6 +33,7 @@ export class MongoDataServices
   customLogger: MongoGenericRepository<CustomLogger>;
   notifications: MongoGenericRepository<Notification>;
   quickTrades: MongoGenericRepository<QuickTrade>;
+  quickTradeContracts: MongoGenericRepository<QuickTradeContract>;
 
   constructor(
     @InjectModel(User.name)
@@ -68,7 +70,12 @@ export class MongoDataServices
     private NotificationRepository: Model<NotificationDocument>,
 
     @InjectModel(QuickTrade.name)
-    private QuickTradeRepository: Model<QuickTradeDocument>
+    private QuickTradeRepository: Model<QuickTradeDocument>,
+
+    @InjectModel(QuickTradeContract.name)
+    private QuickTradeContractRepository: Model<QuickTradeContractDocument>,
+
+
 
 
   ) { }
@@ -87,6 +94,10 @@ export class MongoDataServices
     this.customLogger = new MongoGenericRepository<CustomLogger>(this.CustomLoggerRepository)
     this.notifications = new MongoGenericRepository<Notification>(this.NotificationRepository)
     this.quickTrades = new MongoGenericRepository<QuickTrade>(this.QuickTradeRepository, ['buyerId', 'sellerId'])
+    this.quickTradeContracts = new MongoGenericRepository<QuickTradeContract>(this.QuickTradeContractRepository)
+
+
+
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
     //   'author',
