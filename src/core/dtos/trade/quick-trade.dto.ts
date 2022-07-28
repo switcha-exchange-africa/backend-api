@@ -56,6 +56,7 @@ export class QuickTradeSellDto {
 
 export interface IQuickTradeBuy extends QuickTradeBuyDto {
   userId: string
+  fullName?: string
 }
 
 export interface IQuickTradeSell extends QuickTradeSellDto {

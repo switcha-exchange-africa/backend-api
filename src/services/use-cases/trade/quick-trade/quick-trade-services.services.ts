@@ -36,7 +36,7 @@ export class QuickTradeServices {
 
   async buyAd(payload: IQuickTradeBuy): Promise<ResponsesType<any>> {
     try {
-      const { userId, buy, payingCoin, unitPrice, amount } = payload
+      const { userId, buy, payingCoin, unitPrice, amount, fullName } = payload
       const price = unitPrice * amount  // total price
       const generalTransactionReference = generateReference('general')
       const pair = `${buy}/${payingCoin}`
@@ -241,6 +241,30 @@ export class QuickTradeServices {
             const buyerCreditTransactionFactory = await this.transactionFactory.create(buyerCreditTransactionPayload)
             await this.data.transactions.create(buyerCreditTransactionFactory, session)
 
+            await this.discord.inHouseNotification({
+              title: `Quick Trade:- ${env.env} environment`,
+              message: `
+              
+              Quick Trade of type ${matchingTrade.type} and ID ${matchingTrade._id} has been matched and filled completely by ${fullName}
+              
+              Trading Pair:- ${matchingTrade.pair}
+              
+              Amount:- ${matchingTrade.amount}
+
+              Unit Price:- ${matchingTrade.unitPrice}
+
+              Price:- ${matchingTrade.price}
+
+              Creator/Seller ID :- ${seller.firstName} ${seller.lastName}:- ${seller._id}
+
+              Buyer:- ${fullName}
+
+              Remaining Amount To Buy:- ${remainingAmount}${buy}
+      `,
+              link: env.isProd ? QUICK_TRADE_CHANNEL_LINK_PRODUCTION : QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT,
+            })
+
+
             // create buy ad for the remaining amount
             const [quickTradeFactory, transactionFactory] = await Promise.all([
               this.quickTradeFactory.create({
@@ -249,7 +273,7 @@ export class QuickTradeServices {
                 pair,
                 unitPrice,
                 price: _.multiply(remainingAmount, unitPrice),
-                amount: remainingAmount
+                amount: remainingAmount,
               }),
               this.transactionFactory.create(txDebitPayload)
             ])

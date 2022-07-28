@@ -30,10 +30,12 @@ export class QuickTradeController {
     @Body() body: QuickTradeBuyDto
   ) {
     try {
+      const user = req?.user!
+      const userId = user._id
 
-      const userId = req?.user?._id;
       const payload: IQuickTradeBuy = {
         userId,
+        fullName: user.fullName,
         ...body
       }
 
