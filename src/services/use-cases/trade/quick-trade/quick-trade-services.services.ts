@@ -157,7 +157,7 @@ export class QuickTradeServices {
           if (!debitWallet) throw new BadRequestsException("Insufficient Balance")
 
 
-          const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.BUY, unitPrice, pair, balance: { $lte: amount } })
+          const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.BUY, unitPrice, pair, balance: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
           const matchingTradeContract: mongoose.HydratedDocument<QuickTradeContract> = await this.data.quickTradeContracts.findOne({ quickTradeId: String(matchingTrade._id) }) // credit the user acceptingCoin wallet with the price
 
           const generalTransactionReference = generateReference('general')
