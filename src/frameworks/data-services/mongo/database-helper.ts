@@ -16,48 +16,59 @@ import * as mongoose from 'mongoose';
 const databaseHelper = {
   runTransactionWithRetry: async (txnFunc: any, session: ClientSession) => {
     try {
-      let retries = 1
-      while (retries < 3) {
-        if (retries < 1) break
-        try {
-          Logger.log("-------- runTransactionWithRetry function ----------")
-          await txnFunc(session);  // performs transaction
-          await session.commitTransaction(); // Uses write concern set at transaction start.
-          Logger.log("-------- runTransactionWithRetry function ----------")
-          Logger.log("Transaction commited.............")
-          // commit transaction
-          await session.endSession();
-          break;
-        } catch (error: any) {
-          if (error.hasOwnProperty("errorLabels") && error.errorLabels.includes("TransientTransactionError")) {
-            Logger.error("TransientTransactionError, retrying transaction ...");
-            retries++
-            continue;
-          } else if (error.hasOwnProperty("errorLabels") && error.errorLabels.includes("UnknownTransactionCommitResult")) {
-            Logger.error("UnknownTransactionCommitResult, retrying commit operation ...");
-            retries++
-            continue;
-          } else {
-            await session.abortTransaction();
-            throw new Error(error)
-            //  break;
-            // throw new Error(error);
-          }
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      await session.startTransaction()
+      await txnFunc(session)
+        ;  // performs transaction
 
-        }
-      }
+      // commit transaction
+      await session.commitTransaction(); // Uses write concern set at transaction start.
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      Logger.log("Transaction commited.............")
+      // let retries = 1
+      // while (retries < 3) {
+      //   if (retries < 1) break
+      //   try {
+
+      //   } catch (error: any) {
+      //     if (error.hasOwnProperty("errorLabels") && error.errorLabels.includes("TransientTransactionError")) {
+      //       Logger.error("TransientTransactionError, retrying transaction ...");
+      //       retries++
+      //       continue;
+      //     } else if (error.hasOwnProperty("errorLabels") && error.errorLabels.includes("UnknownTransactionCommitResult")) {
+      //       Logger.error("UnknownTransactionCommitResult, retrying commit operation ...");
+      //       retries++
+      //       continue;
+      //     } else {
+      //       await session.abortTransaction();
+      //       throw new Error(error)
+      //       //  break;
+      //       // throw new Error(error);
+      //     }
+
+      //   }
+      // }
     } catch (err) {
+      await session.abortTransaction();
       throw new Error(err);
     }
 
   },
   executeTransaction: async (transactionProcess: any, connection: mongoose.Connection) => {
     const session = await connection.startSession();
-    session.startTransaction();
     try {
-      await databaseHelper.runTransactionWithRetry(transactionProcess, session);
-      await session.endSession();
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      await session.startTransaction()
+      await transactionProcess(session);  // performs transaction
+
+      // commit transaction
+      await session.commitTransaction(); // Uses write concern set at transaction start.
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      Logger.log("Transaction commited.............")
+      // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
     } catch (error: any) {
+      await session.abortTransaction();
+
       throw new Error(error);
     } finally {
       await session.endSession();

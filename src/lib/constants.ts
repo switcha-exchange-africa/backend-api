@@ -110,6 +110,8 @@ export const SWAP_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/99
 export const WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/990726042031378482/zX-9vVzMwrehxFMs71mRGBHogyEsD3uo3s1r16y9kR4n5iOoXZ0b4Ur_8CzT45oFoiPC'
 export const WITHDRAWAL_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990725119288680468/a43in4GFIDXdEA8Sf0upYmsP-yM1Hxj_WPROaTGSiT3ThCzFzmtF-MVDFwv76WQYV6fG'
 
+export const QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1002226779878084668/ODuLUSeDoU3iCFE0LCASlBqldt2ZeTOgLE3Dj6evV4UQkrg4W13E5giq_sfPES-anGSN'
+export const QUICK_TRADE_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1002226850086518844/nGVMxxCnLAB2DslSItrNdmFOYWpW827wVaKr00OlsmuqNTmS5zTXm8JZlEomp8G-AlV_'
 
 
 export interface UserIDDocumentType {

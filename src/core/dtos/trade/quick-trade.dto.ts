@@ -1,5 +1,4 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
-import { QuickTradeType } from "src/core/entities/QuickTrade";
 import { CoinType } from "src/core/entities/wallet.entity";
 
 export class QuickTradeBuyDto {
@@ -30,13 +29,10 @@ export class QuickTradeBuyDto {
 
 export class QuickTradeSellDto {
 
-  @IsNotEmpty()
-  @IsEnum(QuickTradeType)
-  public type: QuickTradeType
 
   @IsNumber()
   @IsPositive()
-  public price: number
+  public unitPrice: number
 
 
   @IsNumber()
@@ -64,5 +60,6 @@ export interface IQuickTradeBuy extends QuickTradeBuyDto {
 
 export interface IQuickTradeSell extends QuickTradeSellDto {
   userId: string
+  fullName?: string
 }
 

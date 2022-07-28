@@ -80,9 +80,12 @@ export class QuickTradeController {
   ) {
     try {
 
-      const userId = req?.user?._id;
+      const user = req?.user!
+      const userId = user._id
+
       const payload: IQuickTradeSell = {
         userId,
+        fullName: user.fullName,
         ...body
       }
 

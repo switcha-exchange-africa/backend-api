@@ -43,7 +43,6 @@ export class QuickTrade {
   @Prop()
   price: number
 
-
   @Prop()
   unitPrice: number
 
