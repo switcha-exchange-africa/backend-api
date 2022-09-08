@@ -79,3 +79,13 @@ export class Wallet {
   tatumMessage: string;
   reference: string
 }
+
+export enum CryptoPairType {
+  ETH_USDT = "ETH/USDT",
+  BTC_USDT = "BTC/USDT",    
+}
+
+export const CoinPairList = [
+  CryptoPairType.ETH_USDT,
+  CryptoPairType.BTC_USDT,
+]
