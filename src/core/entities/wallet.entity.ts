@@ -82,7 +82,8 @@ export class Wallet {
 
 export enum CryptoPairType {
   ETH_USDT = "ETH/USDT",
-  BTC_USDT = "BTC/USDT",    
+  BTC_USDT = "BTC/USDT",
+  NGN_USDT = "NGN/USDT",
 }
 
 export const CoinPairList = [

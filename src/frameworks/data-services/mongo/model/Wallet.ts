@@ -11,6 +11,11 @@ export class Wallet {
   })
   balance: Number;
 
+  @Prop({
+    default: 0
+  })
+  lockedBalance: Number;
+
   @Prop()
   address: string;
 
@@ -52,14 +57,11 @@ export class Wallet {
   @Prop()
   isBlocked: boolean;
 
-
   @Prop()
   destinationTag: string;
 
-
   @Prop()
   memo: string;
-
 
   @Prop()
   tatumMessage: string;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SignupDto } from 'src/core/dtos/user.dto';
+import { SignupDto } from 'src/core/dtos/authentication/login.dto';
 import { User } from 'src/core/entities/user.entity';
 import { USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
 import { hash } from 'src/lib/utils';

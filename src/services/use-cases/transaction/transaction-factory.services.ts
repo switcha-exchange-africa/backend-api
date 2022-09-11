@@ -21,6 +21,7 @@ export class TransactionFactoryService {
     if (data.tatumTransactionId) transaction.tatumTransactionId = data.tatumTransactionId;
     if (data.senderAddress) transaction.senderAddress = data.senderAddress
     if (data.reference) transaction.reference = data.reference
+    if (data.description) transaction.description = data.description
     if (data.generalTransactionReference) transaction.generalTransactionReference = data.generalTransactionReference
     if (data.hash) transaction.hash = data.hash
     

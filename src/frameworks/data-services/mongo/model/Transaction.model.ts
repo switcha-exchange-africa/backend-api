@@ -64,6 +64,11 @@ export class Transaction {
   @Prop()
   balanceBefore: number;
 
+  @Prop({
+    default: 0
+  })
+  lockedBalance: Number;
+
   @Prop({ type: Object })
   rate: Rates;
 

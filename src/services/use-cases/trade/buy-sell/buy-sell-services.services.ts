@@ -107,7 +107,7 @@ export class BuySellServices {
             amount: creditedAmount,
             signedAmount: creditedAmount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `${creditCoin} bought`,
+            description: `Bought ${creditedAmount}${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
@@ -130,7 +130,7 @@ export class BuySellServices {
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description: `${debitCoin} bought`,
+            description: `Bought ${creditedAmount}${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
@@ -165,7 +165,7 @@ export class BuySellServices {
           throw new Error(error);
         }
       };
-      
+
       await Promise.all([
         databaseHelper.executeTransaction(
           atomicTransaction,
@@ -187,7 +187,7 @@ export class BuySellServices {
       ])
 
       return {
-        message: `${creditCoin} bought successfully`,
+        message: `Bought ${creditedAmount}${creditCoin}`,
         data: {},
         status: 200,
       };
@@ -270,7 +270,7 @@ export class BuySellServices {
             reference: generateReference('debit'),
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description: `${debitCoin} sold`,
+            description: `Sold ${amount}${debitCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
@@ -285,7 +285,7 @@ export class BuySellServices {
             amount: creditedAmount,
             signedAmount: creditedAmount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `${creditCoin} sold`,
+            description: `Sold ${amount}${debitCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
@@ -337,7 +337,7 @@ export class BuySellServices {
       ])
 
       return {
-        message: `${debitCoin} sold successfully`,
+        message: `Sold ${amount}${debitCoin}`,
         data: {},
         status: HttpStatus.OK,
       };

@@ -20,6 +20,7 @@ import { Notification, NotificationSchema } from "./model/Notification";
 import { QuickTrade, QuickTradeSchema } from "./model/Quick-Trade";
 import { QuickTradeContract, QuickTradeContractSchema } from "./model/Quick-Trade-Contract";
 import { Rate, RateSchema } from "./model/Rate";
+import { Admin, AdminSchema } from "./model/Admin";
 
 @Module({
   imports: [
@@ -38,6 +39,8 @@ import { Rate, RateSchema } from "./model/Rate";
       { name: QuickTrade.name, schema: QuickTradeSchema },
       { name: QuickTradeContract.name, schema: QuickTradeContractSchema },
       { name: Rate.name, schema: RateSchema },
+      { name: Admin.name, schema: AdminSchema },
+      
       
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),

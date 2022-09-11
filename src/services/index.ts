@@ -4,6 +4,7 @@ import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.modu
 import { RedisServiceModule } from "src/frameworks/in-memory-database/redis/redis-service.module";
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { DataServicesModule } from "./data-services/data-services.module";
+import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
 // import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
@@ -37,5 +38,6 @@ export default [
   BankServicesModule,
   QuickTradeServicesModule,
   // CustomLoggerServicesModule,
-  NotificationServicesModule
+  NotificationServicesModule,
+  AdminServicesModule
 ]

@@ -1,4 +1,5 @@
 import { AccountController } from "./account";
+import admin from "./admin";
 import { AuthenticationController } from "./authentication";
 import { BankController } from "./bank";
 import { BuySellController } from "./buy-sell";
@@ -23,5 +24,6 @@ export default [
   HomeController,
   BankController,
   NotificationController,
-  QuickTradeController
+  QuickTradeController,
+  ...admin
 ]

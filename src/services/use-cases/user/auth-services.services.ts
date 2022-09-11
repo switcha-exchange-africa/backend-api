@@ -15,11 +15,11 @@ import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { randomBytes } from 'crypto'
-import { SignupDto } from 'src/core/dtos/user.dto';
 import { UserFactoryService } from './user-factory.service';
 import { ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { SignupDto } from 'src/core/dtos/authentication/login.dto';
 
 @Injectable()
 export class AuthServices {

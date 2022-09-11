@@ -14,6 +14,7 @@ import {
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
 import { BLOCKCHAIN_CHAIN, CoinType } from "src/core/entities/wallet.entity";
+import { Types } from "mongoose";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -68,7 +69,7 @@ const generateTatumWalletPayload = (coin: CoinType) => {
 export class WalletServices {
   constructor(
     private http: IHttpServices,
-    private dataServices: IDataServices,
+    private data: IDataServices,
     private walletFactory: WalletFactoryService
   ) { }
 
@@ -76,7 +77,7 @@ export class WalletServices {
     try {
       const { userId, coin } = payload
 
-      const walletExists = await this.dataServices.wallets.findOne({ userId, coin });
+      const walletExists = await this.data.wallets.findOne({ userId, coin });
       if (walletExists) throw new AlreadyExistsException('Wallet already exists')
 
       if (coin === CoinType.NGN) {
@@ -89,7 +90,7 @@ export class WalletServices {
           network: null,
         };
         const factory = await this.walletFactory.create(walletPayload);
-        const data = await this.dataServices.wallets.create(factory);
+        const data = await this.data.wallets.create(factory);
         return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
       }
 
@@ -103,7 +104,7 @@ export class WalletServices {
           network: null,
         };
         const factory = await this.walletFactory.create(walletPayload);
-        const data = await this.dataServices.wallets.create(factory);
+        const data = await this.data.wallets.create(factory);
         return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
       }
 
@@ -135,7 +136,7 @@ export class WalletServices {
         tatumMessage: message,
       });
 
-      const data = await this.dataServices.wallets.create(factory);
+      const data = await this.data.wallets.create(factory);
       return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
 
     } catch (error) {
@@ -266,11 +267,12 @@ export class WalletServices {
   //   }
   // }
 
-  async findAll(query: Record<string, any>, userId: string) {
+  async findAll(payload: Record<string, any>) {
     try {
-      const wallets = await this.dataServices.wallets.findAllWithPagination({
-        query,
-        queryFields: { userId: userId },
+
+      const { data, pagination } = await this.data.wallets.findAllWithPagination({
+        query: payload,
+        queryFields: {},
         misc: {
           populated: {
             path: 'userId',
@@ -278,10 +280,12 @@ export class WalletServices {
           }
         }
       });
+
       return {
         status: 200,
         message: "Wallets retrieved successfully",
-        wallets,
+        data,
+        pagination,
       };
     } catch (error) {
       Logger.error(error);
@@ -291,9 +295,9 @@ export class WalletServices {
     }
   }
 
-  async details(id: string) {
+  async details(id: Types.ObjectId) {
     try {
-      const wallet = await this.dataServices.wallets.findOne({ _id: id });
+      const wallet = await this.data.wallets.findOne({ _id: id });
       if (!wallet) throw new DoesNotExistsException("wallet does not exist");
       return { status: 200, message: "Wallet retrieved successfully", wallet };
     } catch (error) {

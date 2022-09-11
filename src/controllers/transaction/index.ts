@@ -14,7 +14,7 @@ import {
 import { Request, Response } from "express";
 import { TRANSACTION_ROUTE } from "src/lib/route-constant";
 import { TransactionServices } from "src/services/use-cases/transaction/transaction-services.services";
-import { FindByIdDto } from "src/core/dtos/user.dto";
+import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
 @Controller()
 export class TransactionController {

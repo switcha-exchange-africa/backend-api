@@ -70,7 +70,6 @@ export class User {
   @Prop({ enum: USER_LOCK_LIST })
   lock: USER_LOCK;
 
-
   @Prop({ enum: USER_SIGNUP_STATUS_TYPE_LIST })
   authStatus: USER_SIGNUP_STATUS_TYPE
 

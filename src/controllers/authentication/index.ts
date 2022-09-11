@@ -12,7 +12,6 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthServices } from "src/services/use-cases/user/auth-services.services";
-import { SignupDto } from "src/core/dtos/user.dto";
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto";
 import { LooseAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
@@ -20,7 +19,7 @@ import {
   ResetPasswordDto,
 } from "src/core/dtos/resetPasswordDto.dto";
 import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto";
-import { LoginDto } from "src/core/dtos/authentication/login.dto";
+import { LoginDto, SignupDto } from "src/core/dtos/authentication/login.dto";
 import { generateGoogleAuthUrl } from "src/lib/utils";
 import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 
