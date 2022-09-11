@@ -1,9 +1,5 @@
-// transaction pin
-// kyc
-// verify phone number
-// id card
-
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { Types } from "mongoose";
 import { env } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
@@ -24,16 +20,16 @@ import {
 @Injectable()
 export class AccountServices {
   constructor(
-    private dataServices: IDataServices,
+    private data: IDataServices,
     private inMemoryServices: IInMemoryServices
-  ) {}
+  ) { }
 
   async createTransactionPin(userId: string, pin: string) {
     try {
-      const user = await this.dataServices.users.findOne({ _id: userId });
+      const user = await this.data.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exists");
       const hashedPin = await hash(pin);
-      await this.dataServices.users.update(
+      await this.data.users.update(
         { _id: user?._id },
         { transactionPin: hashedPin }
       );
@@ -53,13 +49,13 @@ export class AccountServices {
   }) {
     try {
       const { userId, pin, oldPin } = payload;
-      const user = await this.dataServices.users.findOne({ _id: userId });
+      const user = await this.data.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exists");
       const comparePin = await compareHash(oldPin, user?.transactionPin);
       if (!comparePin)
         throw new BadRequestsException("old transaction pin is invalid");
       const hashedPin = await hash(pin);
-      await this.dataServices.users.update(
+      await this.data.users.update(
         { _id: user?._id },
         { transactionPin: hashedPin }
       );
@@ -93,7 +89,7 @@ export class AccountServices {
   }) {
     try {
       const { userType, phone, userId, code } = payload;
-      const user = await this.dataServices.users.findOne({ _id: userId });
+      const user = await this.data.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exists");
 
       const phoneCodeCountKey = `${RedisPrefix.phoneCodeCount}/${user?.email}`;
@@ -166,7 +162,7 @@ export class AccountServices {
 
         await this.inMemoryServices.del(phoneVerificationCodeRedisKey);
         // update phone
-        await this.dataServices.users.update(
+        await this.data.users.update(
           { _id: user?._id },
           {
             $set: {
@@ -196,13 +192,13 @@ export class AccountServices {
   }) {
     try {
       const { documentType, url, userId } = payload;
-      const user = await this.dataServices.users.findOne({ _id: userId });
+      const user = await this.data.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exists");
       const document = {
         documentType,
         url,
       };
-      await this.dataServices.users.update(
+      await this.data.users.update(
         { _id: user?._id },
         { $set: { document } }
       );
@@ -222,9 +218,9 @@ export class AccountServices {
   async uploadAvatar(payload: { url: string; userId: string }) {
     try {
       const { userId, url } = payload;
-      const user = await this.dataServices.users.findOne({ _id: userId });
+      const user = await this.data.users.findOne({ _id: userId });
       if (!user) throw new DoesNotExistsException("user does not exists");
-      await this.dataServices.users.update(
+      await this.data.users.update(
         { _id: user?._id },
         { $set: { avatar: url } }
       );
@@ -237,6 +233,72 @@ export class AccountServices {
       if (error.name === "TypeError")
         throw new HttpException(error.message, 500);
       throw error;
+    }
+  }
+
+  async enableAuthenticator(id: Types.ObjectId) {
+    try {
+      await this.data.users.update({ _id: id }, { authenticator: true })
+      return {
+        message: "Authenticator enabled successfully",
+        status: HttpStatus.OK,
+        data: {},
+      }
+
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+  async disabledAuthenticator(id: Types.ObjectId) {
+    try {
+      await this.data.users.update({ _id: id }, { authenticator: false })
+      return {
+        message: "Authenticator disabled successfully",
+        status: HttpStatus.OK,
+        data: {},
+      }
+
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+  async enableNotification(id: Types.ObjectId) {
+    try {
+      await this.data.users.update({ _id: id }, { notify: true })
+      return {
+        message: "Notification enabled successfully",
+        status: HttpStatus.OK,
+        data: {},
+      }
+
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
+    }
+  }
+
+  async disableNotification(id: Types.ObjectId) {
+    try {
+      await this.data.users.update({ _id: id }, { notify: false })
+      return {
+        message: "Notification disabled successfully",
+        status: HttpStatus.OK,
+        data: {},
+      }
+
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === "TypeError")
+        throw new HttpException(error.message, 500);
+      throw new Error(error);
     }
   }
 }

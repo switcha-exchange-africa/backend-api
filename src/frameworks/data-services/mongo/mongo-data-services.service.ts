@@ -18,6 +18,7 @@ import { QuickTrade, QuickTradeDocument } from './model/Quick-Trade';
 import { QuickTradeContract, QuickTradeContractDocument } from './model/Quick-Trade-Contract';
 import { Rate, RateDocument } from './model/Rate';
 import { Admin, AdminDocument } from './model/Admin';
+import { Kyc, KycDocument } from './model/Kyc';
 
 
 @Injectable()
@@ -38,6 +39,7 @@ export class MongoDataServices
   quickTradeContracts: MongoGenericRepository<QuickTradeContract>;
   rates: MongoGenericRepository<Rate>;
   admins: MongoGenericRepository<Admin>;
+  kyc: MongoGenericRepository<Kyc>;
 
   constructor(
     @InjectModel(User.name)
@@ -85,6 +87,9 @@ export class MongoDataServices
     @InjectModel(Admin.name)
     private AdminRepository: Model<AdminDocument>,
 
+    @InjectModel(Kyc.name)
+    private KycRepository: Model<KycDocument>,
+
 
   ) { }
 
@@ -105,6 +110,7 @@ export class MongoDataServices
     this.quickTradeContracts = new MongoGenericRepository<QuickTradeContract>(this.QuickTradeContractRepository)
     this.rates = new MongoGenericRepository<Rate>(this.RateRepository)
     this.admins = new MongoGenericRepository<Admin>(this.AdminRepository)
+    this.kyc = new MongoGenericRepository<Kyc>(this.KycRepository, ['userId'])
 
 
 

@@ -43,6 +43,12 @@ export class User {
   @Prop()
   agreedToTerms: boolean
 
+  @Prop({ default: false })
+  authenticator: boolean
+
+  @Prop({ default: false })
+  notify: boolean
+
   @Prop()
   country: string
 

@@ -8,6 +8,7 @@ import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
 // import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
+import { KycServicesModule } from "./use-cases/kyc/kyc-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
 import { RatesServicesModule } from "./use-cases/rates/rates-services.module";
 import { BuySellServicesModule } from "./use-cases/trade/buy-sell/buy-sell-services.module";
@@ -39,5 +40,6 @@ export default [
   QuickTradeServicesModule,
   // CustomLoggerServicesModule,
   NotificationServicesModule,
-  AdminServicesModule
+  AdminServicesModule,
+  KycServicesModule
 ]

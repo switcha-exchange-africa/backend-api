@@ -13,6 +13,7 @@ import { Notification } from '../entities/notification.entity';
 import { QuickTrade, QuickTradeContract } from '../entities/QuickTrade';
 import { Rate } from '../entities/Rate';
 import { Admin } from '../entities/Admin';
+import { Kyc } from '../entities/Kyc';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -30,5 +31,6 @@ export abstract class IDataServices {
   abstract quickTradeContracts: IGenericRepository<QuickTradeContract>
   abstract rates: IGenericRepository<Rate>
   abstract admins: IGenericRepository<Admin>
+  abstract kyc: IGenericRepository<Kyc>
 
 }

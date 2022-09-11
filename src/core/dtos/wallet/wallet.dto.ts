@@ -1,4 +1,3 @@
-import { UserDetail } from "src/core/entities/user.entity";
 import {
   IsEnum,
   IsNotEmpty,
@@ -16,7 +15,6 @@ export class PhraseDto {
 // deprecated, dont use
 export class WalletDto {
 
-  userDetail: UserDetail;
 
   @IsString()
   accountId: string;

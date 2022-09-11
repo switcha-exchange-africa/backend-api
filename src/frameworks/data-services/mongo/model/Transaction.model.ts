@@ -1,4 +1,3 @@
-import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { Types } from "mongoose";
@@ -52,8 +51,6 @@ export class Transaction {
   @Prop({ enum: TRANSACTION_SUBTYPE_LIST })
   subType: TRANSACTION_SUBTYPE;
 
-  @Prop({ type: Object })
-  user: UserDetail;
 
   @Prop({ enum: TRANSACTION_STATUS_LIST })
   status: TRANSACTION_STATUS;

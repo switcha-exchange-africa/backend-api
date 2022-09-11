@@ -1,9 +1,5 @@
 import { SwitchaDeviceType, UserIDDocumentType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from "src/lib/constants";
 
-export interface UserDetail {
-  email: string,
-  fullName: string
-}
 
 
 export class User {
@@ -46,8 +42,12 @@ export class User {
   transactionPin?: string
 
   document: UserIDDocumentType
- 
+
   avatar: string
+
+  authenticator: boolean
+
+  notify: boolean
 
 }
 
