@@ -15,7 +15,7 @@ import { WALLET_ROUTE } from "src/lib/route-constant";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
-import { CreateWalletDto } from "src/core/dtos/wallet/wallet.dto";
+import { CreateWalletDto, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
 @Controller()
@@ -35,7 +35,7 @@ export class WalletController {
       const response = await this.services.create({ userId, coin })
 
       return res.status(response.status).json(response);
-      
+
     } catch (error) {
       return res.status(error.status || 500).json(error);
 
@@ -46,11 +46,15 @@ export class WalletController {
   @UseGuards(StrictAuthGuard)
   async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
+      
       const userId = req?.user?._id;
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin } = query
 
-      const response = await this.services.findAll({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin});
+      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin }
+      const response = await this.services.findAll(payload);
+
       return res.status(response.status).json(response);
+      
     } catch (error) {
       return res.status(error.status || 500).json(error);
 

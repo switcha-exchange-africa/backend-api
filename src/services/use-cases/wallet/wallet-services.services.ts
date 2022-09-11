@@ -14,6 +14,7 @@ import { WalletFactoryService } from "./wallet-factory.service";
 import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "src/core/entities/wallet.entity";
 import { Types } from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
+import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -72,6 +73,18 @@ export class WalletServices {
     private walletFactory: WalletFactoryService
   ) { }
 
+  cleanQueryPayload(payload: IGetWallets) {
+    let key = {}
+    if (payload.userId) key['userId'] = payload.userId
+    if (payload.coin) key['coin'] = payload.coin
+    if (payload.perpage) key['perpage'] = payload.perpage
+    if (payload.page) key['page'] = payload.page
+    if (payload.dateFrom) key['dateFrom'] = payload.dateFrom
+    if (payload.dateTo) key['dateTo'] = payload.dateTo
+    if (payload.sortBy) key['sortBy'] = payload.sortBy
+    if (payload.orderBy) key['orderBy'] = payload.orderBy
+    return key
+  }
   async create(payload: { userId: string, coin: CoinType }): Promise<ResponsesType<Wallet>> {
     try {
       const { userId, coin } = payload
@@ -290,11 +303,11 @@ export class WalletServices {
   //   }
   // }
 
-  async findAll(payload: Record<string, any>): Promise<ResponsesType<Wallet>> {
+  async findAll(payload: IGetWallets): Promise<ResponsesType<Wallet>> {
     try {
-
+      const cleanedPayload = this.cleanQueryPayload(payload)
       const { data, pagination } = await this.data.wallets.findAllWithPagination({
-        query: payload,
+        query: cleanedPayload,
         queryFields: {},
         misc: {
           populated: {
