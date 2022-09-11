@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Logger, Param, Query, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, Res, UseGuards } from "@nestjs/common";
 import { TransactionServices } from "src/services/use-cases/transaction/transaction-services.services";
 import { Response } from "express"
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
@@ -24,10 +24,8 @@ export class AdminTransactionsController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -43,10 +41,8 @@ export class AdminTransactionsController {
       const response = await this.services.getSingleTransaction(id);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 }

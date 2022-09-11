@@ -45,12 +45,14 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
-  async findOne(key: FilterQuery<T>, session?: ClientSession) {
+  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' }) {
     try {
       const result = await this._repository
         .findOne(key)
         .populate(this._populateOnFind)
+        .sort(options && options.sort === 'desc' ? { createdAt: -1 } : { createdAt: 1 })
         .session(session || null);
+
       return Promise.resolve(result);
     } catch (e) {
       return Promise.reject(e);

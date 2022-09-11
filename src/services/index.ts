@@ -6,6 +6,7 @@ import { DiscordServicesModule } from "src/frameworks/notification-services/disc
 import { DataServicesModule } from "./data-services/data-services.module";
 import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
+import { ExchangeRateServicesModule } from "./use-cases/exchange-rates/exchange-rate-service.module";
 // import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
 import { KycServicesModule } from "./use-cases/kyc/kyc-services.module";
@@ -41,5 +42,6 @@ export default [
   // CustomLoggerServicesModule,
   NotificationServicesModule,
   AdminServicesModule,
-  KycServicesModule
+  KycServicesModule,
+  ExchangeRateServicesModule
 ]

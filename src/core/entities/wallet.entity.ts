@@ -84,9 +84,15 @@ export enum CryptoPairType {
   ETH_USDT = "ETH/USDT",
   BTC_USDT = "BTC/USDT",
   NGN_USDT = "NGN/USDT",
+  USDC_NGN = "USDC/NGN",
+  USDT_NGN = "USDT/NGN",
 }
 
 export const CoinPairList = [
   CryptoPairType.ETH_USDT,
   CryptoPairType.BTC_USDT,
+  CryptoPairType.NGN_USDT,
+  CryptoPairType.USDC_NGN,
+  CryptoPairType.USDT_NGN,
+  
 ]

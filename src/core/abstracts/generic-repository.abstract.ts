@@ -14,7 +14,7 @@ export abstract class IGenericRepository<T> {
       }
     });
 
-  abstract findOne(key: FilterQuery<T>, session?: ClientSession);
+  abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' });
 
   abstract create(payload: T | T[], session?: ClientSession);
 
