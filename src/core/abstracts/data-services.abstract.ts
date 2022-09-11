@@ -33,4 +33,5 @@ export abstract class IDataServices {
   abstract admins: IGenericRepository<Admin>
   abstract kyc: IGenericRepository<Kyc>
 
+
 }

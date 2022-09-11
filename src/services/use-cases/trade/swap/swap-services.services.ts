@@ -48,7 +48,7 @@ export class SwapServices {
       state: ResponseState.ERROR,
       message: `User does not exist`,
       error: null,
-    }) 
+    })
     if (!sourceWallet) return Promise.reject({
       status: HttpStatus.NOT_FOUND,
       state: ResponseState.ERROR,
@@ -134,8 +134,8 @@ export class SwapServices {
           type: TRANSACTION_TYPE.CREDIT,
           description: "swap currency",
           status: TRANSACTION_STATUS.COMPLETED,
-          balanceAfter: destinationWallet?.balance,
-          balanceBefore: creditDestinationWallet?.balance,
+          balanceAfter: creditDestinationWallet?.balance,
+          balanceBefore: destinationWallet?.balance,
           subType: TRANSACTION_SUBTYPE.CREDIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,
@@ -152,8 +152,8 @@ export class SwapServices {
           type: TRANSACTION_TYPE.DEBIT,
           description: "swap currency",
           status: TRANSACTION_STATUS.COMPLETED,
-          balanceAfter: sourceWallet?.balance,
-          balanceBefore: debitSourceWallet?.balance,
+          balanceAfter: debitSourceWallet?.balance,
+          balanceBefore: sourceWallet?.balance,
           subType: TRANSACTION_SUBTYPE.DEBIT,
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,

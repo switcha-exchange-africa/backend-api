@@ -8,6 +8,7 @@ export type INotificationUserType = {
   email: string
 }
 export class Notification {
+  seen?: boolean
   message?: string
   link?: string
   title?: string
