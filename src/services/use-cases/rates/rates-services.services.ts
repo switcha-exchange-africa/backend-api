@@ -1,6 +1,6 @@
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { ResponsesType } from "src/core/types/response";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { SingleRateDto } from "src/core/dtos/rates/rates.dto";
 
@@ -33,13 +33,18 @@ export class RatesServices {
       const rates = await this.http.get(url, config);
       return Promise.resolve({
         message: "Rates retrieved successfully",
-        status: 200,
+        status: HttpStatus.OK,
         data: rates,
+        state: ResponseState.SUCCESS
       });
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -51,13 +56,19 @@ export class RatesServices {
       const rate = await this.http.get(url, config);
       return Promise.resolve({
         message: `${sub} rate retrieved successfully`,
-        status: 200,
+        status: HttpStatus.OK,
         data: rate,
+        state: ResponseState.SUCCESS
+
       });
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
   async allCryptoMarketCharts(base: string): Promise<ResponsesType<any>> {
@@ -66,13 +77,19 @@ export class RatesServices {
       const data = await this.http.get(url, config);
       return Promise.resolve({
         message: `data retrieved successfully`,
-        status: 200,
+        status: HttpStatus.OK,
         data,
+        state: ResponseState.SUCCESS
+
       });
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -86,13 +103,18 @@ export class RatesServices {
       const data = await this.http.get(url, config);
       return Promise.resolve({
         message: `data retrieved successfully`,
-        status: 200,
+        status: HttpStatus.OK,
         data,
+        state: ResponseState.SUCCESS
       });
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -100,11 +122,15 @@ export class RatesServices {
     const url = `${COIN_GECKO_BASE_URL}/coins/${payload.coin}/market_chart?vs_currency=${payload.base}&days=${payload.days}&interval=${payload.interval}`;
     try {
       const data = await this.http.get(url, config);
-      return Promise.resolve({ message: `data retrieved successfully`, status: 200, data });
+      return Promise.resolve({ message: `data retrieved successfully`, status: HttpStatus.OK, data, state: ResponseState.SUCCESS });
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -115,8 +141,12 @@ export class RatesServices {
       return { message: "Exchange rate recieved successfully", rate, status: HttpStatus.OK }
     } catch (error) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }
