@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  HttpException,
-  Logger,
   Param,
   Query,
   Res,
@@ -23,9 +21,8 @@ export class RatesController {
       const response = await this.rateServices.findAll(base);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -36,8 +33,6 @@ export class RatesController {
       const response = await this.rateServices.allCryptoMarketCharts(base);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -57,9 +52,8 @@ export class RatesController {
       );
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
   @Get(RATES_ROUTE.HISTORICAL_MARKETS_DATA)
@@ -77,9 +71,8 @@ export class RatesController {
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -90,9 +83,8 @@ export class RatesController {
       const response = await this.rateServices.findOne(query);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -103,8 +95,6 @@ export class RatesController {
       const response = await this.rateServices.exchangeRate(coin, base);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }

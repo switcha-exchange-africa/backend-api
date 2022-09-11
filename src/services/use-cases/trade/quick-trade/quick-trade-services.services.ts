@@ -1,15 +1,14 @@
 import { InjectConnection } from "@nestjs/mongoose";
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 // import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 // import { TATUM_API_KEY } from "src/configuration";
 import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
-import { ResponsesType } from "src/core/types/response";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { IQuickTradeBuy, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
-import { BadRequestsException } from "../../user/exceptions";
 import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
 import { generateReference } from "src/lib/utils";
@@ -23,7 +22,6 @@ import * as _ from 'lodash';
 export class QuickTradeServices {
 
   constructor(
-    // private http: IHttpServices,
     private data: IDataServices,
     private quickTradeFactory: QuickTradeFactoryService,
     private quickTradeContractFactory: QuickTradeContractFactoryService,
@@ -34,7 +32,7 @@ export class QuickTradeServices {
 
   ) { }
 
-  async buyAd(payload: IQuickTradeBuy): Promise<ResponsesType<any>> {
+  async buyAd(payload: IQuickTradeBuy): Promise<ResponsesType<QuickTrade>> {
     try {
       const { userId, buy, payingCoin, unitPrice, amount, fullName } = payload
       const price = unitPrice * amount  // total price
@@ -48,9 +46,18 @@ export class QuickTradeServices {
             this.data.wallets.findOne({ userId, coin: buy, isBlocked: false }),
             this.data.wallets.findOne({ userId, coin: payingCoin, balance: { $gte: price } }),
           ])
-          if (!creditWallet) throw new BadRequestsException("Wallet does not exists")
-          if (!debitWallet) throw new BadRequestsException("Insufficient Balance")
-
+          if (!creditWallet) return Promise.reject({
+            status: HttpStatus.NOT_FOUND,
+            state: ResponseState.ERROR,
+            message: `${buy} wallet does not exist`,
+            error: null,
+          });
+          if (!debitWallet) return Promise.reject({
+            status: HttpStatus.NOT_FOUND,
+            state: ResponseState.ERROR,
+            message: "Insufficient Balance",
+            error: null,
+          });
 
           const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.SELL, unitPrice, pair, amount: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
           const matchingTradeContract: mongoose.HydratedDocument<QuickTradeContract> = await this.data.quickTradeContracts.findOne({ quickTradeId: String(matchingTrade._id) }) // credit the user acceptingCoin wallet with the price
@@ -98,10 +105,20 @@ export class QuickTradeServices {
 
             const seller = matchingTrade.sellerId as unknown as mongoose.HydratedDocument<User>
             const sellerWallet = await this.data.wallets.findOne({ coin: buy, userId: String(seller._id) })
-            if (!sellerWallet) throw new BadRequestsException('Buyer wallet does not exists')
+            if (!sellerWallet) return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: 'Buyer wallet does not exists',
+              error: null,
+            });
 
             const sellerPendingTransaction = await this.data.transactions.findOne({ generalTransactionReference: matchingTradeContract.generalTransactionReference })
-            if (!sellerPendingTransaction) throw new BadRequestsException(`Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`)
+            if (!sellerPendingTransaction) return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: `Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`,
+              error: null,
+            });
 
             const sellerNotificationPayload = {
               message: `Your sell ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
@@ -329,6 +346,8 @@ export class QuickTradeServices {
         message: `Buy ads added successfully`,
         data: {},
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
+
       };
     } catch (error) {
       Logger.error(error);
@@ -342,7 +361,7 @@ export class QuickTradeServices {
     }
   }
 
-  async sell(payload: IQuickTradeSell): Promise<ResponsesType<any>> {
+  async sell(payload: IQuickTradeSell): Promise<ResponsesType<QuickTrade>> {
 
     try {
 
@@ -358,8 +377,19 @@ export class QuickTradeServices {
             this.data.wallets.findOne({ userId, coin: acceptingCoin, isBlocked: false }),
             this.data.wallets.findOne({ userId, coin: sell, balance: { $gte: amount } }),
           ])
-          if (!creditWallet) throw new BadRequestsException("Wallet does not exists")
-          if (!debitWallet) throw new BadRequestsException("Insufficient Balance")
+
+          if (!creditWallet) return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `${acceptingCoin} wallet does not exists`,
+            error: null,
+          });
+          if (!debitWallet) return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `Insufficient Balance`,
+            error: null,
+          });
 
 
           const matchingTrade: mongoose.HydratedDocument<QuickTrade> = await this.data.quickTrades.findOne({ type: QuickTradeType.BUY, unitPrice, pair, amount: { $lte: amount }, status: { $ne: QuickTradeStatus.FILLED } })
@@ -410,10 +440,20 @@ export class QuickTradeServices {
 
             const buyer = matchingTrade.buyerId as unknown as mongoose.HydratedDocument<User>
             const buyerWallet = await this.data.wallets.findOne({ coin: sell, userId: String(buyer._id) })
-            if (!buyerWallet) throw new BadRequestsException('Buyer wallet does not exists')
+            if (!buyerWallet) return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: `Buyer wallet does not exists`,
+              error: null,
+            });
 
             const buyerPendingTransaction = await this.data.transactions.findOne({ generalTransactionReference: matchingTradeContract.generalTransactionReference })
-            if (!buyerPendingTransaction) throw new BadRequestsException(`Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`)
+            if (!buyerPendingTransaction) return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: `Group Transaction Reference of ${matchingTradeContract.generalTransactionReference} does not exists`,
+              error: null,
+            });
 
             const buyerNotificationPayload = {
               message: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
@@ -754,6 +794,8 @@ export class QuickTradeServices {
         message: `Sell ads added successfully`,
         data,
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
+
       };
     } catch (error) {
       Logger.error(error);
@@ -768,7 +810,7 @@ export class QuickTradeServices {
     }
   }
 
-  async getBuyAds(payload: { perpage: string, page: string, dateFrom: string, dateTo: string, sortBy: string, orderBy: string, userId: string }) {
+  async getBuyAds(payload: { perpage: string, page: string, dateFrom: string, dateTo: string, sortBy: string, orderBy: string, userId: string }): Promise<ResponsesType<QuickTrade>> {
     try {
 
       const { data, pagination } = await this.data.quickTrades.findAllWithPagination({
@@ -783,17 +825,23 @@ export class QuickTradeServices {
       });
 
       return Promise.resolve({
-        message: "Transaction retrieved successfully",
+        message: "Ads retrieved successfully",
         status: 200,
         data,
         pagination,
+        state: ResponseState.SUCCESS,
+
       });
 
     } catch (error) {
       Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: "An error occured, please contact support",
+        technical: error.message,
+        state: 'error',
+        error
+      });
     }
   }
 }

@@ -1,8 +1,9 @@
 import { IDataServices } from "src/core/abstracts";
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { KycFactoryService } from "./kyc-factory.service";
 import { IGetKyc, IKyc } from "src/core/dtos/kyc";
+import { ResponseState } from "src/core/types/response";
 
 @Injectable()
 export class KycServices {
@@ -19,15 +20,18 @@ export class KycServices {
 
       return Promise.resolve({
         message: "Kyc created successfully",
-        status: 200,
+        status: HttpStatus.CREATED,
         data,
       });
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -46,16 +50,19 @@ export class KycServices {
 
       return Promise.resolve({
         message: "Kyc retrieved successfully",
-        status: 200,
+        status: HttpStatus.OK,
         data,
         pagination,
       });
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -65,15 +72,18 @@ export class KycServices {
       const data = await this.data.kyc.findOne({ _id: id });
       return Promise.resolve({
         message: "Kyc retrieved succesfully",
-        status: 200,
+        status: HttpStatus.OK,
         data,
       });
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

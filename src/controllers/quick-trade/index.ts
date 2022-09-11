@@ -3,8 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  Logger,
   Post,
   Query,
   Req,
@@ -43,10 +41,8 @@ export class QuickTradeController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -66,10 +62,8 @@ export class QuickTradeController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -96,9 +90,8 @@ export class QuickTradeController {
 
 
     } catch (error) {
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
+
     }
   }
 

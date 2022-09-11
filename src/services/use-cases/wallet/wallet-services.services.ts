@@ -1,8 +1,6 @@
-import { AlreadyExistsException } from "./../user/exceptions";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { DoesNotExistsException } from "src/services/use-cases/user/exceptions";
 import { IDataServices } from "src/core/abstracts";
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import {
   TATUM_API_KEY,
   TATUM_BASE_URL,
@@ -13,8 +11,9 @@ import {
   TATUM_USDT_TRON_ACCOUNT_ID,
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
-import { BLOCKCHAIN_CHAIN, CoinType } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "src/core/entities/wallet.entity";
 import { Types } from "mongoose";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -73,12 +72,17 @@ export class WalletServices {
     private walletFactory: WalletFactoryService
   ) { }
 
-  async create(payload: { userId: string, coin: CoinType }) {
+  async create(payload: { userId: string, coin: CoinType }): Promise<ResponsesType<Wallet>> {
     try {
       const { userId, coin } = payload
 
       const walletExists = await this.data.wallets.findOne({ userId, coin });
-      if (walletExists) throw new AlreadyExistsException('Wallet already exists')
+      if (walletExists) return Promise.reject({
+        status: HttpStatus.CONFLICT,
+        state: ResponseState.ERROR,
+        message: 'Wallet already exists',
+        error: null,
+      })
 
       if (coin === CoinType.NGN) {
         const walletPayload = {
@@ -91,7 +95,12 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
-        return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
+        return {
+          message: "Wallet created successfully",
+          data,
+          status: HttpStatus.CREATED,
+          state: ResponseState.SUCCESS
+        };
       }
 
       if (coin === CoinType.USD) {
@@ -105,7 +114,13 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
-        return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
+        return {
+          message: "Wallet created successfully",
+          data,
+          status: HttpStatus.CREATED,
+          state: ResponseState.SUCCESS
+
+        };
       }
 
       const tatumPayload = generateTatumWalletPayload(coin)
@@ -137,13 +152,21 @@ export class WalletServices {
       });
 
       const data = await this.data.wallets.create(factory);
-      return { message: "Wallet created successfully", data, status: HttpStatus.CREATED };
+      return {
+        message: "Wallet created successfully",
+        data, status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS
+
+      };
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
   // async createMultipleWallet(userId: string) {
@@ -267,7 +290,7 @@ export class WalletServices {
   //   }
   // }
 
-  async findAll(payload: Record<string, any>) {
+  async findAll(payload: Record<string, any>): Promise<ResponsesType<Wallet>> {
     try {
 
       const { data, pagination } = await this.data.wallets.findAllWithPagination({
@@ -282,29 +305,41 @@ export class WalletServices {
       });
 
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: "Wallets retrieved successfully",
         data,
         pagination,
+        state: ResponseState.SUCCESS
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
-  async details(id: Types.ObjectId) {
+  async details(id: Types.ObjectId): Promise<ResponsesType<Wallet>> {
     try {
-      const wallet = await this.data.wallets.findOne({ _id: id });
-      if (!wallet) throw new DoesNotExistsException("wallet does not exist");
-      return { status: 200, message: "Wallet retrieved successfully", wallet };
+      const data = await this.data.wallets.findOne({ _id: id });
+      if (!data) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'Wallet does not exist',
+        error: null,
+      })
+      return { status: HttpStatus.OK, message: "Wallet retrieved successfully", data, state: ResponseState.SUCCESS };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 

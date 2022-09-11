@@ -26,9 +26,8 @@ export class WebhookController {
             const response = await this.services.tatum(req)
             return res.status(200).json(response)
         } catch (error) {
-            Logger.error(error)
-            if (error.name === 'TypeError') return res.status(200).json(error)
-            return res.status(200).json(error)
+            return res.status(error.status || 500).json(error);
+
         }
     }
 
@@ -84,9 +83,8 @@ export class WebhookController {
             return res.status(200).json(response)
 
         } catch (error) {
-            Logger.error(error)
-            if (error.name === 'TypeError') return res.status(200).json(error)
-            return res.status(200).json(error)
+            return res.status(error.status || 500).json(error);
+
         }
     }
 }

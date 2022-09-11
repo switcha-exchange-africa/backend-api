@@ -44,7 +44,6 @@ export type JWT_USER_PAYLOAD_TYPE = {
   _id?: string;
   fullName?: string;
   email?: string;
-  authStatus?: USER_SIGNUP_STATUS_TYPE;
   lock?: USER_LOCK;
   emailVerified?: boolean;
   phoneVerified?: boolean;

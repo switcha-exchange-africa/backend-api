@@ -2,8 +2,6 @@ import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   Controller,
   Get,
-  HttpException,
-  Logger,
   Param,
   Query,
   Req,
@@ -29,10 +27,8 @@ export class NotificationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -48,10 +44,8 @@ export class NotificationController {
       const response = await this.services.detail(id);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 

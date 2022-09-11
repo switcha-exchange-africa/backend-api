@@ -2,8 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  Logger,
   Post,
   Query,
   Req,
@@ -19,23 +17,21 @@ import {
   ResetPasswordDto,
 } from "src/core/dtos/resetPasswordDto.dto";
 import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto";
-import { LoginDto, SignupDto } from "src/core/dtos/authentication/login.dto";
+import { ILogin, ISignup, LoginDto, SignupDto } from "src/core/dtos/authentication/login.dto";
 import { generateGoogleAuthUrl } from "src/lib/utils";
 import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 
 @Controller()
 export class AuthenticationController {
-  constructor(private authServices: AuthServices) {}
+  constructor(private services: AuthServices) { }
 
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
   async signup(@Res() res: Response, @Body() body: SignupDto) {
     try {
-      const response = await this.authServices.signup(body, res);
+      const payload: ISignup = { ...body }
+      const response = await this.services.signup(payload);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -43,13 +39,10 @@ export class AuthenticationController {
   @Post(AUTHENTICATION_ROUTE.LOGIN)
   async login(@Res() res: Response, @Body() body: LoginDto) {
     try {
-      const { email, password } = body;
-      const response = await this.authServices.login(res, { email, password });
+      const payload: ILogin = { ...body }
+      const response = await this.services.login(payload);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -58,12 +51,9 @@ export class AuthenticationController {
   @UseGuards(LooseAuthGuard)
   async issueEmailVerificationCode(@Req() req: Request, @Res() res: Response) {
     try {
-      const response = await this.authServices.issueEmailVerificationCode(req);
+      const response = await this.services.issueEmailVerificationCode(req);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -76,12 +66,9 @@ export class AuthenticationController {
     @Body() body: VerifyUserDto
   ) {
     try {
-      const response = await this.authServices.verifyEmail(req, res, body);
+      const response = await this.services.verifyEmail(req, res, body);
       return res.status(200).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -93,12 +80,9 @@ export class AuthenticationController {
   ) {
     try {
       const { email, code } = body;
-      const response = await this.authServices.recoverPassword({ email, code });
+      const response = await this.services.recoverPassword({ email, code });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -112,16 +96,13 @@ export class AuthenticationController {
     try {
       const { email, token } = query;
       const { password } = body;
-      const response = await this.authServices.resetPassword(res, {
+      const response = await this.services.resetPassword(res, {
         email,
         password,
         token,
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -130,5 +111,20 @@ export class AuthenticationController {
   async google(@Res() res: Response) {
     const response = await generateGoogleAuthUrl();
     res.redirect(response);
+  }
+
+  @Get(AUTHENTICATION_ROUTE.GET_USER)
+  @UseGuards(LooseAuthGuard)
+  async getUser(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+
+      const response = await this.services.getUser(req?.user);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
   }
 }

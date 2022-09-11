@@ -2,18 +2,17 @@ import { TransactionReference } from "src/core/entities/transaction-reference.en
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import {
   BadRequestsException,
-  DoesNotExistsException,
 } from "../../user/exceptions";
 import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import * as mongoose from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
-import { ResponsesType } from "src/core/types/response";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
 import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
@@ -38,6 +37,7 @@ export class BuySellServices {
   async buy(body: BuySellDto, userId: string): Promise<ResponsesType<any>> {
     const { amount, debitCoin, creditCoin } = body;
     try {
+
       const url = `${TATUM_BASE_URL}/tatum/rate/${creditCoin}?basePair=${debitCoin}`;
       const [user, creditWallet, debitWallet, { value }] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -53,9 +53,18 @@ export class BuySellServices {
         this.http.get(url, this.config),
       ]);
 
-      if (!user) throw new DoesNotExistsException("User does not exist");
-      if (!creditWallet || !debitWallet)
-        throw new DoesNotExistsException("Wallet does not exist");
+      if (!user) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'User does not exist',
+        error: null,
+      });
+      if (!creditWallet || !debitWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: "Wallet does not exist",
+        error: null,
+      });
 
       const rate = value
       const creditedAmount = parseFloat((amount / rate).toFixed(4));
@@ -77,7 +86,7 @@ export class BuySellServices {
 
           if (!debitedWallet) {
             Logger.error("Balance is 0");
-            throw new BadRequestsException("Insufficient Balance");
+            throw new Error("Insufficient Balance");
           }
 
           const creditedWallet = await this.dataServices.wallets.update(
@@ -190,11 +199,17 @@ export class BuySellServices {
         message: `Bought ${creditedAmount}${creditCoin}`,
         data: {},
         status: 200,
+        state: ResponseState.SUCCESS,
       };
+
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError") throw new HttpException(error.message, 500);
-      throw error;
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -213,9 +228,25 @@ export class BuySellServices {
           coin: creditCoin,
         }),
       ]);
-      if (!user) throw new DoesNotExistsException("user does not exist");
-      if (!creditWallet) throw new DoesNotExistsException(`${creditCoin} does not exists`);
-      if (!debitWallet) throw new DoesNotExistsException(`${debitCoin} does not exists`);
+      if (!user) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: "User does not exist",
+        error: null,
+      });
+      if (!creditWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `${creditCoin} does not exists`,
+        error: null,
+      });
+      if (!debitWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `${debitCoin} does not exists`,
+        error: null,
+      });
+
       const url = `${TATUM_BASE_URL}/tatum/rate/${debitCoin}?basePair=${creditCoin}`;
       const { value } = await this.http.get(url, this.config);
       const rate = value
@@ -340,12 +371,17 @@ export class BuySellServices {
         message: `Sold ${amount}${debitCoin}`,
         data: {},
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
+
       };
     } catch (error) {
-      console.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

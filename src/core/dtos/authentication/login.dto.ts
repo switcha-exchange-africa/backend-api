@@ -2,12 +2,11 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
-  IsOptional,
   IsEnum,
   IsBoolean
 } from "class-validator";
 import { PartialType } from '@nestjs/mapped-types';
-import { SwitchaDeviceType, USER_LOCK, USER_SIGNUP_STATUS_TYPE, USER_TYPE } from 'src/lib/constants';
+import { SwitchaDeviceType } from 'src/lib/constants';
 import { Types } from 'mongoose';
 
 export class LoginDto {
@@ -21,14 +20,17 @@ export class LoginDto {
 }
 
 export class SignupDto {
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
 
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  firstName: string
 
+  @IsString()
+  @IsNotEmpty()
+  lastName: string
+
+
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
@@ -41,45 +43,10 @@ export class SignupDto {
   @IsBoolean()
   agreedToTerms: boolean
 
-  @IsOptional()
-  country: string
-
-  @IsOptional()
-  isAdmin: boolean
-
-  @IsOptional()
-  isActive: boolean
-
-  @IsOptional()
-  emailVerified: boolean
-
-  @IsOptional()
-  phoneVerified: boolean
-
-  @IsOptional()
-  lastLoginDate: Date
-
-  @IsOptional()
-  createdAt: Date
-
-  @IsOptional()
-  dob: Date
-
-  @IsOptional()
-  phone: string
-
-  @IsOptional()
-  updatedAt: Date
-
-  @IsOptional()
-  lock: USER_LOCK;
-
-  @IsOptional()
-  authStatus: USER_SIGNUP_STATUS_TYPE
-
-  @IsOptional()
-  userType: USER_TYPE
 }
+
+export type ISignup = SignupDto & {}
+export type ILogin = LoginDto & {}
 
 export class UpdateUserDto extends PartialType(SignupDto) { }
 

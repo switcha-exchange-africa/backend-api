@@ -3,10 +3,6 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import {
-  USER_LOCK,
-  USER_LOCK_LIST,
-} from 'src/lib/constants';
 
 export type AdminDocument = Admin & Document;
 
@@ -39,8 +35,8 @@ export class Admin {
   @Prop()
   updatedAt: Date
 
-  @Prop({ enum: USER_LOCK_LIST })
-  lock: USER_LOCK;
+  @Prop({ default: false })
+  lock: boolean;
 
   @Prop()
   roles: string[]

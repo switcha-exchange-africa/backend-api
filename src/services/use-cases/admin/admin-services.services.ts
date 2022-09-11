@@ -1,13 +1,12 @@
 import { IDataServices } from "src/core/abstracts";
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IAddAdminImage, IAddAdminRoles, IAdmin, IAdminLogin, IChangeAdminPassword } from "src/core/dtos/admin";
 import { AdminFactoryService } from "./admin-factory.service";
 import { compareHash, hash } from 'src/lib/utils';
-import { AlreadyExistsException, BadRequestsException, DoesNotExistsException, ForbiddenRequestException } from "../user/exceptions";
 import { Types } from 'mongoose';
 import { Admin } from "src/core/entities/Admin";
-import { ResponsesType } from "src/core/types/response";
-import { JWT_USER_PAYLOAD_TYPE, USER_LOCK } from "src/lib/constants";
+import { ResponseState, ResponsesType } from "src/core/types/response";
+import { JWT_USER_PAYLOAD_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 
 @Injectable()
@@ -21,7 +20,12 @@ export class AdminServices {
     try {
 
       const adminExists = await this.data.admins.findOne({ email: payload.email })
-      if (adminExists) throw new AlreadyExistsException('Admin already exists')
+      if (adminExists) return Promise.reject({
+        status: HttpStatus.CONFLICT,
+        state: ResponseState.ERROR,
+        message: 'Admin already exists',
+        error: null,
+      })
 
       const password = await hash(payload.password)
       const adminPayload = { ...payload, password }
@@ -32,13 +36,18 @@ export class AdminServices {
       return {
         message: "Admin created successfully",
         status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS,
         data,
       };
+      
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -50,13 +59,17 @@ export class AdminServices {
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -68,13 +81,17 @@ export class AdminServices {
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -85,13 +102,17 @@ export class AdminServices {
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -102,13 +123,17 @@ export class AdminServices {
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -119,13 +144,17 @@ export class AdminServices {
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
   async changePassword(payload: IChangeAdminPassword) {
@@ -134,19 +163,28 @@ export class AdminServices {
       const { id, password, oldPassword } = payload
 
       const correctPassword: boolean = await compareHash(password, oldPassword);
-      if (!correctPassword) throw new BadRequestsException('Password is incorrect') //
+      if (!correctPassword) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Email or Password is incorrect',
+        error: null,
+      })
 
       const data = await this.data.admins.update({ _id: id }, { password: await hash(password) })
       return {
         message: "Admin updated successfully",
         status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
         data,
       };
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -156,14 +194,26 @@ export class AdminServices {
       const { email, password } = payload
       const admin = await this.data.admins.findOne({ email });
 
-      const verification: string[] = []
-      if (!admin) throw new DoesNotExistsException('Admin does not exists')
-      if (admin.lock === USER_LOCK.LOCK) throw new ForbiddenRequestException('Account is temporary locked')
-
+      if (!admin) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'Admin does not exists',
+        error: null,
+      })
+      if (admin.lock) return Promise.reject({
+        status: HttpStatus.FORBIDDEN,
+        state: ResponseState.ERROR,
+        message: 'Account is temporary locked',
+        error: null,
+      })
 
       const correctPassword: boolean = await compareHash(password, admin?.password!);
-      if (!correctPassword) throw new BadRequestsException('Password is incorrect') //
-
+      if (!correctPassword) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Email or Password is incorrect',
+        error: null,
+      })
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: admin?._id,
@@ -180,16 +230,20 @@ export class AdminServices {
       })
 
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: 'Admin logged in successfully',
         token: `Bearer ${token}`,
         data: jwtPayload,
-        verification
+        state: ResponseState.SUCCESS,
       }
     } catch (error: Error | any | unknown) {
       Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error;
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

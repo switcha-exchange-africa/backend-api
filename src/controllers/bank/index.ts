@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { AddBankDto, IBank } from "src/core/dtos/bank";
 import { BANK_ROUTE } from "src/lib/route-constant";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
@@ -27,10 +27,8 @@ export class BankController {
       const response = await this.services.create(payload);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -50,10 +48,7 @@ export class BankController {
       const response = await this.services.findAllWithPagination(payload);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 
@@ -63,13 +58,9 @@ export class BankController {
     @Res() res: Response
   ) {
     try {
-
       return res.status(HttpStatus.OK).json(nigeriaBanks);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
     }
   }
 

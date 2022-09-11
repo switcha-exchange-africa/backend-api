@@ -1,5 +1,3 @@
-import { USER_LOCK } from "src/lib/constants";
-
 export class Admin {
   firstName: string;
   lastName: string;
@@ -8,7 +6,7 @@ export class Admin {
   lastLoginDate: Date
   createdAt: Date
   updatedAt: Date
-  lock: USER_LOCK;
+  lock: boolean;
   image: string;
   roles: string[]
   twoFa: boolean

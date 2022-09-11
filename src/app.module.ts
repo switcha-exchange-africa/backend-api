@@ -12,7 +12,7 @@ declare global {
   namespace Express {
     export interface Request {
       user?: {
-        _id?: string;
+        _id?: string ;
         fullName?: string;
         email?: string;
         authStatus?: USER_SIGNUP_STATUS_TYPE;

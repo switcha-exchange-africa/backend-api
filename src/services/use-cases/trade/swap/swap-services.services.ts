@@ -1,10 +1,6 @@
 import { TransactionFactoryService } from "src/services/use-cases/transaction/transaction-factory.services";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import {
-  BadRequestsException,
-  DoesNotExistsException,
-} from "src/services/use-cases/user/exceptions";
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
@@ -13,7 +9,7 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
-import { ResponsesType } from "src/core/types/response";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 import { CoinType } from "src/core/entities/wallet.entity";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
@@ -47,10 +43,24 @@ export class SwapServices {
         coin: destinationCoin,
       }),
     ]);
-    if (!user) throw new DoesNotExistsException("User does not exist");
-
-    if (!sourceWallet) throw new DoesNotExistsException(`${sourceWallet} does not exists`);
-    if (!destinationWallet) throw new DoesNotExistsException(`${destinationWallet} does not exists`);
+    if (!user) return Promise.reject({
+      status: HttpStatus.NOT_FOUND,
+      state: ResponseState.ERROR,
+      message: `User does not exist`,
+      error: null,
+    }) 
+    if (!sourceWallet) return Promise.reject({
+      status: HttpStatus.NOT_FOUND,
+      state: ResponseState.ERROR,
+      message: `${sourceWallet} does not exists`,
+      error: null,
+    });
+    if (!destinationWallet) return Promise.reject({
+      status: HttpStatus.NOT_FOUND,
+      state: ResponseState.ERROR,
+      message: `${destinationWallet} does not exists`,
+      error: null,
+    });
 
 
     const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
@@ -82,7 +92,12 @@ export class SwapServices {
 
         if (!creditDestinationWallet) {
           Logger.error("Error Occurred");
-          throw new BadRequestsException("Destination wallet does not match criteria");
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: "Destination wallet does not match criteria",
+            error: null,
+          });
         }
 
         const debitSourceWallet = await this.dataServices.wallets.update(
@@ -100,7 +115,12 @@ export class SwapServices {
         );
         if (!debitSourceWallet) {
           Logger.error("Error Occurred");
-          throw new BadRequestsException("Source wallet does not match criteria");
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: "Source wallet does not match criteria",
+            error: null,
+          });
         }
 
         const generalTransactionReference = generateReference('general')
@@ -120,7 +140,7 @@ export class SwapServices {
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,
           reference: generateReference('credit'),
-  
+
         };
 
         const txDebitPayload: OptionalQuery<Transaction> = {
@@ -138,7 +158,7 @@ export class SwapServices {
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,
           reference: generateReference('debit'),
-  
+
         };
 
         const [txCreditFactory, txDebitFactory] = await Promise.all([
@@ -180,6 +200,7 @@ export class SwapServices {
       message: `Swap successful`,
       data: {},
       status: 200,
+      state: ResponseState.SUCCESS,
     };
   }
 }

@@ -4,6 +4,7 @@ export enum AUTHENTICATION_ROUTE {
   GOOGLE = "/auth/google",
   ISSUE_VERIFICATION_CODE = "/auth/verify-email",
   VERIFY_USER = "/auth/verify-email",
+  GET_USER = "/auth",
   RESET_PASSWORD = "/auth/reset-password",
   RECOVER_PASSWORD = "/auth/recover-password",
 }
