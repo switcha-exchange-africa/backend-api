@@ -3,10 +3,10 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 import { CoinPairList, CryptoPairType } from "src/core/entities/wallet.entity";
 
-export type RateDocument = Rate & Document;
+export type RateDocument = ExchangeRate & Document;
 
 @Schema()
-export class Rate {
+export class ExchangeRate {
 
   @Prop({ enum: CoinPairList })
   pair: CryptoPairType;
@@ -34,4 +34,4 @@ export class Rate {
   updatedAt: Date;
 }
 
-export const RateSchema = SchemaFactory.createForClass(Rate);
+export const ExchangeRateSchema = SchemaFactory.createForClass(ExchangeRate);

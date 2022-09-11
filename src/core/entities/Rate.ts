@@ -1,6 +1,6 @@
 import { CryptoPairType } from "./wallet.entity";
 
-export class Rate {
+export class ExchangeRate {
 
   pair: CryptoPairType;
 

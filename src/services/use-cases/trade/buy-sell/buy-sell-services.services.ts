@@ -67,6 +67,7 @@ export class BuySellServices {
       });
 
       const rate = value
+      console.log("RATE", rate)
       const creditedAmount = parseFloat((amount / rate).toFixed(4));
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -119,7 +120,7 @@ export class BuySellServices {
             description: `Bought ${creditedAmount}${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
-            balanceBefore: creditWallet?.balance,
+            balanceBefore: creditWallet?.balance || 0,
             hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
@@ -142,7 +143,7 @@ export class BuySellServices {
             description: `Bought ${creditedAmount}${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
-            balanceBefore: debitWallet?.balance,
+            balanceBefore: debitWallet?.balance || 0,
             hash: txRef?.hash,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
@@ -250,6 +251,8 @@ export class BuySellServices {
       const url = `${TATUM_BASE_URL}/tatum/rate/${debitCoin}?basePair=${creditCoin}`;
       const { value } = await this.http.get(url, this.config);
       const rate = value
+      console.log("RATE", rate)
+
       const creditedAmount = parseFloat((rate * amount).toFixed(4));
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -368,7 +371,7 @@ export class BuySellServices {
       ])
 
       return {
-        message: `Sold ${amount}${debitCoin}`,
+        message: `Sold ${amount} ${debitCoin}`,
         data: {},
         status: HttpStatus.OK,
         state: ResponseState.SUCCESS,

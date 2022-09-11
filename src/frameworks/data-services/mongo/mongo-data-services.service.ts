@@ -16,7 +16,7 @@ import { CustomLogger, CustomLoggerDocument } from './model/CustomLogger';
 import { Notification, NotificationDocument } from './model/Notification';
 import { QuickTrade, QuickTradeDocument } from './model/Quick-Trade';
 import { QuickTradeContract, QuickTradeContractDocument } from './model/Quick-Trade-Contract';
-import { Rate, RateDocument } from './model/Rate';
+import { ExchangeRate, RateDocument } from './model/ExchangeRate';
 import { Admin, AdminDocument } from './model/Admin';
 import { Kyc, KycDocument } from './model/Kyc';
 
@@ -37,7 +37,7 @@ export class MongoDataServices
   notifications: MongoGenericRepository<Notification>;
   quickTrades: MongoGenericRepository<QuickTrade>;
   quickTradeContracts: MongoGenericRepository<QuickTradeContract>;
-  rates: MongoGenericRepository<Rate>;
+  exchangeRates: MongoGenericRepository<ExchangeRate>;
   admins: MongoGenericRepository<Admin>;
   kyc: MongoGenericRepository<Kyc>;
 
@@ -81,8 +81,8 @@ export class MongoDataServices
     @InjectModel(QuickTradeContract.name)
     private QuickTradeContractRepository: Model<QuickTradeContractDocument>,
 
-    @InjectModel(Rate.name)
-    private RateRepository: Model<RateDocument>,
+    @InjectModel(ExchangeRate.name)
+    private ExchangeRateRepository: Model<RateDocument>,
 
     @InjectModel(Admin.name)
     private AdminRepository: Model<AdminDocument>,
@@ -108,7 +108,7 @@ export class MongoDataServices
     this.notifications = new MongoGenericRepository<Notification>(this.NotificationRepository)
     this.quickTrades = new MongoGenericRepository<QuickTrade>(this.QuickTradeRepository, ['buyerId', 'sellerId'])
     this.quickTradeContracts = new MongoGenericRepository<QuickTradeContract>(this.QuickTradeContractRepository)
-    this.rates = new MongoGenericRepository<Rate>(this.RateRepository)
+    this.exchangeRates = new MongoGenericRepository<ExchangeRate>(this.ExchangeRateRepository)
     this.admins = new MongoGenericRepository<Admin>(this.AdminRepository)
     this.kyc = new MongoGenericRepository<Kyc>(this.KycRepository, ['userId'])
 

@@ -19,7 +19,7 @@ import { CustomLogger, CustomLoggerSchema } from "./model/CustomLogger";
 import { Notification, NotificationSchema } from "./model/Notification";
 import { QuickTrade, QuickTradeSchema } from "./model/Quick-Trade";
 import { QuickTradeContract, QuickTradeContractSchema } from "./model/Quick-Trade-Contract";
-import { Rate, RateSchema } from "./model/Rate";
+import { ExchangeRate, ExchangeRateSchema } from "./model/ExchangeRate";
 import { Admin, AdminSchema } from "./model/Admin";
 import { Kyc, KycSchema } from "./model/Kyc";
 
@@ -39,7 +39,7 @@ import { Kyc, KycSchema } from "./model/Kyc";
       { name: Notification.name, schema: NotificationSchema },
       { name: QuickTrade.name, schema: QuickTradeSchema },
       { name: QuickTradeContract.name, schema: QuickTradeContractSchema },
-      { name: Rate.name, schema: RateSchema },
+      { name: ExchangeRate.name, schema: ExchangeRateSchema },
       { name: Admin.name, schema: AdminSchema },
       { name: Kyc.name, schema: KycSchema },
       
