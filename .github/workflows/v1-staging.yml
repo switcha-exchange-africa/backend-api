@@ -65,9 +65,6 @@ jobs:
             # rm
             docker rm -f switcha-staging-api
 
-            # deleting untagged image
-            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
-
             # pull latest image
             docker pull registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
