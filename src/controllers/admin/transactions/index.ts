@@ -3,6 +3,7 @@ import { TransactionServices } from "src/services/use-cases/transaction/transact
 import { Response } from "express"
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { IGetTransactions } from "src/core/dtos/transactions";
 
 @Controller('admin/transactions')
 export class AdminTransactionsController {
@@ -14,9 +15,12 @@ export class AdminTransactionsController {
   async findAll(@Query() query: any, @Res() res: Response) {
     try {
 
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId } = query
+      const { userId, perpage, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type } = query
 
-      const response = await this.services.getAllTransactions({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId });
+      const payload: IGetTransactions = {
+        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type
+      }
+      const response = await this.services.getAllTransactions(payload);
       return res.status(response.status).json(response);
 
     } catch (error) {

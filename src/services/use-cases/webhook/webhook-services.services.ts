@@ -62,9 +62,7 @@ export class WebhookServices {
       if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })
       if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
 
-
-      const user = await this.data.users.findOne({ userId: wallet.userId })
-
+      const user = await this.data.users.findOne({ _id: wallet.userId })
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const creditedWallet = await this.data.wallets.update(
