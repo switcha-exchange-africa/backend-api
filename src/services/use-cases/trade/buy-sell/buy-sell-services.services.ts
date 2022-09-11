@@ -3,12 +3,11 @@ import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import {
   BadRequestsException,
 } from "../../user/exceptions";
-import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { env } from "src/configuration";
 import * as mongoose from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
@@ -20,13 +19,8 @@ import { NotificationFactoryService } from "../../notification/notification-fact
 
 @Injectable()
 export class BuySellServices {
-  private config = {
-    headers: {
-      "X-API-Key": TATUM_API_KEY,
-    },
-  };
+
   constructor(
-    private http: IHttpServices,
     private dataServices: IDataServices,
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
@@ -38,8 +32,15 @@ export class BuySellServices {
     const { amount, debitCoin, creditCoin } = body;
     try {
 
-      const url = `${TATUM_BASE_URL}/tatum/rate/${creditCoin}?basePair=${debitCoin}`;
-      const [user, creditWallet, debitWallet, { value }] = await Promise.all([
+      const exchangeRate = await this.dataServices.exchangeRates.findOne({ pair: `${creditCoin}/${debitCoin}` }, null, { sort: 'desc' })
+      if (!exchangeRate) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Exchange Rate not set',
+        error: null,
+      });
+
+      const [user, creditWallet, debitWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -50,7 +51,6 @@ export class BuySellServices {
           coin: debitCoin,
           balance: { $gt: 0 },
         }),
-        this.http.get(url, this.config),
       ]);
 
       if (!user) return Promise.reject({
@@ -66,8 +66,7 @@ export class BuySellServices {
         error: null,
       });
 
-      const rate = value
-      console.log("RATE", rate)
+      const rate = exchangeRate.buyRate
       const creditedAmount = parseFloat((amount / rate).toFixed(4));
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -218,6 +217,14 @@ export class BuySellServices {
     const { amount, creditCoin, debitCoin } = body;
 
     try {
+      const exchangeRate = await this.dataServices.exchangeRates.findOne({ pair: `${debitCoin}/${creditCoin}` }, null, { sort: 'desc' })
+      if (!exchangeRate) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Exchange Rate not set',
+        error: null,
+      });
+
       const [user, debitWallet, creditWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
@@ -248,9 +255,7 @@ export class BuySellServices {
         error: null,
       });
 
-      const url = `${TATUM_BASE_URL}/tatum/rate/${debitCoin}?basePair=${creditCoin}`;
-      const { value } = await this.http.get(url, this.config);
-      const rate = value
+      const rate = exchangeRate.sellRate
       console.log("RATE", rate)
 
       const creditedAmount = parseFloat((rate * amount).toFixed(4));
