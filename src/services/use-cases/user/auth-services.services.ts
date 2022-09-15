@@ -447,7 +447,7 @@ export class AuthServices {
           message: 'Email is not verified',
           data: 'Email is not verified',
           token: `Bearer ${token}`,
-          state: ResponseState.ERROR,
+          state: ResponseState.SUCCESS,
         }
       }
 
