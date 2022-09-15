@@ -9,6 +9,8 @@ export class UserFactoryService {
     const user = new User();
     if (data.firstName) user.firstName = data.firstName;
     if (data.lastName) user.lastName = data.lastName;
+    if (data.username) user.username = data.username;
+
     if (data.email) user.email = data.email;
     if (data.device) user.device = data.device;
     if (data.password) user.password = await hash(data.password);

@@ -3,6 +3,7 @@ import { SwitchaDeviceType, USER_LEVEL_TYPE } from "src/lib/constants";
 
 
 export class User {
+  username: string
   firstName: string;
   lastName: string;
   email: string;

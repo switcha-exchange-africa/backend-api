@@ -20,6 +20,9 @@ export class User {
   @Prop()
   lastName: string;
 
+  @Prop()
+  username: string;
+
   @Prop({ required: true })
   email: string;
 
