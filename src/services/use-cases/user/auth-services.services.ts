@@ -356,7 +356,7 @@ export class AuthServices {
       } else {
 
         const phoneVerifyDocument = codeSent as string;
-        if (isEmpty(phoneVerifyDocument))return Promise.reject({
+        if (isEmpty(phoneVerifyDocument)) return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: `code is invalid or has expired`,
@@ -364,7 +364,7 @@ export class AuthServices {
         })
 
         const correctCode = await compareHash(String(code).trim(), (phoneVerifyDocument || '').trim());
-        if (!correctCode)return Promise.reject({
+        if (!correctCode) return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: `code is invalid or has expired`,
@@ -443,11 +443,11 @@ export class AuthServices {
 
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
         return {
-          status: HttpStatus.FORBIDDEN,
+          status: HttpStatus.ACCEPTED,
           message: 'Email is not verified',
           data: 'Email is not verified',
           token: `Bearer ${token}`,
-          state: ResponseState.SUCCESS,
+          state: ResponseState.ERROR,
         }
       }
 
