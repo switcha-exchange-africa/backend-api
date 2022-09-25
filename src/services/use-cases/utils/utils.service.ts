@@ -43,14 +43,12 @@ export class UtilsServices {
   async swap(payload: ISwap): Promise<{ rate: number, destinationAmount: number }> {
     try {
       const { source, amount, destination } = payload
-      if (this.isStableCoin(source as CoinType) && this.isStableCoin(destination as CoinType)) {
-
+      if (source === destination) {
         const destinationAmount = amount * 1
         return { rate: 1, destinationAmount }
-
       }
 
-      if (this.isStableCoin(source as CoinType) || this.isStableCoin(destination as CoinType)) {
+      if (this.isStableCoin(destination as CoinType)) {
         console.log("HE YEAH")
         const sourceExchangeRate = await this.data.exchangeRates.findOne({ coin: source.toUpperCase() }, null, { sort: 'desc' })
         if (!sourceExchangeRate) throw new Error(`Exchange rate not set for source currency ${source}`)
@@ -72,7 +70,7 @@ export class UtilsServices {
       console.log(sourceExchangeRate)
       console.log(destinationExchangeRate)
 
-      const conversionRate = _.divide(sourceExchangeRate.buyRate, destinationExchangeRate.buyRate )
+      const conversionRate = _.divide(sourceExchangeRate.buyRate, destinationExchangeRate.buyRate)
       const destinationAmount = _.floor(_.multiply(conversionRate, amount), 3)
 
       return { rate: conversionRate, destinationAmount }
