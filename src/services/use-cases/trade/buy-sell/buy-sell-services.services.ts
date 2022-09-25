@@ -159,6 +159,22 @@ export class BuySellServices {
             Logger.error("Error Occurred");
             throw new BadRequestsException("Error Occurred");
           }
+          const creditedFeeWallet = await this.dataServices.feeWallets.update(
+            {
+              _id: creditFeeWallet._id,
+            },
+            {
+              $inc: {
+                balance: fee,
+              },
+            },
+            session
+          );
+          if (!creditedFeeWallet) {
+            Logger.error("Error Occurred");
+            throw new BadRequestsException("Error Occurred");
+          }
+
 
           const generalTransactionReference = generateReference('general')
 
@@ -222,9 +238,29 @@ export class BuySellServices {
             generalTransactionReference,
             reference: generateReference('debit'),
           };
+          const txFeeCreditPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: creditFeeWallet?._id,
+            currency: creditCoin,
+            amount: fee,
+            signedAmount: fee,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Charged ${fee} ${creditCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
+            balanceBefore: creditFeeWallet.balance,
+            balanceAfter: creditedFeeWallet.balance,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+          };
 
 
-          const [txCreditFactory, txDebitFactory, notificationFactory, activityFactory, feeTransactionFactory] = await Promise.all([
+          const [txCreditFactory, txDebitFactory, notificationFactory, activityFactory, feeTransactionFactory, feeCreditTransactionFactory] = await Promise.all([
             this.txFactoryServices.create(txCreditPayload),
             this.txFactoryServices.create(txDebitPayload),
             this.notificationFactory.create({
@@ -237,7 +273,9 @@ export class BuySellServices {
               description: 'Bought crypto',
               userId
             }),
-            this.txFactoryServices.create(txFeePayload)
+            this.txFactoryServices.create(txFeePayload),
+            this.txFactoryServices.create(txFeeCreditPayload)
+
           ])
           await Promise.all([
             this.dataServices.transactions.create(txCreditFactory, session),
@@ -245,6 +283,8 @@ export class BuySellServices {
             this.dataServices.notifications.create(notificationFactory, session),
             this.dataServices.activities.create(activityFactory, session),
             this.dataServices.transactions.create(feeTransactionFactory, session),
+            this.dataServices.transactions.create(feeCreditTransactionFactory, session),
+
           ])
 
         } catch (error) {
@@ -305,9 +345,9 @@ export class BuySellServices {
     const { amount, creditCoin, debitCoin } = body;
 
     try {
-      const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
 
-      const [user, debitWallet, creditWallet] = await Promise.all([
+
+      const [user, debitWallet, creditWallet, debitFeeWallet, creditFeeWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -315,6 +355,12 @@ export class BuySellServices {
         }),
         this.dataServices.wallets.findOne({
           userId,
+          coin: creditCoin,
+        }),
+        this.dataServices.wallets.findOne({
+          coin: debitCoin,
+        }),
+        this.dataServices.wallets.findOne({
           coin: creditCoin,
         }),
       ]);
@@ -330,15 +376,58 @@ export class BuySellServices {
         message: `${creditCoin} does not exists`,
         error: null,
       });
+
       if (!debitWallet) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
         message: `${debitCoin} does not exists`,
         error: null,
       });
+      if (!creditFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+
+              Action: SELL Action
+
+              User: ${user.email}
+
+              ${creditCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
+      if (!debitFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+
+              Action: SELL Action
+
+              User: ${user.email}
+
+              ${debitCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
+
+      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount })
+      const conversion = await this.utils.swap({ amount: deduction, source: debitCoin, destination: creditCoin })
 
       const rate = conversion.rate
-      console.log("RATE", rate)
       const creditedAmount = conversion.destinationAmount
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -352,6 +441,26 @@ export class BuySellServices {
                 balance: creditedAmount,
               },
               lastDeposit: creditedAmount
+            },
+            session
+          );
+
+          if (!creditedWallet) {
+            console.error("AN error Occured");
+
+            throw new BadRequestsException("Error Occurred");
+          }
+
+
+          const creditedFeeWallet = await this.dataServices.wallets.update(
+            {
+              _id: debitFeeWallet._id,
+            },
+            {
+              $inc: {
+                balance: fee,
+              },
+              lastDeposit: fee
             },
             session
           );
@@ -396,6 +505,10 @@ export class BuySellServices {
             balanceBefore: debitWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             generalTransactionReference,
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
           const txCreditedPayload: OptionalQuery<Transaction> = {
@@ -412,10 +525,54 @@ export class BuySellServices {
             subType: TRANSACTION_SUBTYPE.CREDIT,
             generalTransactionReference,
             reference: generateReference('credit'),
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
 
-          const [txDebitFactory, txCreditFactory, notificationFactory, activityFactory] = await Promise.all([
+          const txDebitFeePayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: debitWallet?._id,
+            currency: debitCoin,
+            amount,
+            reference: generateReference('debit'),
+            signedAmount: -amount,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: `Charged ${fee} ${debitCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            generalTransactionReference,
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
+          };
+
+          const txFeeCreditPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: creditedFeeWallet?._id,
+            currency: creditCoin,
+            amount: creditedAmount,
+            signedAmount: creditedAmount,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Sold ${amount}${debitCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: creditedFeeWallet?.balance,
+            balanceBefore: creditFeeWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
+          };
+
+          const [txDebitFactory, txCreditFactory, notificationFactory, activityFactory, txFeeDebitFactory, txFeeCreditFactory] = await Promise.all([
             this.txFactoryServices.create(txDebitedPayload),
             this.txFactoryServices.create(txCreditedPayload),
             this.notificationFactory.create({
@@ -427,14 +584,18 @@ export class BuySellServices {
               action: ActivityAction.SELL,
               description: 'Sold crypto',
               userId
-            })
+            }),
+            this.txFactoryServices.create(txDebitFeePayload),
+            this.txFactoryServices.create(txFeeCreditPayload),
+
           ])
           await Promise.all([
             this.dataServices.transactions.create(txDebitFactory, session),
             this.dataServices.transactions.create(txCreditFactory, session),
             this.dataServices.notifications.create(notificationFactory, session),
             this.dataServices.activities.create(activityFactory, session),
-
+            this.dataServices.transactions.create(txFeeDebitFactory, session),
+            this.dataServices.transactions.create(txFeeCreditFactory, session),
           ])
 
         } catch (error) {
