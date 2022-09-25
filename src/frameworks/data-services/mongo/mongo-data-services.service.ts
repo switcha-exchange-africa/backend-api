@@ -20,6 +20,7 @@ import { ExchangeRate, ExchangeRateDocument } from './model/ExchangeRate';
 import { Admin, AdminDocument } from './model/Admin';
 import { Kyc, KycDocument } from './model/Kyc';
 import { Fee, FeeDocument } from './model/Fee';
+import { FeeWallet, FeeWalletDocument } from './model/Fee-Wallet';
 
 
 @Injectable()
@@ -42,8 +43,9 @@ export class MongoDataServices
   admins: MongoGenericRepository<Admin>;
   kyc: MongoGenericRepository<Kyc>;
   fees: MongoGenericRepository<Fee>;
+  feeWallets: MongoGenericRepository<FeeWallet>;
 
-  
+
   constructor(
     @InjectModel(User.name)
     private UserRepository: Model<UserDocument>,
@@ -96,6 +98,9 @@ export class MongoDataServices
     @InjectModel(Fee.name)
     private FeeRepository: Model<FeeDocument>,
 
+    @InjectModel(FeeWallet.name)
+    private FeeWalletRepository: Model<FeeWalletDocument>,
+
   ) { }
 
 
@@ -117,6 +122,7 @@ export class MongoDataServices
     this.admins = new MongoGenericRepository<Admin>(this.AdminRepository)
     this.kyc = new MongoGenericRepository<Kyc>(this.KycRepository, ['userId'])
     this.fees = new MongoGenericRepository<Fee>(this.FeeRepository, ['userId'])
+    this.feeWallets = new MongoGenericRepository<FeeWallet>(this.FeeWalletRepository, ['userId'])
 
 
 

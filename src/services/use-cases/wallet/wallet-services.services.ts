@@ -84,6 +84,7 @@ export class WalletServices {
     if (payload.dateTo) key['dateTo'] = payload.dateTo
     if (payload.sortBy) key['sortBy'] = payload.sortBy
     if (payload.orderBy) key['orderBy'] = payload.orderBy
+    if (payload.reference) key['reference'] = payload.reference
     return key
   }
   async create(payload: { userId: string, coin: CoinType }): Promise<ResponsesType<Wallet>> {

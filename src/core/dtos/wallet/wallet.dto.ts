@@ -38,4 +38,5 @@ export class CreateWalletDto {
 export type IGetWallets = PaginationType & {
   userId: string
   coin: string
+  reference: string
 }

@@ -23,6 +23,7 @@ import { ExchangeRate, ExchangeRateSchema } from "./model/ExchangeRate";
 import { Admin, AdminSchema } from "./model/Admin";
 import { Kyc, KycSchema } from "./model/Kyc";
 import { Fee, FeeSchema } from "./model/Fee";
+import { FeeWallet, FeeWalletSchema } from "./model/Fee-Wallet";
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { Fee, FeeSchema } from "./model/Fee";
       { name: Admin.name, schema: AdminSchema },
       { name: Kyc.name, schema: KycSchema },
       { name: Fee.name, schema: FeeSchema },
+      { name: FeeWallet.name, schema: FeeWalletSchema },
       
       
     ]),

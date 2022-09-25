@@ -36,8 +36,6 @@ export class BuySellServices {
     const { amount, debitCoin, creditCoin } = body;
     try {
 
-      const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
-
 
       const [user, creditWallet, debitWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -58,15 +56,26 @@ export class BuySellServices {
         message: 'User does not exist',
         error: null,
       });
-      if (!creditWallet || !debitWallet) return Promise.reject({
+
+      if (!creditWallet) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
-        message: "Wallet does not exist",
+        message: `${creditCoin} wallet does not exist`,
         error: null,
       });
 
+      if (!debitWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `${debitCoin} wallet does not exist`,
+        error: null,
+      });
+
+      const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
+      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount:conversion.destinationAmount })
+
       const rate = conversion.rate
-      const creditedAmount = conversion.destinationAmount;
+      const creditedAmount =deduction ;
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
@@ -113,7 +122,7 @@ export class BuySellServices {
             amount: creditedAmount,
             signedAmount: creditedAmount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Bought ${creditedAmount}${creditCoin}`,
+            description: `Bought ${creditedAmount} ${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance || 0,
@@ -135,7 +144,7 @@ export class BuySellServices {
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description: `Bought ${creditedAmount}${creditCoin}`,
+            description: `Bought ${creditedAmount} ${creditCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance || 0,
@@ -147,10 +156,28 @@ export class BuySellServices {
             },
             generalTransactionReference,
             reference: generateReference('debit'),
-
+          };
+          const txFeePayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: creditWallet?._id,
+            currency: creditCoin,
+            amount: fee,
+            signedAmount: -fee,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: `Charged ${fee} ${creditCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+            rate: {
+              pair: `${creditCoin}${debitCoin}`,
+              rate: rate
+            },
+            generalTransactionReference,
+            reference: generateReference('debit'),
           };
 
-          const [txCreditFactory, txDebitFactory, notificationFactory, activityFactory] = await Promise.all([
+
+          const [txCreditFactory, txDebitFactory, notificationFactory, activityFactory, feeTransactionFactory] = await Promise.all([
             this.txFactoryServices.create(txCreditPayload),
             this.txFactoryServices.create(txDebitPayload),
             this.notificationFactory.create({
@@ -162,14 +189,17 @@ export class BuySellServices {
               action: ActivityAction.BUY,
               description: 'Bought crypto',
               userId
-            })
+            }),
+            this.txFactoryServices.create(txFeePayload)
           ])
           await Promise.all([
             this.dataServices.transactions.create(txCreditFactory, session),
             this.dataServices.transactions.create(txDebitFactory, session),
             this.dataServices.notifications.create(notificationFactory, session),
             this.dataServices.activities.create(activityFactory, session),
+            this.dataServices.transactions.create(feeTransactionFactory, session),
           ])
+
         } catch (error) {
           Logger.error(error);
           throw new Error(error);
@@ -189,7 +219,11 @@ export class BuySellServices {
 
               User: ${user.email}
 
-              Bought ${amount} ${debitCoin} of ${creditCoin}
+              Fee: ${fee}
+
+              Amount after deduction : ${deduction}
+
+              Message: Bought ${amount} ${debitCoin} of ${creditCoin}
 
               ${creditedAmount} ${creditCoin} gotten
 
@@ -199,10 +233,11 @@ export class BuySellServices {
       ])
 
       return {
-        message: `Bought ${creditedAmount}${creditCoin}`,
+        message: `Bought ${creditedAmount} ${creditCoin}`,
         data: {
           rate,
-          creditedAmount
+          creditedAmount,
+          fee
         },
         status: 200,
         state: ResponseState.SUCCESS,

@@ -8,6 +8,7 @@ import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
 import { ExchangeRateServicesModule } from "./use-cases/exchange-rates/exchange-rate-service.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
+import { FeeWalletServicesModule } from "./use-cases/fee-wallet/fee-wallet.module";
 import { FeeServicesModule } from "./use-cases/fees/fee.module";
 import { KycServicesModule } from "./use-cases/kyc/kyc-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
@@ -43,5 +44,6 @@ export default [
   AdminServicesModule,
   KycServicesModule,
   ExchangeRateServicesModule,
-  FeeServicesModule
+  FeeServicesModule,
+  FeeWalletServicesModule
 ]
