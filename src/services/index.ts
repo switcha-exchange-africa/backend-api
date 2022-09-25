@@ -7,8 +7,8 @@ import { DataServicesModule } from "./data-services/data-services.module";
 import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
 import { ExchangeRateServicesModule } from "./use-cases/exchange-rates/exchange-rate-service.module";
-// import { CustomLoggerServicesModule } from "./use-cases/customer-logger/custom-logger-services.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
+import { FeeServicesModule } from "./use-cases/fees/fee.module";
 import { KycServicesModule } from "./use-cases/kyc/kyc-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
 import { RatesServicesModule } from "./use-cases/rates/rates-services.module";
@@ -39,9 +39,9 @@ export default [
   TransferServicesModule,
   BankServicesModule,
   QuickTradeServicesModule,
-  // CustomLoggerServicesModule,
   NotificationServicesModule,
   AdminServicesModule,
   KycServicesModule,
-  ExchangeRateServicesModule
+  ExchangeRateServicesModule,
+  FeeServicesModule
 ]

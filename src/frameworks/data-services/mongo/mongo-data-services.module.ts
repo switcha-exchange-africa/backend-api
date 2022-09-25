@@ -22,6 +22,7 @@ import { QuickTradeContract, QuickTradeContractSchema } from "./model/Quick-Trad
 import { ExchangeRate, ExchangeRateSchema } from "./model/ExchangeRate";
 import { Admin, AdminSchema } from "./model/Admin";
 import { Kyc, KycSchema } from "./model/Kyc";
+import { Fee, FeeSchema } from "./model/Fee";
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { Kyc, KycSchema } from "./model/Kyc";
       { name: ExchangeRate.name, schema: ExchangeRateSchema },
       { name: Admin.name, schema: AdminSchema },
       { name: Kyc.name, schema: KycSchema },
+      { name: Fee.name, schema: FeeSchema },
       
       
     ]),
