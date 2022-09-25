@@ -14,9 +14,9 @@ export class AdminWalletsController {
   @UseGuards(StrictAuthGuard)
   async findAll(@Res() res: Response, @Query() query) {
     try {
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference } = query
 
-      const response = await this.services.findAll({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin });
+      const response = await this.services.findAll({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference });
       return res.status(response.status).json(response);
     } catch (error) {
       Logger.error(error);

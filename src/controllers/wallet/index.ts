@@ -46,15 +46,15 @@ export class WalletController {
   @UseGuards(StrictAuthGuard)
   async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
-      
-      const userId = req?.user?._id;
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin } = query
 
-      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin }
+      const userId = req?.user?._id;
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, reference } = query
+
+      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference }
       const response = await this.services.findAll(payload);
 
       return res.status(response.status).json(response);
-      
+
     } catch (error) {
       return res.status(error.status || 500).json(error);
 
