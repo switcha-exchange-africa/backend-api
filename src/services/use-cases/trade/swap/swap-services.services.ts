@@ -3,8 +3,8 @@ import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_S
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
-import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
-import { IHttpServices } from "src/core/abstracts/http-services.abstract";
+import { env } from "src/configuration";
+// import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 
 import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
@@ -14,23 +14,26 @@ import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
 import { SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { CoinType } from "src/core/types/coin";
+import { UtilsServices } from "../../utils/utils.service";
 
-const TATUM_CONFIG = {
-  headers: {
-    "X-API-Key": TATUM_API_KEY,
-  },
-};
+// const TATUM_CONFIG = {
+//   headers: {
+//     "X-API-Key": TATUM_API_KEY,
+//   },
+// };
 @Injectable()
 export class SwapServices {
   constructor(
     private dataServices: IDataServices,
-    private http: IHttpServices,
+    // private http: IHttpServices,
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
+    private readonly utils: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
+
     const { amount, sourceCoin, destinationCoin } = body;
     const [user, sourceWallet, destinationWallet] = await Promise.all([
       this.dataServices.users.findOne({ _id: userId }),
@@ -43,6 +46,7 @@ export class SwapServices {
         coin: destinationCoin,
       }),
     ]);
+
     if (!user) return Promise.reject({
       status: HttpStatus.NOT_FOUND,
       state: ResponseState.ERROR,
@@ -63,16 +67,11 @@ export class SwapServices {
     });
 
 
-    const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
-    const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
+    // const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
+    // const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
 
 
-    const [{ value: sourceRate }, { value: destinationRate }] = await Promise.all([
-      this.http.get(sourceRateUrl, TATUM_CONFIG),
-      this.http.get(destinationRateUrl, TATUM_CONFIG),
-    ]);
-
-    const destinationAmount = parseFloat(((sourceRate / destinationRate) * amount).toFixed(4));
+    const { rate, destinationAmount } = await this.utils.swap({ amount, source: sourceCoin, destination: destinationCoin })
 
     const atomicTransaction = async (session: mongoose.ClientSession) => {
       try {
@@ -140,7 +139,10 @@ export class SwapServices {
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,
           reference: generateReference('credit'),
-
+          rate: {
+            pair: `${sourceCoin}${destinationCoin}`,
+            rate: rate
+          },
         };
 
         const txDebitPayload: OptionalQuery<Transaction> = {
@@ -158,7 +160,10 @@ export class SwapServices {
           customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
           generalTransactionReference,
           reference: generateReference('debit'),
-
+          rate: {
+            pair: `${sourceCoin}${destinationCoin}`,
+            rate: rate
+          },
         };
 
         const [txCreditFactory, txDebitFactory] = await Promise.all([
@@ -186,19 +191,24 @@ export class SwapServices {
         title: `Swap Coins :- ${env.env} environment`,
         message: `
 
-        Swap Crypto
+            Swap Crypto
 
-        User: ${user.email}
+            User: ${user.email}
 
-        Swapped ${amount} ${sourceCoin} to ${destinationCoin}
-        
-`,
+            Swapped ${amount} ${sourceCoin} to ${destinationCoin}
+
+            ${destinationAmount} ${destinationCoin} gotten
+
+    `,
         link: env.isProd ? SWAP_CHANNEL_LINK_PRODUCTION : SWAP_CHANNEL_LINK_DEVELOPMENT,
       })
     ])
     return {
       message: `Swap successful`,
-      data: {},
+      data: {
+        rate,
+        destinationAmount
+      },
       status: 200,
       state: ResponseState.SUCCESS,
     };

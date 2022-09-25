@@ -16,6 +16,8 @@ import { generateReference } from "src/lib/utils";
 import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { UtilsServices } from "../../utils/utils.service";
+import { ActivityFactoryService } from "../../activity/activity-factory.service";
+import { ActivityAction } from "src/core/dtos/activity";
 
 @Injectable()
 export class BuySellServices {
@@ -26,6 +28,7 @@ export class BuySellServices {
     private discord: INotificationServices,
     private notificationFactory: NotificationFactoryService,
     private readonly utils: UtilsServices,
+    private readonly activityFactory: ActivityFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -147,19 +150,25 @@ export class BuySellServices {
 
           };
 
-          const [txCreditFactory, txDebitFactory, notificationFactory] = await Promise.all([
+          const [txCreditFactory, txDebitFactory, notificationFactory, activityFactory] = await Promise.all([
             this.txFactoryServices.create(txCreditPayload),
             this.txFactoryServices.create(txDebitPayload),
             this.notificationFactory.create({
               userId,
               title: "Bought Crypto",
               message: `Bought ${amount} ${debitCoin} of ${creditCoin}`
+            }),
+            this.activityFactory.create({
+              action: ActivityAction.BUY,
+              description: 'Bought crypto',
+              userId
             })
           ])
           await Promise.all([
             this.dataServices.transactions.create(txCreditFactory, session),
             this.dataServices.transactions.create(txDebitFactory, session),
-            this.dataServices.notifications.create(notificationFactory, session)
+            this.dataServices.notifications.create(notificationFactory, session),
+            this.dataServices.activities.create(activityFactory, session),
           ])
         } catch (error) {
           Logger.error(error);
@@ -181,6 +190,8 @@ export class BuySellServices {
               User: ${user.email}
 
               Bought ${amount} ${debitCoin} of ${creditCoin}
+
+              ${creditedAmount} ${creditCoin} gotten
 
       `,
           link: env.isProd ? BUY_SELL_CHANNEL_LINK_PRODUCTION : BUY_SELL_CHANNEL_LINK_DEVELOPMENT,
@@ -322,19 +333,26 @@ export class BuySellServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SELL,
           };
 
-          const [txDebitFactory, txCreditFactory, notificationFactory] = await Promise.all([
+          const [txDebitFactory, txCreditFactory, notificationFactory, activityFactory] = await Promise.all([
             this.txFactoryServices.create(txDebitedPayload),
             this.txFactoryServices.create(txCreditedPayload),
             this.notificationFactory.create({
               userId,
               title: "Sold Crypto",
               message: `Sold ${amount} ${debitCoin} of ${creditCoin}`
+            }),
+            this.activityFactory.create({
+              action: ActivityAction.SELL,
+              description: 'Sold crypto',
+              userId
             })
           ])
           await Promise.all([
             this.dataServices.transactions.create(txDebitFactory, session),
             this.dataServices.transactions.create(txCreditFactory, session),
-            this.dataServices.notifications.create(notificationFactory, session)
+            this.dataServices.notifications.create(notificationFactory, session),
+            this.dataServices.activities.create(activityFactory, session),
+
           ])
 
         } catch (error) {
