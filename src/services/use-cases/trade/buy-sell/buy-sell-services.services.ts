@@ -358,10 +358,10 @@ export class BuySellServices {
           userId,
           coin: creditCoin,
         }),
-        this.dataServices.wallets.findOne({
+        this.dataServices.feeWallets.findOne({
           coin: debitCoin,
         }),
-        this.dataServices.wallets.findOne({
+        this.dataServices.feeWallets.findOne({
           coin: creditCoin,
         }),
       ]);
