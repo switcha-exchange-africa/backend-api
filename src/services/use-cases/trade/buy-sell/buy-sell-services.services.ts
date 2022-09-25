@@ -16,6 +16,7 @@ import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
 import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
+import { UtilsServices } from "../../utils/utils.service";
 
 @Injectable()
 export class BuySellServices {
@@ -25,6 +26,7 @@ export class BuySellServices {
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
     private notificationFactory: NotificationFactoryService,
+    private readonly utils: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -32,13 +34,8 @@ export class BuySellServices {
     const { amount, debitCoin, creditCoin } = body;
     try {
 
-      const exchangeRate = await this.dataServices.exchangeRates.findOne({ pair: `${creditCoin}/${debitCoin}` }, null, { sort: 'desc' })
-      if (!exchangeRate) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Exchange Rate not set',
-        error: null,
-      });
+      const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
+
 
       const [user, creditWallet, debitWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -66,8 +63,8 @@ export class BuySellServices {
         error: null,
       });
 
-      const rate = exchangeRate.buyRate
-      const creditedAmount = parseFloat((amount / rate).toFixed(4));
+      const rate = conversion.rate
+      const creditedAmount = parseFloat((amount / conversion.destinationAmount).toFixed(4));
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
@@ -217,13 +214,7 @@ export class BuySellServices {
     const { amount, creditCoin, debitCoin } = body;
 
     try {
-      const exchangeRate = await this.dataServices.exchangeRates.findOne({ pair: `${debitCoin}/${creditCoin}` }, null, { sort: 'desc' })
-      if (!exchangeRate) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Exchange Rate not set',
-        error: null,
-      });
+      const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
 
       const [user, debitWallet, creditWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -255,9 +246,8 @@ export class BuySellServices {
         error: null,
       });
 
-      const rate = exchangeRate.sellRate
+      const rate = conversion.rate
       console.log("RATE", rate)
-
       const creditedAmount = parseFloat((rate * amount).toFixed(4));
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
