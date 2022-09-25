@@ -167,6 +167,7 @@ export class BuySellServices {
               $inc: {
                 balance: fee,
               },
+              lastDeposit: fee
             },
             session
           );
@@ -452,7 +453,7 @@ export class BuySellServices {
           }
 
 
-          const creditedFeeWallet = await this.dataServices.wallets.update(
+          const creditedFeeWallet = await this.dataServices.feeWallets.update(
             {
               _id: debitFeeWallet._id,
             },
@@ -536,9 +537,9 @@ export class BuySellServices {
             userId,
             walletId: debitWallet?._id,
             currency: debitCoin,
-            amount,
+            amount:fee,
             reference: generateReference('debit'),
-            signedAmount: -amount,
+            signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${debitCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
@@ -554,11 +555,11 @@ export class BuySellServices {
           const txFeeCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: creditedFeeWallet?._id,
-            currency: creditCoin,
-            amount: creditedAmount,
-            signedAmount: creditedAmount,
+            currency: debitCoin,
+            amount: fee,
+            signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Sold ${amount}${debitCoin}`,
+            description: `Charged ${fee} ${debitCoin}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: creditedFeeWallet?.balance,
             balanceBefore: creditFeeWallet?.balance,
