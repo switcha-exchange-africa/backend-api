@@ -1,4 +1,3 @@
-import { TransactionReference } from "src/core/entities/transaction-reference.entity";
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BuySellDto } from "src/core/dtos/trade/buy-sell.dto";
@@ -64,137 +63,140 @@ export class BuySellServices {
       });
 
       const rate = conversion.rate
-      const creditedAmount = parseFloat((amount / conversion.destinationAmount).toFixed(4));
+      const creditedAmount = conversion.destinationAmount;
 
-      const atomicTransaction = async (session: mongoose.ClientSession) => {
-        try {
-          const debitedWallet = await this.dataServices.wallets.update(
-            {
-              _id: debitWallet._id,
-              balance: { $gte: amount },
-            },
-            {
-              $inc: {
-                balance: -amount,
-              },
-            },
-            session
-          );
+      //     const atomicTransaction = async (session: mongoose.ClientSession) => {
+      //       try {
+      //         const debitedWallet = await this.dataServices.wallets.update(
+      //           {
+      //             _id: debitWallet._id,
+      //             balance: { $gte: amount },
+      //           },
+      //           {
+      //             $inc: {
+      //               balance: -amount,
+      //             },
+      //           },
+      //           session
+      //         );
 
-          if (!debitedWallet) {
-            Logger.error("Balance is 0");
-            throw new Error("Insufficient Balance");
-          }
+      //         if (!debitedWallet) {
+      //           Logger.error("Balance is 0");
+      //           throw new Error("Insufficient Balance");
+      //         }
 
-          const creditedWallet = await this.dataServices.wallets.update(
-            {
-              _id: creditWallet._id,
-            },
-            {
-              $inc: {
-                balance: creditedAmount,
-              },
-            },
-            session
-          );
-          if (!creditedWallet) {
-            Logger.error("Error Occurred");
-            throw new BadRequestsException("Error Occurred");
-          }
+      //         const creditedWallet = await this.dataServices.wallets.update(
+      //           {
+      //             _id: creditWallet._id,
+      //           },
+      //           {
+      //             $inc: {
+      //               balance: creditedAmount,
+      //             },
+      //           },
+      //           session
+      //         );
+      //         if (!creditedWallet) {
+      //           Logger.error("Error Occurred");
+      //           throw new BadRequestsException("Error Occurred");
+      //         }
 
-          const txRefPayload: TransactionReference = { userId, amount };
-          const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
-          const generalTransactionReference = generateReference('general')
+      //         const txRefPayload: TransactionReference = { userId, amount };
+      //         const txRef = await this.dataServices.transactionReferences.create(txRefPayload, session);
+      //         const generalTransactionReference = generateReference('general')
 
-          const txCreditPayload: OptionalQuery<Transaction> = {
-            userId,
-            walletId: String(creditWallet?._id),
-            currency: creditCoin,
-            amount: creditedAmount,
-            signedAmount: creditedAmount,
-            type: TRANSACTION_TYPE.CREDIT,
-            description: `Bought ${creditedAmount}${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
-            balanceAfter: creditedWallet?.balance,
-            balanceBefore: creditWallet?.balance || 0,
-            hash: txRef?.hash,
-            subType: TRANSACTION_SUBTYPE.CREDIT,
-            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
-            rate: {
-              pair: `${creditCoin}${debitCoin}`,
-              rate: rate
-            },
-            generalTransactionReference,
-            reference: generateReference('credit'),
+      //         const txCreditPayload: OptionalQuery<Transaction> = {
+      //           userId,
+      //           walletId: String(creditWallet?._id),
+      //           currency: creditCoin,
+      //           amount: creditedAmount,
+      //           signedAmount: creditedAmount,
+      //           type: TRANSACTION_TYPE.CREDIT,
+      //           description: `Bought ${creditedAmount}${creditCoin}`,
+      //           status: TRANSACTION_STATUS.COMPLETED,
+      //           balanceAfter: creditedWallet?.balance,
+      //           balanceBefore: creditWallet?.balance || 0,
+      //           hash: txRef?.hash,
+      //           subType: TRANSACTION_SUBTYPE.CREDIT,
+      //           customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+      //           rate: {
+      //             pair: `${creditCoin}${debitCoin}`,
+      //             rate: rate
+      //           },
+      //           generalTransactionReference,
+      //           reference: generateReference('credit'),
 
-          };
+      //         };
 
-          const txDebitPayload: OptionalQuery<Transaction> = {
-            userId,
-            walletId: debitWallet?._id,
-            currency: debitCoin,
-            amount: amount,
-            signedAmount: -amount,
-            type: TRANSACTION_TYPE.DEBIT,
-            description: `Bought ${creditedAmount}${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
-            balanceAfter: debitedWallet?.balance,
-            balanceBefore: debitWallet?.balance || 0,
-            hash: txRef?.hash,
-            subType: TRANSACTION_SUBTYPE.DEBIT,
-            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
-            rate: {
-              pair: `${creditCoin}${debitCoin}`,
-              rate: rate
-            },
-            generalTransactionReference,
-            reference: generateReference('debit'),
+      //         const txDebitPayload: OptionalQuery<Transaction> = {
+      //           userId,
+      //           walletId: debitWallet?._id,
+      //           currency: debitCoin,
+      //           amount: amount,
+      //           signedAmount: -amount,
+      //           type: TRANSACTION_TYPE.DEBIT,
+      //           description: `Bought ${creditedAmount}${creditCoin}`,
+      //           status: TRANSACTION_STATUS.COMPLETED,
+      //           balanceAfter: debitedWallet?.balance,
+      //           balanceBefore: debitWallet?.balance || 0,
+      //           hash: txRef?.hash,
+      //           subType: TRANSACTION_SUBTYPE.DEBIT,
+      //           customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+      //           rate: {
+      //             pair: `${creditCoin}${debitCoin}`,
+      //             rate: rate
+      //           },
+      //           generalTransactionReference,
+      //           reference: generateReference('debit'),
 
-          };
+      //         };
 
-          const [txCreditFactory, txDebitFactory, notificationFactory] = await Promise.all([
-            this.txFactoryServices.create(txCreditPayload),
-            this.txFactoryServices.create(txDebitPayload),
-            this.notificationFactory.create({
-              userId,
-              title: "Bought Crypto",
-              message: `Bought ${amount} ${debitCoin} of ${creditCoin}`
-            })
-          ])
-          await Promise.all([
-            this.dataServices.transactions.create(txCreditFactory, session),
-            this.dataServices.transactions.create(txDebitFactory, session),
-            this.dataServices.notifications.create(notificationFactory, session)
-          ])
-        } catch (error) {
-          Logger.error(error);
-          throw new Error(error);
-        }
-      };
+      //         const [txCreditFactory, txDebitFactory, notificationFactory] = await Promise.all([
+      //           this.txFactoryServices.create(txCreditPayload),
+      //           this.txFactoryServices.create(txDebitPayload),
+      //           this.notificationFactory.create({
+      //             userId,
+      //             title: "Bought Crypto",
+      //             message: `Bought ${amount} ${debitCoin} of ${creditCoin}`
+      //           })
+      //         ])
+      //         await Promise.all([
+      //           this.dataServices.transactions.create(txCreditFactory, session),
+      //           this.dataServices.transactions.create(txDebitFactory, session),
+      //           this.dataServices.notifications.create(notificationFactory, session)
+      //         ])
+      //       } catch (error) {
+      //         Logger.error(error);
+      //         throw new Error(error);
+      //       }
+      //     };
 
-      await Promise.all([
-        databaseHelper.executeTransaction(
-          atomicTransaction,
-          this.connection
-        ),
-        this.discord.inHouseNotification({
-          title: `Bought Crypto :- ${env.env} environment`,
-          message: `
-  
-          Bought Crypto
+      //     await Promise.all([
+      //       databaseHelper.executeTransaction(
+      //         atomicTransaction,
+      //         this.connection
+      //       ),
+      //       this.discord.inHouseNotification({
+      //         title: `Bought Crypto :- ${env.env} environment`,
+      //         message: `
 
-          User: ${user.email}
-  
-          Bought ${amount} ${debitCoin} of ${creditCoin}
-          
-  `,
-          link: env.isProd ? BUY_SELL_CHANNEL_LINK_PRODUCTION : BUY_SELL_CHANNEL_LINK_DEVELOPMENT,
-        })
-      ])
+      //         Bought Crypto
+
+      //         User: ${user.email}
+
+      //         Bought ${amount} ${debitCoin} of ${creditCoin}
+
+      // `,
+      //         link: env.isProd ? BUY_SELL_CHANNEL_LINK_PRODUCTION : BUY_SELL_CHANNEL_LINK_DEVELOPMENT,
+      //       })
+      // ])
 
       return {
         message: `Bought ${creditedAmount}${creditCoin}`,
-        data: {},
+        data: {
+          rate,
+          creditedAmount
+        },
         status: 200,
         state: ResponseState.SUCCESS,
       };

@@ -14,6 +14,8 @@ export enum CoinType {
 export const StableCoins = [
   CoinType.USDT,
   CoinType.USDC,
+  CoinType.USD,
+
 ]
 
 export const SwapableCoins = [
@@ -30,6 +32,17 @@ export enum FiatCoinType {
 
 export type ISwap = IConvertByPair & {}
 
+export type IBuy = {
+  amount: number
+  creditCoin: string,
+  debitCoin: string
+}
+
+export type ISell = {
+  amount: number
+  creditCoin: string,
+  debitCoin: string
+}
 export const COIN_TYPES_LIST = [
   CoinType.BTC,
   CoinType.ETH,
