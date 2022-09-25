@@ -1,12 +1,12 @@
 import { PaginationType } from "src/core/types/database";
 
-export enum IAmountType {
+export enum IFeeAmountType {
   PERCENTAGE = 'percentage',
   FIXED = 'fixed',
 }
 export const IAmountTypeEnumList = [
-  IAmountType.FIXED,
-  IAmountType.PERCENTAGE
+  IFeeAmountType.FIXED,
+  IFeeAmountType.PERCENTAGE
 ]
 export type IGetFee = PaginationType & {
   userId: string

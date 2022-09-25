@@ -15,6 +15,8 @@ import { OptionalQuery } from "src/core/types/database";
 import { SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { CoinType } from "src/core/types/coin";
 import { UtilsServices } from "../../utils/utils.service";
+import { ActivityAction } from "src/core/dtos/activity";
+import { ActivityFactoryService } from "../../activity/activity-factory.service";
 
 // const TATUM_CONFIG = {
 //   headers: {
@@ -29,6 +31,7 @@ export class SwapServices {
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
     private readonly utils: UtilsServices,
+    private readonly activityFactory: ActivityFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
@@ -131,7 +134,7 @@ export class SwapServices {
           amount: destinationAmount,
           signedAmount: destinationAmount,
           type: TRANSACTION_TYPE.CREDIT,
-          description: "swap currency",
+          description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
           status: TRANSACTION_STATUS.COMPLETED,
           balanceAfter: creditDestinationWallet?.balance,
           balanceBefore: destinationWallet?.balance,
@@ -152,7 +155,7 @@ export class SwapServices {
           amount: amount,
           signedAmount: -amount,
           type: TRANSACTION_TYPE.DEBIT,
-          description: "swap currency",
+          description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
           status: TRANSACTION_STATUS.COMPLETED,
           balanceAfter: debitSourceWallet?.balance,
           balanceBefore: sourceWallet?.balance,
@@ -166,14 +169,20 @@ export class SwapServices {
           },
         };
 
-        const [txCreditFactory, txDebitFactory] = await Promise.all([
+        const [txCreditFactory, txDebitFactory, activityFactory] = await Promise.all([
           this.txFactoryServices.create(txCreditPayload),
-          this.txFactoryServices.create(txDebitPayload)
+          this.txFactoryServices.create(txDebitPayload),
+          this.activityFactory.create({
+            action: ActivityAction.SWAP,
+            description: 'Swapped crypto',
+            userId
+          })
         ])
 
         await Promise.all([
           this.dataServices.transactions.create(txCreditFactory, session),
-          this.dataServices.transactions.create(txDebitFactory, session)
+          this.dataServices.transactions.create(txDebitFactory, session),
+          this.dataServices.activities.create(activityFactory, session)
         ])
 
       } catch (error) {

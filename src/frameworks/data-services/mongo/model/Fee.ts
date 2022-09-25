@@ -1,7 +1,7 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, now, Document } from "mongoose";
-import { IAmountType, IAmountTypeEnumList } from "src/core/dtos/fee";
+import { IFeeAmountType, IAmountTypeEnumList } from "src/core/dtos/fee";
 
 export type FeeDocument = Fee & Document;
 
@@ -18,7 +18,7 @@ export class Fee {
   amountInFixed: number
 
   @Prop({ enum: IAmountTypeEnumList })
-  amountType: IAmountType
+  amountType: IFeeAmountType
 
   @Prop({
     type: Types.ObjectId,

@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import { Types } from "mongoose"
 import { IDataServices } from "src/core/abstracts"
-import { IAmountType, IGetFee } from "src/core/dtos/fee"
+import { IFeeAmountType, IGetFee } from "src/core/dtos/fee"
 import { ResponseState } from "src/core/types/response"
 
 @Injectable()
@@ -33,35 +33,35 @@ export class FeeServices {
           feature: "swap",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "buy",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "sell",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "p2p-sell",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "p2p-buy",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
 
@@ -69,21 +69,21 @@ export class FeeServices {
           feature: "fiat-withdrawal",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "fiat-deposit",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         },
         {
           feature: "crypto-withdrawal",
           amountInPercentage: 0.5,
           amountInFixed: 0,
-          amountType: IAmountType.PERCENTAGE,
+          amountType: IFeeAmountType.PERCENTAGE,
           userId
         }
       ]

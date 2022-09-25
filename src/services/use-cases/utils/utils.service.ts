@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts';
-import { CoinType, FiatCoinType, IBuy, ISwap, StableCoins, SwapableCoins } from 'src/core/types/coin';
+import { CoinType, FiatCoinType, ISwap, StableCoins, SwapableCoins } from 'src/core/types/coin';
 import * as _ from "lodash"
+import { ActivityAction } from 'src/core/dtos/activity';
+import { Fee } from 'src/core/entities/Fee';
+import * as mongoose from "mongoose";
+import { IFeeAmountType } from 'src/core/dtos/fee';
 
 @Injectable()
 export class UtilsServices {
@@ -80,28 +84,27 @@ export class UtilsServices {
     }
   }
 
-  async buy(payload: IBuy): Promise<{ rate: number, destinationAmount: number }> {
+  async calculateFees(payload: {
+    operation: ActivityAction,
+    amount: number
+  }) {
     try {
-      const { creditCoin, amount, debitCoin } = payload
 
-      const [sourceExchangeRate, destinationExchangeRate] = await Promise.all([
-        this.data.exchangeRates.findOne({ coin: debitCoin.toUpperCase() }, null, { sort: 'desc' }),
-        this.data.exchangeRates.findOne({ coin: creditCoin.toUpperCase() }, null, { sort: 'desc' }),
-      ])
+      const { operation, amount } = payload
+      
+      const getFee: mongoose.HydratedDocument<Fee> = await this.data.fees.findOne({ feature: operation })
+      if (!getFee) return { fee: 0, deduction: amount }
+      
+      if (getFee.amountType === IFeeAmountType.PERCENTAGE) {
+        const fee = _.multiply(amount, _.divide(getFee.amountInPercentage, 100))
+        const deduction = _.subtract(amount, fee)
+        return { deduction, fee }
+      }
 
-      if (!sourceExchangeRate) throw new Error(`Exchange rate not set for source currency ${debitCoin}`)
-      if (!destinationExchangeRate) throw new Error(`Exchange rate not set for destination currency ${creditCoin}`)
-
-
-      const conversionRate = _.divide(destinationExchangeRate.buyRate, sourceExchangeRate.sellRate)
-      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 3)
-
-      return { rate: conversionRate, destinationAmount }
-
+      return { fee: 0, deduction: amount }
     } catch (error) {
       throw new Error(error)
     }
   }
-
 }
 
