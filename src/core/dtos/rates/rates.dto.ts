@@ -1,4 +1,5 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 import { CryptoPairType } from "src/core/entities/wallet.entity";
 import { PaginationType } from "src/core/types/database";
 import { SwapableCoin } from "../trade/swap.dto";
@@ -69,17 +70,15 @@ export class ExchangeRateDto {
 }
 export class CreateExchangeRateDto {
   @IsNotEmpty()
-  @IsEnum(CryptoPairType)
-  pair: CryptoPairType;
+  @IsString()
+  coin: string
 
   @IsNotEmpty()
   @IsNumber()
-  @Min(1)
   buyRate: number
 
   @IsNotEmpty()
   @IsNumber()
-  @Min(1)
   sellRate: number
 
 }
@@ -90,7 +89,7 @@ export type ICreateExchangeRate = CreateExchangeRateDto & {
 
 export type IGetExchangeRates = PaginationType & {
   userId: string
-  pair: string
+  coin: string
 
 }
 
@@ -100,3 +99,31 @@ export class FindByPairDto {
   public readonly pair: CryptoPairType;
 
 }
+
+export class FindByCoinDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly coin: string;
+
+}
+
+export class ConvertByPairDto {
+
+  @IsNotEmpty()
+  @Type(() => Number)
+  @IsPositive()
+  public readonly amount: number;
+
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly source: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly destination: string;
+
+
+}
+
+export type IConvertByPair = ConvertByPairDto & {}

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards, Query, Param } from "@nestjs/common";
 import { Response, Request } from "express"
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
-import { CreateExchangeRateDto, FindByPairDto, ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
+import { CreateExchangeRateDto, FindByCoinDto, ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
 import { ExchangeRateServices } from "src/services/use-cases/exchange-rates/exchange-rates.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
@@ -41,10 +41,10 @@ export class AdminExchangeRatesController {
   ) {
     try {
 
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, pair } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin } = query
       const payload: IGetExchangeRates = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy,
-        pair
+        coin
       }
 
       const response = await this.services.getAllExchangeRates(payload);
@@ -74,16 +74,16 @@ export class AdminExchangeRatesController {
     }
   }
 
-  @Get('/rate/pair')
+  @Get('/rate/coin')
   @UseGuards(StrictAuthGuard)
-  async getSingleExchangeRateByPair(
+  async getSingleExchangeRateByCoin(
     @Res() res: Response,
-    @Query() query: FindByPairDto
+    @Query() query: FindByCoinDto
   ) {
     try {
 
-      const { pair } = query
-      const response = await this.services.getSingleExchangeRateByPair(pair);
+      const { coin } = query
+      const response = await this.services.getSingleExchangeRateByCoin(coin);
       return res.status(response.status).json(response);
 
     } catch (error) {

@@ -6,7 +6,7 @@ import { OptionalQuery } from "src/core/types/database";
 export class ExchangeRateFactoryServices {
   create(data: OptionalQuery<ExchangeRate>) {
     const rate = new ExchangeRate();
-    if (data.pair) rate.pair = data.pair;
+    if (data.coin) rate.coin = data.coin;
     if (data.description) rate.description = data.description;
     if (data.userId) rate.userId = data.userId;
     if (data.buyRate) rate.buyRate = data.buyRate;

@@ -4,7 +4,8 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-import { BLOCKCHAIN_NETWORK, CoinType } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_NETWORK } from "src/core/entities/wallet.entity";
+import { CoinType } from "src/core/types/coin";
 import { PaginationType } from "src/core/types/database";
 
 export class PhraseDto {

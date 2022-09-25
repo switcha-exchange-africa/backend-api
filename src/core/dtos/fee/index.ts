@@ -11,4 +11,5 @@ export const IAmountTypeEnumList = [
 export type IGetFee = PaginationType & {
   userId: string
   feature: string
+  amountType: string
 }

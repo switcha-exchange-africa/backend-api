@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
-import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, CoinType, COIN_TYPES_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
+import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type WalletDocument = Wallet & Document;
 

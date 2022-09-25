@@ -10,10 +10,10 @@ import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
-import { CoinType } from "src/core/entities/wallet.entity";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
 import { SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { CoinType } from "src/core/types/coin";
 
 const TATUM_CONFIG = {
   headers: {

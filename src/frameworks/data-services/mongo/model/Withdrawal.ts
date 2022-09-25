@@ -1,8 +1,8 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
-import { CoinType, COIN_TYPES_LIST } from "src/core/entities/wallet.entity";
 import { WithdrawalCryptoDestination, WithdrawalPaymentMethod, WithdrawalStatus, WithdrawalSubType, WithdrawalType, WITHDRAWAL_PAYMENT_METHOD_LIST, WITHDRAWAL_STATUS_LIST, WITHDRAWAL_SUB_TYPE_LIST, WITHDRAWAL_TYPE_LIST } from "src/core/entities/Withdrawal";
+import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 
 export type WithdrawalDocument = Withdrawal & Document;

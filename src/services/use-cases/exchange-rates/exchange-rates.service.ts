@@ -3,13 +3,15 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { ResponseState } from "src/core/types/response";
 import { ExchangeRateFactoryServices } from "./exchange-rate-factory.service";
-import { ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
+import { IConvertByPair, ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class ExchangeRateServices {
   constructor(
     private data: IDataServices,
-    private factory: ExchangeRateFactoryServices
+    private factory: ExchangeRateFactoryServices,
+    private readonly utils: UtilsServices
   ) { }
 
   cleanQueryPayload(payload: IGetExchangeRates) {
@@ -22,7 +24,7 @@ export class ExchangeRateServices {
     if (payload.sortBy) key['sortBy'] = payload.sortBy
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.userId) key['userId'] = payload.userId
-    if (payload.pair) key['pair'] = payload.pair
+    if (payload.coin) key['coin'] = payload.coin
 
     return key
   }
@@ -100,10 +102,10 @@ export class ExchangeRateServices {
       })
     }
   }
-  async getSingleExchangeRateByPair(pair: string) {
+  async getSingleExchangeRateByCoin(coin: string) {
     try {
 
-      const data = await this.data.exchangeRates.findOne({ pair }, null, { sort: 'desc' });
+      const data = await this.data.exchangeRates.findOne({ coin: coin.toUpperCase() }, null, { sort: 'desc' });
       return Promise.resolve({
         message: "Exchange Rate retrieved succesfully",
         status: HttpStatus.OK,
@@ -120,4 +122,32 @@ export class ExchangeRateServices {
       })
     }
   }
+
+  async convert(payload: IConvertByPair) {
+    try {
+      const { source, amount, destination } = payload
+      const destinationAmount = await this.utils.swap(payload)
+
+      return Promise.resolve({
+        message: "Convert retrieved succesfully",
+        status: HttpStatus.OK,
+        data: {
+          source,
+          destination,
+          amount,
+          destinationAmount
+        },
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
 }

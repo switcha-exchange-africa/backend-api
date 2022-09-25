@@ -16,7 +16,7 @@ import { CustomLogger, CustomLoggerDocument } from './model/CustomLogger';
 import { Notification, NotificationDocument } from './model/Notification';
 import { QuickTrade, QuickTradeDocument } from './model/Quick-Trade';
 import { QuickTradeContract, QuickTradeContractDocument } from './model/Quick-Trade-Contract';
-import { ExchangeRate, RateDocument } from './model/ExchangeRate';
+import { ExchangeRate, ExchangeRateDocument } from './model/ExchangeRate';
 import { Admin, AdminDocument } from './model/Admin';
 import { Kyc, KycDocument } from './model/Kyc';
 import { Fee, FeeDocument } from './model/Fee';
@@ -85,7 +85,7 @@ export class MongoDataServices
     private QuickTradeContractRepository: Model<QuickTradeContractDocument>,
 
     @InjectModel(ExchangeRate.name)
-    private ExchangeRateRepository: Model<RateDocument>,
+    private ExchangeRateRepository: Model<ExchangeRateDocument>,
 
     @InjectModel(Admin.name)
     private AdminRepository: Model<AdminDocument>,

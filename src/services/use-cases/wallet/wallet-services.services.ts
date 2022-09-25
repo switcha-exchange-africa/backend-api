@@ -11,10 +11,11 @@ import {
   TATUM_USDT_TRON_ACCOUNT_ID,
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
-import { BLOCKCHAIN_CHAIN, CoinType, Wallet } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_CHAIN, Wallet } from "src/core/entities/wallet.entity";
 import { Types } from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { CoinType } from "src/core/types/coin";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {

@@ -21,7 +21,9 @@ export class FeeServices {
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.userId) key['userId'] = payload.userId
     if (payload.feature) key['feature'] = payload.feature
+    if (payload.amountType) key['amountType'] = payload.amountType
 
+    
     return key
   }
   async seedFee(userId: string) {

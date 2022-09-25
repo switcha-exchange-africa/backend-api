@@ -3,7 +3,7 @@ import {
   IsNumber,
   IsEnum
 } from "class-validator";
-import { CoinType } from "src/core/entities/wallet.entity";
+import { CoinType } from "src/core/types/coin";
 export class BuySellDto {
 
   @IsNotEmpty()

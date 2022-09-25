@@ -9,9 +9,9 @@ import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_S
 import { Faucet } from "src/core/entities/faucet.entity";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
-import { CoinType } from "src/core/entities/wallet.entity";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
+import { CoinType } from "src/core/types/coin";
 
 @Injectable()
 export class FaucetServices {

@@ -39,10 +39,11 @@ export class AdminFeeController {
   ) {
     try {
 
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, feature } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, feature, amountType } = query
       const payload: IGetFee = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy,
-        feature
+        feature,
+        amountType
       }
 
       const response = await this.services.getAllFees(payload);

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { Types } from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_STATUS, TRANSACTION_STATUS_LIST, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
-import { COIN_TYPES_LIST, CoinType } from "src/core/entities/wallet.entity";
+import { COIN_TYPES_LIST ,CoinType} from "src/core/types/coin";
 
 export type TransactionDocument = Transaction & Document;
 

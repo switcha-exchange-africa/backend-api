@@ -21,15 +21,6 @@ export const WALLET_STATUS_LIST = [
   WALLET_STATUS.INACTIVE,
 ];
 
-export enum CoinType {
-  BTC = "BTC",
-  ETH = "ETH",
-  USDT = "USDT",
-  USDC = "USDC",
-  USDT_TRON = "USDT_TRON",
-  NGN = "NGN",
-  USD = "USD",
-}
 
 export enum BLOCKCHAIN_CHAIN {
   SOL = "SOL",
@@ -45,16 +36,6 @@ export enum BLOCKCHAIN_CHAIN {
   TRON = "TRON",
 }
 
-export const COIN_TYPES_LIST = [
-  CoinType.BTC,
-  CoinType.ETH,
-  CoinType.USDT,
-  CoinType.USDC,
-  CoinType.NGN,
-  CoinType.USDT_TRON,
-  CoinType.USD
-
-];
 
 export enum NETWORK {
   ROPSTEN = "ropsten",
@@ -81,11 +62,11 @@ export class Wallet {
 }
 
 export enum CryptoPairType {
-  ETH_USDT = "ETH/USDT",
-  BTC_USDT = "BTC/USDT",
+  ETH_USDT = "ETH/USD",
+  BTC_USDT = "BTC/USD",
   BTC_NGN = "BTC/NGN",
   ETH_NGN = "ETH/NGN",
-  NGN_USDT = "NGN/USDT",
+  NGN_USDT = "NGN/USD",
   USDC_NGN = "USDC/NGN",
   USDT_NGN = "USDT/NGN",
 }
@@ -98,5 +79,5 @@ export const CoinPairList = [
   CryptoPairType.USDT_NGN,
   CryptoPairType.BTC_NGN,
   CryptoPairType.ETH_NGN,
-  
+
 ]

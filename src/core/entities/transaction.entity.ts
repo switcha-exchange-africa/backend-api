@@ -1,4 +1,4 @@
-import { CoinType } from "./wallet.entity";
+import { CoinType } from "../types/coin";
 
 
 export enum TRANSACTION_TYPE {
