@@ -112,6 +112,9 @@ export const WITHDRAWAL_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webho
 export const QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1002226779878084668/ODuLUSeDoU3iCFE0LCASlBqldt2ZeTOgLE3Dj6evV4UQkrg4W13E5giq_sfPES-anGSN'
 export const QUICK_TRADE_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1002226850086518844/nGVMxxCnLAB2DslSItrNdmFOYWpW827wVaKr00OlsmuqNTmS5zTXm8JZlEomp8G-AlV_'
 
+export const ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1023610121764491294/D8BMqfTSfX9xgPAlEGxVgGZK-SlKby-SRjI_L-MRjBGC9xRZcbNDM-qJrFSyTlRJZsMM'
+export const ERROR_REPORTING_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1023610072066183299/fuALGLejZV0-S4C_d-1p3ffnwW7NmBwW1O8WWxtfKLHpbOsCPUtV426mHI95OG-1QLTL'
+
 
 export interface UserIDDocumentType {
   documentType: string;

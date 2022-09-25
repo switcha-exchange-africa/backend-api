@@ -12,7 +12,7 @@ import { InjectConnection } from "@nestjs/mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
-import { SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { CoinType } from "src/core/types/coin";
 import { UtilsServices } from "../../utils/utils.service";
 import { ActivityAction } from "src/core/dtos/activity";
@@ -38,10 +38,17 @@ export class SwapServices {
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
 
     const { amount, sourceCoin, destinationCoin } = body;
-    const [user, sourceWallet, destinationWallet] = await Promise.all([
+    const [user, sourceWallet, destinationWallet, sourceFeeWallet, destinationFeeWallet] = await Promise.all([
       this.dataServices.users.findOne({ _id: userId }),
       this.dataServices.wallets.findOne({
         userId,
+        coin: sourceCoin,
+      }),
+      this.dataServices.wallets.findOne({
+        userId,
+        coin: destinationCoin,
+      }),
+      this.dataServices.wallets.findOne({
         coin: sourceCoin,
       }),
       this.dataServices.wallets.findOne({
@@ -56,6 +63,46 @@ export class SwapServices {
       message: `User does not exist`,
       error: null,
     })
+    if (!sourceFeeWallet) {
+      this.discord.inHouseNotification({
+        title: `Error Reporter :- ${env.env} environment`,
+        message: `
+
+            Action: Buy Action
+
+            User: ${user.email}
+
+            ${sourceCoin} fee wallet not set by admin
+    `,
+        link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+      })
+      return Promise.reject({
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        state: ResponseState.ERROR,
+        message: `Feature under maintenance`,
+        error: null,
+      });
+    }
+    if (!destinationFeeWallet) {
+      this.discord.inHouseNotification({
+        title: `Error Reporter :- ${env.env} environment`,
+        message: `
+
+            Action: Buy Action
+
+            User: ${user.email}
+
+            ${destinationCoin} fee wallet not set by admin
+    `,
+        link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+      })
+      return Promise.reject({
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        state: ResponseState.ERROR,
+        message: `Feature under maintenance`,
+        error: null,
+      });
+    }
     if (!sourceWallet) return Promise.reject({
       status: HttpStatus.NOT_FOUND,
       state: ResponseState.ERROR,

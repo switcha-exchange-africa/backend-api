@@ -13,7 +13,7 @@ import { TransactionFactoryService } from "../../transaction/transaction-factory
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
 import { generateReference } from "src/lib/utils";
-import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { BUY_SELL_CHANNEL_LINK_DEVELOPMENT, BUY_SELL_CHANNEL_LINK_PRODUCTION, ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { UtilsServices } from "../../utils/utils.service";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
@@ -37,7 +37,7 @@ export class BuySellServices {
     try {
 
 
-      const [user, creditWallet, debitWallet] = await Promise.all([
+      const [user, creditWallet, debitWallet, creditFeeWallet, debitFeeWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -48,7 +48,14 @@ export class BuySellServices {
           coin: debitCoin,
           balance: { $gt: 0 },
         }),
+        this.dataServices.feeWallets.findOne({
+          coin: creditCoin,
+        }),
+        this.dataServices.feeWallets.findOne({
+          coin: debitCoin,
+        })
       ]);
+
 
       if (!user) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
@@ -56,7 +63,46 @@ export class BuySellServices {
         message: 'User does not exist',
         error: null,
       });
+      if (!creditFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
 
+              Action: Buy Action
+
+              User: ${user.email}
+
+              ${creditCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
+      if (!debitFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+
+              Action: Buy Action
+
+              User: ${user.email}
+
+              ${debitCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
       if (!creditWallet) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
@@ -71,11 +117,12 @@ export class BuySellServices {
         error: null,
       });
 
+
       const conversion = await this.utils.swap({ amount, source: debitCoin, destination: creditCoin })
-      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount:conversion.destinationAmount })
+      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount: conversion.destinationAmount })
 
       const rate = conversion.rate
-      const creditedAmount =deduction ;
+      const creditedAmount = deduction;
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
