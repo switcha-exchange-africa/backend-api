@@ -6,7 +6,7 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { Fee } from 'src/core/entities/Fee';
 import * as mongoose from "mongoose";
 import { IFeeAmountType } from 'src/core/dtos/fee';
-import { MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY } from 'src/configuration';
+import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY } from 'src/configuration';
 import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 
 @Injectable()
@@ -129,6 +129,7 @@ export class UtilsServices {
 
   }) {
     try {
+
       const { fromEmail, fromName, templateId, subject, variables, toEmail, toName } = payload
       const CONFIG = {
         auth: {
@@ -136,32 +137,38 @@ export class UtilsServices {
           password: MAILJET_API_SECRET_KEY,
         },
       }
-      const response = await this.http.post(
-        'https://api.mailjet.com/v3.1/send',
-        {
-          "Messages": [
-            {
-              "From": {
-                "Email": fromEmail,
-                "Name": fromName
-              },
-              "To": [
-                {
-                  "Email": toEmail,
-                  "Name": toName
-                }
-              ],
-              "TemplateID": templateId,
-              "TemplateLanguage": true,
-              "Subject": subject,
-              "Variables": { ...variables }
-            }
-          ]
-        },
-        CONFIG
-      )
-      Logger.log(JSON.stringify(response))
-      return response
+      if (env.isProd) {
+        const response = await this.http.post(
+          'https://api.mailjet.com/v3.1/send',
+          {
+            "Messages": [
+              {
+                "From": {
+                  "Email": fromEmail,
+                  "Name": fromName
+                },
+                "To": [
+                  {
+                    "Email": toEmail,
+                    "Name": toName
+                  }
+                ],
+                "TemplateID": templateId,
+                "TemplateLanguage": true,
+                "Subject": subject,
+                "Variables": { ...variables }
+              }
+            ]
+          },
+          CONFIG
+        )
+        Logger.log(JSON.stringify(response))
+        return response
+      }
+
+      Logger.log('Email Sent')
+      return 'Email Sent'
+
     } catch (error) {
       console.error(error)
       throw new Error(error)
