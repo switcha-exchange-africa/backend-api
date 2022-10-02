@@ -9,6 +9,7 @@ export type IGetActivities = PaginationType & {
 export enum ActivityAction {
   SIGNUP = 'signup',
   SIGNIN = 'signin',
+  VERIFY_EMAIL = 'verify-email',
   WITHDRAWAL = 'withdrawal',
   DEPOSIT = 'deposit',
   SWAP = 'swap',
@@ -16,5 +17,6 @@ export enum ActivityAction {
   SELL = 'sell',
   P2P_SELL = 'p2p-sell',
   P2P_BUY = 'p2p-buy',
+
 }
 

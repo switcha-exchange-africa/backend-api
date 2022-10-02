@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts';
 import { CoinType, FiatCoinType, ISwap, StableCoins, SwapableCoins } from 'src/core/types/coin';
 import * as _ from "lodash"
@@ -6,11 +6,14 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { Fee } from 'src/core/entities/Fee';
 import * as mongoose from "mongoose";
 import { IFeeAmountType } from 'src/core/dtos/fee';
+import { MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY } from 'src/configuration';
+import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 
 @Injectable()
 export class UtilsServices {
   constructor(
     private data: IDataServices,
+    private http: IHttpServices
 
   ) { }
 
@@ -43,6 +46,11 @@ export class UtilsServices {
       throw new Error(error)
     }
   }
+
+
+  /**
+ *  Util function for handling our crypto conversion and swaps
+ */
 
   async swap(payload: ISwap): Promise<{ rate: number, destinationAmount: number }> {
     try {
@@ -84,6 +92,9 @@ export class UtilsServices {
     }
   }
 
+  /**
+   *  Util function for calculating our fees
+   */
   async calculateFees(payload: {
     operation: ActivityAction,
     amount: number
@@ -91,10 +102,10 @@ export class UtilsServices {
     try {
 
       const { operation, amount } = payload
-      
+
       const getFee: mongoose.HydratedDocument<Fee> = await this.data.fees.findOne({ feature: operation })
       if (!getFee) return { fee: 0, deduction: amount }
-      
+
       if (getFee.amountType === IFeeAmountType.PERCENTAGE) {
         const fee = _.multiply(amount, _.divide(getFee.amountInPercentage, 100))
         const deduction = _.subtract(amount, fee)
@@ -103,6 +114,56 @@ export class UtilsServices {
 
       return { fee: 0, deduction: amount }
     } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  async sendEmailUsingMailjet(payload: {
+    fromEmail: string,
+    fromName: string,
+    toEmail: string,
+    toName: string,
+    templateId: string,
+    subject: string,
+    variables?: Record<string, any>
+
+  }) {
+    try {
+      const { fromEmail, fromName, templateId, subject, variables, toEmail, toName } = payload
+      const CONFIG = {
+        auth: {
+          username: MAILJET_API_PUBLIC_KEY,
+          password: MAILJET_API_SECRET_KEY,
+        },
+      }
+      const response = await this.http.post(
+        'https://api.mailjet.com/v3.1/send',
+        {
+          "Messages": [
+            {
+              "From": {
+                "Email": fromEmail,
+                "Name": fromName
+              },
+              "To": [
+                {
+                  "Email": toEmail,
+                  "Name": toName
+                }
+              ],
+              "TemplateID": templateId,
+              "TemplateLanguage": true,
+              "Subject": subject,
+              "Variables": { ...variables }
+            }
+          ]
+        },
+        CONFIG
+      )
+      Logger.log(JSON.stringify(response))
+      return response
+    } catch (error) {
+      console.error(error)
       throw new Error(error)
     }
   }

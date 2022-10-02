@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/core/entities/user.entity';
+import { UserFeatureManagement } from 'src/core/entities/UserFeatureManagement';
 import { OptionalQuery } from 'src/core/types/database';
 import { hash } from 'src/lib/utils';
 
@@ -28,6 +29,16 @@ export class UserFactoryService {
     user.updatedAt = new Date();
     user.lastLoginDate = new Date();
     return user;
+  }
+
+}
+
+@Injectable()
+export class UserFeatureManagementFactoryService {
+  async manageUser(data: OptionalQuery<UserFeatureManagement>) {
+    const manage = new UserFeatureManagement();
+    if (data.userId) manage.userId = data.userId;
+    return manage;
   }
 
 }

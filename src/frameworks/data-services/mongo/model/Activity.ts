@@ -34,3 +34,6 @@ export class Activity {
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);
 
+
+
+// 4245519

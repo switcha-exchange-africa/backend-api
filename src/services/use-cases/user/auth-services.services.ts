@@ -8,12 +8,14 @@ import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { randomBytes } from 'crypto'
-import { UserFactoryService } from './user-factory.service';
+import { UserFactoryService, UserFeatureManagementFactoryService } from './user-factory.service';
 import { ResponseState, ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { ILogin, ISignup } from 'src/core/dtos/authentication/login.dto';
-
+import { ActivityFactoryService } from '../activity/activity-factory.service';
+import { ActivityAction } from 'src/core/dtos/activity';
+import { EmailTemplates } from 'src/core/types/email'
 @Injectable()
 export class AuthServices {
   constructor(
@@ -22,7 +24,8 @@ export class AuthServices {
     private inMemoryServices: IInMemoryServices,
     private factory: UserFactoryService,
     private emitter: EventEmitter2,
-
+    private userFeatureManagementFactory: UserFeatureManagementFactoryService,
+    private readonly activityFactory: ActivityFactoryService,
   ) { }
 
   async signup(data: ISignup): Promise<ResponsesType<User>> {
@@ -38,7 +41,7 @@ export class AuthServices {
         error: null
       })
 
-      const factory = await this.factory.createNewUser(data);
+      const factory = await this.factory.createNewUser(data)
       const user = await this.data.users.create(factory);
       const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
 
@@ -51,7 +54,14 @@ export class AuthServices {
       }
       const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
       const code = randomFixedInteger(6)
-      const hashedCode = await hash(String(code));
+      const [hashedCode, activityFactory] = await Promise.all([
+        hash(String(code)),
+        this.activityFactory.create({
+          action: ActivityAction.SIGNUP,
+          description: 'Signed Up',
+          userId: user._id
+        })
+      ]);
 
       await Promise.all([
         this.discordServices.inHouseNotification({
@@ -59,7 +69,19 @@ export class AuthServices {
           message: `Verification code for ${jwtPayload?.fullName}-${jwtPayload?.email} is ${code}`,
           link: DISCORD_VERIFICATION_CHANNEL_LINK,
         }),
-        this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY))
+        this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY)),
+        this.data.activities.create(activityFactory),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'verification@switcha.africa',
+          fromName: "Verification",
+          toEmail: user.email,
+          toName: `${user.firstName} ${user.lastName}`,
+          templateId: EmailTemplates.VERIFY_EMAIL,
+          subject: 'Email Verification',
+          variables: {
+            code
+          }
+        }),
       ])
 
       return {
@@ -126,17 +148,26 @@ export class AuthServices {
         lock: updatedUser?.lock,
         emailVerified: updatedUser.emailVerified,
       }
-      const [token, ,] = await Promise.all([
+      const [token, , , userManagementFactory, activityFactory] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
         this.inMemoryServices.del(redisKey),
         this.emitter.emit("create.wallet", {
           userId: updatedUser._id,
           email: updatedUser.email,
           fullName: `${updatedUser.firstName} ${updatedUser.lastName}`
-
+        }),
+        this.userFeatureManagementFactory.manageUser({ userId: updatedUser._id }),
+        this.activityFactory.create({
+          action: ActivityAction.VERIFY_EMAIL,
+          description: 'Verify Email',
+          userId: updatedUser._id
         })
       ])
 
+      await Promise.all([
+        this.data.userFeatureManagement.create(userManagementFactory),
+        this.data.activities.create(activityFactory)
+      ])
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
       return {

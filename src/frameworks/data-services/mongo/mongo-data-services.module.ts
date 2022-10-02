@@ -24,6 +24,7 @@ import { Admin, AdminSchema } from "./model/Admin";
 import { Kyc, KycSchema } from "./model/Kyc";
 import { Fee, FeeSchema } from "./model/Fee";
 import { FeeWallet, FeeWalletSchema } from "./model/Fee-Wallet";
+import { UserFeatureManagement, UserFeatureManagementSchema } from "./model/UserFeatureManagement";
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { FeeWallet, FeeWalletSchema } from "./model/Fee-Wallet";
       { name: Kyc.name, schema: KycSchema },
       { name: Fee.name, schema: FeeSchema },
       { name: FeeWallet.name, schema: FeeWalletSchema },
+      { name: UserFeatureManagement.name, schema: UserFeatureManagementSchema },
       
       
     ]),
