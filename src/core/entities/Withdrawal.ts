@@ -1,4 +1,5 @@
 import { CoinType } from "../types/coin"
+import { PaginationType } from "../types/database"
 
 export enum WithdrawalStatus {
   PENDING = 'pending',
@@ -12,11 +13,13 @@ export enum WithdrawalType {
 }
 export enum WithdrawalSubType {
   P2P = 'p2p',
-  BUY_SELL = 'buy-sell'
+  BUY_SELL = 'buy-sell',
+  MANUAL = 'manual'
 }
 
 export enum WithdrawalPaymentMethod {
   BANK = 'bank',
+  EXCHANGE = 'manual-exchange',
   SATURN = 'saturn'
 }
 
@@ -33,17 +36,20 @@ export const WITHDRAWAL_STATUS_LIST = [
 ]
 export const WITHDRAWAL_SUB_TYPE_LIST = [
   WithdrawalSubType.BUY_SELL,
-  WithdrawalSubType.P2P
+  WithdrawalSubType.P2P,
+  WithdrawalSubType.MANUAL
+
 ]
 export const WITHDRAWAL_PAYMENT_METHOD_LIST = [
   WithdrawalPaymentMethod.BANK,
+  WithdrawalPaymentMethod.EXCHANGE,
   WithdrawalPaymentMethod.SATURN
 ]
 export type WithdrawalCryptoDestination = {
-  address: string
-  coin: string
-  tagNumber: string
-  memo: string
+  address?: string
+  coin?: string
+  tagNumber?: string
+  memo?: string
 }
 
 export class Withdrawal {
@@ -51,7 +57,9 @@ export class Withdrawal {
   transactionId: string;
   walletId: string;
   bankId: string
-  processedBy: WithdrawalCryptoDestination
+  processedBy: string
+  destination: WithdrawalCryptoDestination
+
   processedReason: string
   currency: CoinType
   reference: string
@@ -62,6 +70,20 @@ export class Withdrawal {
   amount: number
   originalAmount: number
   fee: number
-  createdAt?: Date;
-  updatedAt?: Date;
+}
+
+
+export type IGetWithdrawals = PaginationType & {
+  userId: string;
+  transactionId: string;
+  walletId: string;
+  bankId: string
+  processedBy: string
+  currency: string
+  reference: string
+  type: string
+  subType:string
+  paymentMethod:string
+  status: string
+
 }

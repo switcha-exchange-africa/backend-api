@@ -23,7 +23,7 @@ export class FeeServices {
     if (payload.feature) key['feature'] = payload.feature
     if (payload.amountType) key['amountType'] = payload.amountType
 
-    
+
     return key
   }
   async seedFee(userId: string) {
@@ -106,6 +106,53 @@ export class FeeServices {
     }
   }
 
+  async seedWithdrawalFees(userId: string) {
+    try {
+      const seed = [
+        {
+          coin: "USDT",
+          fee: 20,
+          userId
+        },
+        {
+          coin: "USDC",
+          fee: 20,
+          userId
+        },
+        {
+          coin: "USDT_TRON",
+          fee: 1,
+          userId
+        },
+        {
+          coin: "BTC",
+          fee: 0.0003,
+          userId
+        },
+        {
+          coin: "ETH",
+          fee:  0.004,
+          userId
+        },
+      ]
+      const data = await this.data.coinWithdrawalFee.create(seed)
+
+      return Promise.resolve({
+        message: "Fees seeded successfully",
+        status: HttpStatus.CREATED,
+        data,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
   async getAllFees(payload: IGetFee) {
     try {
       const cleanedPayload = this.cleanQueryPayload(payload)

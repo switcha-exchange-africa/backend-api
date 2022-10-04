@@ -21,6 +21,7 @@ import { TransactionServicesModule } from "./use-cases/transaction/transaction-s
 import { UserServicesModule } from "./use-cases/user/user-service.module";
 import { WalletServicesModule } from "./use-cases/wallet/wallet-services.module";
 import { WebhookServicesModule } from "./use-cases/webhook/webhook-services.module";
+import { WithdrawalServicesModule } from "./use-cases/withdrawal/withdrawal.module";
 
 export default [
   AxiosServiceModule,
@@ -45,5 +46,6 @@ export default [
   KycServicesModule,
   ExchangeRateServicesModule,
   FeeServicesModule,
-  FeeWalletServicesModule
+  FeeWalletServicesModule,
+  WithdrawalServicesModule
 ]

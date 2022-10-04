@@ -22,6 +22,7 @@ import { Kyc, KycDocument } from './model/Kyc';
 import { Fee, FeeDocument } from './model/Fee';
 import { FeeWallet, FeeWalletDocument } from './model/Fee-Wallet';
 import { UserFeatureManagement, UserFeatureManagementDocument } from './model/UserFeatureManagement';
+import { CoinWithdrawalFee, CoinWithdrawalFeeDocument } from './model/CoinWithdrawalFee';
 
 
 @Injectable()
@@ -46,6 +47,9 @@ export class MongoDataServices
   fees: MongoGenericRepository<Fee>;
   feeWallets: MongoGenericRepository<FeeWallet>;
   userFeatureManagement: MongoGenericRepository<UserFeatureManagement>;
+  coinWithdrawalFee: MongoGenericRepository<CoinWithdrawalFee>;
+
+
 
   constructor(
     @InjectModel(User.name)
@@ -105,6 +109,11 @@ export class MongoDataServices
     @InjectModel(UserFeatureManagement.name)
     private UserFeatureManagementRepository: Model<UserFeatureManagementDocument>,
 
+    @InjectModel(CoinWithdrawalFee.name)
+    private CoinWithdrawalFeeRepository: Model<CoinWithdrawalFeeDocument>,
+
+
+
   ) { }
 
 
@@ -128,7 +137,7 @@ export class MongoDataServices
     this.fees = new MongoGenericRepository<Fee>(this.FeeRepository, ['userId'])
     this.feeWallets = new MongoGenericRepository<FeeWallet>(this.FeeWalletRepository, ['userId'])
     this.userFeatureManagement = new MongoGenericRepository<UserFeatureManagement>(this.UserFeatureManagementRepository, ['userId'])
-
+    this.coinWithdrawalFee = new MongoGenericRepository<CoinWithdrawalFee>(this.CoinWithdrawalFeeRepository, ['userId'])
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

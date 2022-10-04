@@ -55,7 +55,11 @@ export const TATUM_ETH_ACCOUNT_ID = getEnv("TATUM_ETH_ACCOUNT_ID")
 export const TATUM_WEBHOOK_SECRET = getEnv("TATUM_WEBHOOK_SECRET", true)!
 export const MAILJET_API_SECRET_KEY = getEnv("MAILJET_API_SECRET_KEY", true)
 export const MAILJET_API_PUBLIC_KEY = getEnv("MAILJET_API_PUBLIC_KEY", true)
-
+export const TATUM_BTC_MNEMONIC = getEnv("TATUM_BTC_MNEMONIC", true)
+export const TATUM_ETH_MNEMONIC = getEnv("TATUM_ETH_MNEMONIC", true)
+export const TATUM_ETH_XPUB_KEY = getEnv("TATUM_ETH_XPUB_KEY", true)
+export const TATUM_TRON_XPUB_KEY = getEnv("TATUM_TRON_XPUB_KEY", true)
+export const TATUM_BTC_XPUB_KEY = getEnv("TATUM_BTC_XPUB_KEY", true)
 
 
 
@@ -65,4 +69,12 @@ export const LOGS_LEVEL = (): LogLevel[] => {
   if (env.isProd) return ['log', 'warn', 'error'];
   return ['error', 'warn', 'log', 'verbose', 'debug'];
 
-} 
+}
+
+export const TATUM_CONFIG = {
+  headers: {
+    "X-API-Key": TATUM_API_KEY,
+  },
+}; 
+
+// https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/

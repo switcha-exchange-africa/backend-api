@@ -31,6 +31,25 @@ export class AdminFeeController {
     }
   }
 
+  @Post('/withdrawals-fees')
+  @UseGuards(StrictAuthGuard)
+  async seedWithdrawalFees(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+
+      const userId = req?.user._id
+      const response = await this.services.seedWithdrawalFees(userId);
+
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
   @Get('/')
   @UseGuards(StrictAuthGuard)
   async getAllFees(

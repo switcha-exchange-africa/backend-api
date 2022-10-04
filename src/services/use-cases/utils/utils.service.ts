@@ -6,9 +6,10 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { Fee } from 'src/core/entities/Fee';
 import * as mongoose from "mongoose";
 import { IFeeAmountType } from 'src/core/dtos/fee';
-import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY } from 'src/configuration';
+import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_ETH_MNEMONIC } from 'src/configuration';
 import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 
+export const ERC_20_TOKENS = ['USDT', 'USDC']
 @Injectable()
 export class UtilsServices {
   constructor(
@@ -171,6 +172,65 @@ export class UtilsServices {
 
     } catch (error) {
       console.error(error)
+      throw new Error(error)
+    }
+  }
+
+  async calculateWithdrawalFees(payload: { coin: string, amount: number }) {
+    try {
+      const { coin, amount } = payload
+      const getFeeAmount = await this.data.coinWithdrawalFee.findOne({ coin })
+      const withdrawableAmount = Math.abs(_.subtract(amount, Math.abs(getFeeAmount.fee)))
+      return {
+        fee: getFeeAmount.fee,
+        amount: withdrawableAmount
+      }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  cleanUpPayloadForTatumWithdrawal(payload: { coin: string, accountId: string, address: string, amount: number }) {
+    try {
+      const { coin, accountId, amount, address } = payload
+      if (coin === 'BTC') {
+        return {
+          url: '/v3/offchain/bitcoin/transfer',
+          payload: {
+            senderAccountId: accountId,
+            address,
+            amount: `${amount}`,
+            mnemonic: TATUM_BTC_MNEMONIC,
+            xpub: TATUM_BTC_XPUB_KEY
+          }
+        }
+      }
+      if (ERC_20_TOKENS.includes(coin)) {
+        return {
+          url: '/v3/offchain/ethereum/erc20/transfer',
+          payload: {
+            senderAccountId: accountId,
+            address,
+            amount: `${amount}`,
+            mnemonic: TATUM_ETH_MNEMONIC,
+            "index": 0
+          }
+        }
+      }
+      if (coin === 'ETH') {
+        return {
+          url: '/v3/offchain/ethereum/transfer',
+          payload: {
+            senderAccountId: accountId,
+            address,
+            amount: `${amount}`,
+            mnemonic: TATUM_ETH_MNEMONIC,
+            "index": 0
+          }
+        }
+      }
+      return {}
+    } catch (error) {
       throw new Error(error)
     }
   }

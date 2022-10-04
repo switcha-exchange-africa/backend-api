@@ -12,6 +12,7 @@ import { RatesController } from "./rates";
 import { TransactionController } from "./transaction";
 import { WalletController } from "./wallet";
 import { WebhookController } from "./webhooks";
+import { WithdrawalController } from "./withdrawal";
 
 export default [
   AuthenticationController,
@@ -27,5 +28,6 @@ export default [
   NotificationController,
   QuickTradeController,
   ExchangeRatesController,
+  WithdrawalController,
   ...admin
 ]

@@ -1,3 +1,4 @@
+import { CoinType } from "../types/coin";
 
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
@@ -44,21 +45,23 @@ export enum NETWORK {
 }
 
 export class Wallet {
+  balance: number;
+  lockedBalance: number;
   address: string;
-  accountId: string;
   userId: string;
+  accountId: string;
   network: BLOCKCHAIN_NETWORK;
-  coin: string;
+  coin: CoinType;
   status: WALLET_STATUS;
   lastDeposit: number;
   lastWithdrawal: number;
+  reference: string
   createdAt: Date;
   updatedAt: Date;
   isBlocked: boolean;
   destinationTag: string;
   memo: string;
   tatumMessage: string;
-  reference: string
 }
 
 export enum CryptoPairType {

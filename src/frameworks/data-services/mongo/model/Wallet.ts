@@ -10,12 +10,12 @@ export class Wallet {
   @Prop({
     default: 0
   })
-  balance: Number;
+  balance: number;
 
   @Prop({
     default: 0
   })
-  lockedBalance: Number;
+  lockedBalance: number;
 
   @Prop()
   address: string;

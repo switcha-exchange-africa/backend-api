@@ -17,6 +17,7 @@ import { Kyc } from '../entities/Kyc';
 import { Fee } from '../entities/Fee';
 import { FeeWallet } from '../entities/FeeWallet';
 import { UserFeatureManagement } from '../entities/UserFeatureManagement';
+import { CoinWithdrawalFee } from '../entities/CoinWithdrawalFee';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -37,5 +38,7 @@ export abstract class IDataServices {
   abstract kyc: IGenericRepository<Kyc>
   abstract fees: IGenericRepository<Fee>
   abstract feeWallets: IGenericRepository<FeeWallet>
-  abstract userFeatureManagement:IGenericRepository<UserFeatureManagement>
+  abstract userFeatureManagement: IGenericRepository<UserFeatureManagement>
+  abstract coinWithdrawalFee: IGenericRepository<CoinWithdrawalFee>
+
 } 
