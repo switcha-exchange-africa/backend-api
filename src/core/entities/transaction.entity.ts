@@ -29,6 +29,7 @@ export enum TRANSACTION_STATUS {
   PENDING = "pending",
   COMPLETED = "completed",
   REJECTED = "rejected",
+  FAILED = 'failed'
 }
 
 export const TRANSACTION_STATUS_LIST = [

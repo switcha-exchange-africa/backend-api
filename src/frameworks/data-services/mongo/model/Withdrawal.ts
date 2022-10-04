@@ -28,6 +28,11 @@ export class Withdrawal {
     ref: "Transaction",
   })
   transactionId: string;
+  @Prop({
+    type: Types.ObjectId,
+    ref: "Transaction",
+  })
+  feeTransactionId: string
 
   @Prop({
     type: Types.ObjectId,
@@ -44,7 +49,7 @@ export class Withdrawal {
 
 
   @Prop({ type: { address: String, coin: String, tagNumber: String, memo: String } })
-  destination : WithdrawalCryptoDestination
+  destination: WithdrawalCryptoDestination
 
   @Prop()
   processedReason: string

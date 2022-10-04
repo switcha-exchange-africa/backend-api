@@ -156,7 +156,7 @@ export class WithdrawalServices {
             this.transactionFactory.create(txFeePayload),
 
           ])
-          const [transactionData,] = await Promise.all([
+          const [transactionData, feeTransactionData] = await Promise.all([
             this.data.transactions.create(transactionFactory, session),
             this.data.transactions.create(feeTransactionFactory, session)
           ])
@@ -164,6 +164,7 @@ export class WithdrawalServices {
           const withdrawalPayload: OptionalQuery<Withdrawal> = {
             userId,
             transactionId: transactionData._id,
+            feeTransactionId: feeTransactionData._id,
             walletId: String(wallet?._id),
             destination: {
               address,
@@ -388,7 +389,10 @@ export class WithdrawalServices {
           await Promise.all([
             this.data.notifications.create(notificationFactory, session),
             this.data.activities.create(activityFactory, session),
-            this.data.transactions.create(transactionFactory, session)
+            this.data.transactions.create(transactionFactory, session),
+            this.data.transactions.update({ _id: withdrawal.transactionId }, { status: TRANSACTION_STATUS.FAILED }, session),
+            this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: TRANSACTION_STATUS.FAILED }, session),
+            this.data.wallets.update({ _id: wallet._id }, { lastDeposit: withdrawal.originalAmount }, session)
           ])
         } catch (error) {
           return Promise.reject(error)

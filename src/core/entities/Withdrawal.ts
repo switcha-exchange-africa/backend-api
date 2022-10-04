@@ -55,6 +55,7 @@ export type WithdrawalCryptoDestination = {
 export class Withdrawal {
   userId: string;
   transactionId: string;
+  feeTransactionId: string;
   walletId: string;
   bankId: string
   processedBy: string
@@ -82,8 +83,8 @@ export type IGetWithdrawals = PaginationType & {
   currency: string
   reference: string
   type: string
-  subType:string
-  paymentMethod:string
+  subType: string
+  paymentMethod: string
   status: string
 
 }
