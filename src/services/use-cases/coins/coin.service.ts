@@ -160,10 +160,10 @@ export class CoinServices {
     try {
 
       const coin = await this.data.coins.findOne({ _id: id });
-      const rate = await this.data.exchangeRates.findOne({ coin: coin.coin }, null, { sort: 'desc' });
+      const rate = await this.data.exchangeRates.findOne({ coin: coin.coin.toUpperCase() }, null, { sort: 'desc' });
       const data = {
-        ...coin,
-        ...rate
+        coin,
+        rate
       }
       return Promise.resolve({
         message: "Coin Details retrieved succesfully",

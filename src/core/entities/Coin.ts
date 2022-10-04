@@ -14,5 +14,5 @@ export class Coin {
 
 export type IGetCoins = PaginationType & {
   coin: string
-  userId: string
+  userId?: string
 }

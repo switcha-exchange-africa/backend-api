@@ -85,6 +85,7 @@ export class WithdrawalServices {
       const generalTransactionReference = generateReference('general')
       const amountInUsd = Math.abs(_.divide(amountBeforeFee, rate.sellRate))
       let apiResponse
+      console.log(fee, amount)
       if (amountInUsd > 200) {
         apiResponse = await this.http.post(
           `${TATUM_BASE_URL}/offchain/withdrawal`,
@@ -92,8 +93,8 @@ export class WithdrawalServices {
 
             senderAccountId: wallet.accountId,
             address,
-            amount,
-            fee
+            amount: String(amount),
+            fee: String(fee)
           },
           TATUM_CONFIG
         );
