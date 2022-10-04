@@ -26,6 +26,9 @@ export class User {
   @Prop({ required: true })
   email: string;
 
+  @Prop()
+  dob: string;
+
   @Prop({
     required: true,
     enum: SWITCHA_DEVICES,
@@ -62,8 +65,7 @@ export class User {
   @Prop()
   createdAt: Date
 
-  @Prop()
-  dob: Date
+ 
 
   @Prop()
   updatedAt: Date

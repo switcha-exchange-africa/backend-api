@@ -21,7 +21,16 @@ export class Coin {
   canSell: boolean;
 
   @Prop({ default: true })
+  canWithdraw: boolean;
+
+  @Prop({ default: true })
   canP2p: boolean;
+
+  @Prop({ default: true })
+  externalDeposit: boolean
+
+  @Prop({ default: true })
+  bankTransferDeposit: boolean
 
   @Prop({
     type: Types.ObjectId,

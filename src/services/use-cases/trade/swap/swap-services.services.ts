@@ -176,7 +176,7 @@ export class SwapServices {
 
         const txCreditPayload: OptionalQuery<Transaction> = {
           userId,
-          walletId: destinationWallet?._id,
+          walletId: String(destinationWallet?._id),
           currency: destinationCoin as unknown as CoinType,
           amount: destinationAmount,
           signedAmount: destinationAmount,
@@ -197,7 +197,7 @@ export class SwapServices {
 
         const txDebitPayload: OptionalQuery<Transaction> = {
           userId,
-          walletId: sourceWallet?._id,
+          walletId: String(sourceWallet?._id),
           currency: sourceCoin as unknown as CoinType,
           amount: amount,
           signedAmount: -amount,

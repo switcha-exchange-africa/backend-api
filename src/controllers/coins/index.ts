@@ -2,7 +2,7 @@ import { Controller, Get, Res, UseGuards, Query, Param } from "@nestjs/common";
 import { Response } from "express"
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { CoinServices } from "src/services/use-cases/admin/coins/coin.service";
+import { CoinServices } from "src/services/use-cases/coins/coin.service";
 import { IGetCoins } from "src/core/entities/Coin";
 
 @Controller('coins')

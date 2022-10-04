@@ -82,8 +82,8 @@ export class TransferServices {
           const generalTransactionReference = generateReference('general')
 
           const txCreditPayload: OptionalQuery<Transaction> = {
-            userId: recipient._id,
-            walletId: creditWallet?._id,
+            userId: String(recipient._id),
+            walletId: String(creditWallet?._id),
             currency: creditedWallet.coin,
             amount,
             signedAmount: amount,
@@ -100,8 +100,8 @@ export class TransferServices {
           };
 
           const txDebitPayload: OptionalQuery<Transaction> = {
-            userId: sender._id,
-            walletId: debitWallet?._id,
+            userId: String(sender._id),
+            walletId: String(debitWallet?._id),
             currency: debitedWallet.coin,
             amount,
             signedAmount: amount,

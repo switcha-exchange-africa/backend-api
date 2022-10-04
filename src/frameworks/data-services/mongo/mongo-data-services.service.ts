@@ -29,7 +29,7 @@ import { Coin, CoinDocument } from './model/Coin';
 @Injectable()
 export class MongoDataServices
   implements IDataServices, OnApplicationBootstrap {
-  users: MongoGenericRepository<UserDocument>;
+  users: MongoGenericRepository<User>;
   wallets: MongoGenericRepository<Wallet>;
   transactionReferences: MongoGenericRepository<TransactionReference>;
   transactions: MongoGenericRepository<Transaction>;

@@ -26,6 +26,7 @@ import { Fee, FeeSchema } from "./model/Fee";
 import { FeeWallet, FeeWalletSchema } from "./model/Fee-Wallet";
 import { UserFeatureManagement, UserFeatureManagementSchema } from "./model/UserFeatureManagement";
 import { CoinWithdrawalFee, CoinWithdrawalFeeSchema } from "./model/CoinWithdrawalFee";
+import { Coin, CoinSchema } from "./model/Coin";
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { CoinWithdrawalFee, CoinWithdrawalFeeSchema } from "./model/CoinWithdraw
       { name: FeeWallet.name, schema: FeeWalletSchema },
       { name: UserFeatureManagement.name, schema: UserFeatureManagementSchema }, 
       { name: CoinWithdrawalFee.name, schema: CoinWithdrawalFeeSchema }, 
-      
+      { name: Coin.name, schema: CoinSchema }, 
+
       
       
       

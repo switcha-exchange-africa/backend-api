@@ -1,11 +1,9 @@
 import { SwitchaDeviceType, USER_LEVEL_TYPE } from "src/lib/constants";
 
-
-
 export class User {
-  username: string
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   device: SwitchaDeviceType
   password: string
@@ -17,13 +15,13 @@ export class User {
   emailVerified: boolean
   phoneVerified: boolean
   lastLoginDate: Date
-  createdAt: Date
-  dob: Date
-  updatedAt: Date
   lock: boolean;
   transactionPin: string
-  level: USER_LEVEL_TYPE
   avatar: string
-
+  level: USER_LEVEL_TYPE
+  dob: string
 }
+
+
+
 

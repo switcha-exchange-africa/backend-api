@@ -39,7 +39,7 @@ export class AdminServices {
         state: ResponseState.SUCCESS,
         data,
       };
-      
+
     } catch (error) {
       Logger.error(error)
       return Promise.reject({
@@ -216,7 +216,7 @@ export class AdminServices {
       })
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: admin?._id,
+        _id: String(admin?._id),
         fullName: `${admin?.firstName} ${admin?.lastName}`,
         email: admin?.email,
         lock: admin?.lock,

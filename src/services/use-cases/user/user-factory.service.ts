@@ -25,8 +25,7 @@ export class UserFactoryService {
     user.lock = false;
     user.authenticator=false
     user.notify=false
-    user.createdAt = new Date();
-    user.updatedAt = new Date();
+   
     user.lastLoginDate = new Date();
     return user;
   }

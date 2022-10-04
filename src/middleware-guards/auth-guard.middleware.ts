@@ -38,7 +38,7 @@ export class AuthGuard implements CanActivate {
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
 
-      if (!user.active) throw new ForbiddenException('Account disabled')
+      if (user.lock) throw new ForbiddenException('Account disabled')
 
       return true;
 
