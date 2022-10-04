@@ -23,12 +23,13 @@ import { Fee, FeeDocument } from './model/Fee';
 import { FeeWallet, FeeWalletDocument } from './model/Fee-Wallet';
 import { UserFeatureManagement, UserFeatureManagementDocument } from './model/UserFeatureManagement';
 import { CoinWithdrawalFee, CoinWithdrawalFeeDocument } from './model/CoinWithdrawalFee';
+import { Coin, CoinDocument } from './model/Coin';
 
 
 @Injectable()
 export class MongoDataServices
   implements IDataServices, OnApplicationBootstrap {
-  users: MongoGenericRepository<User>;
+  users: MongoGenericRepository<UserDocument>;
   wallets: MongoGenericRepository<Wallet>;
   transactionReferences: MongoGenericRepository<TransactionReference>;
   transactions: MongoGenericRepository<Transaction>;
@@ -48,7 +49,7 @@ export class MongoDataServices
   feeWallets: MongoGenericRepository<FeeWallet>;
   userFeatureManagement: MongoGenericRepository<UserFeatureManagement>;
   coinWithdrawalFee: MongoGenericRepository<CoinWithdrawalFee>;
-
+  coins: MongoGenericRepository<Coin>;
 
 
   constructor(
@@ -112,6 +113,8 @@ export class MongoDataServices
     @InjectModel(CoinWithdrawalFee.name)
     private CoinWithdrawalFeeRepository: Model<CoinWithdrawalFeeDocument>,
 
+    @InjectModel(Coin.name)
+    private CoinRepository: Model<CoinDocument>,
 
 
   ) { }
@@ -138,6 +141,7 @@ export class MongoDataServices
     this.feeWallets = new MongoGenericRepository<FeeWallet>(this.FeeWalletRepository, ['userId'])
     this.userFeatureManagement = new MongoGenericRepository<UserFeatureManagement>(this.UserFeatureManagementRepository, ['userId'])
     this.coinWithdrawalFee = new MongoGenericRepository<CoinWithdrawalFee>(this.CoinWithdrawalFeeRepository, ['userId'])
+    this.coins = new MongoGenericRepository<CoinDocument>(this.CoinRepository, ['userId'])
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

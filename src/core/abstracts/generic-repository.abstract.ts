@@ -1,4 +1,5 @@
 import { ClientSession, FilterQuery, UpdateQuery } from "mongoose";
+import * as mongoose from "mongoose";
 
 
 
@@ -14,7 +15,7 @@ export abstract class IGenericRepository<T> {
       }
     });
 
-  abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' });
+  abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' }): Promise<mongoose.HydratedDocument<T>>;
 
   abstract create(payload: T | T[], session?: ClientSession);
 

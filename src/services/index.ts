@@ -6,6 +6,7 @@ import { DiscordServicesModule } from "src/frameworks/notification-services/disc
 import { DataServicesModule } from "./data-services/data-services.module";
 import { AdminServicesModule } from "./use-cases/admin/admin.module";
 import { BankServicesModule } from "./use-cases/bank/bank-services.module";
+import { CoinServicesModule } from "./use-cases/admin/coins/coin.module";
 import { ExchangeRateServicesModule } from "./use-cases/exchange-rates/exchange-rate-service.module";
 import { FaucetServicesModule } from "./use-cases/faucet/faucet-services.module";
 import { FeeWalletServicesModule } from "./use-cases/fee-wallet/fee-wallet.module";
@@ -47,5 +48,6 @@ export default [
   ExchangeRateServicesModule,
   FeeServicesModule,
   FeeWalletServicesModule,
-  WithdrawalServicesModule
+  WithdrawalServicesModule,
+  CoinServicesModule
 ]

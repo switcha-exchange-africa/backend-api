@@ -2,8 +2,8 @@ import { CoinType } from "../types/coin";
 import { BLOCKCHAIN_NETWORK, WALLET_STATUS } from "./wallet.entity";
 
 export class FeeWallet {
-  balance?: Number;
-  lockedBalance?: Number;
+  balance?: number;
+  lockedBalance?: number;
   address?: string;
   userId?: string;
   accountId?: string;

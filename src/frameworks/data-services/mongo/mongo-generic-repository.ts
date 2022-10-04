@@ -1,6 +1,7 @@
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { IGenericRepository } from 'src/core/abstracts';
 import { convertDate, isEmpty } from 'src/lib/utils';
+import * as mongoose from "mongoose";
 
 export class MongoGenericRepository<T> implements IGenericRepository<T> {
   private _repository: Model<T>;
@@ -45,7 +46,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
-  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' }) {
+  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' }): Promise<mongoose.HydratedDocument<T>>  {
     try {
       const result = await this._repository
         .findOne(key)
@@ -53,7 +54,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         .sort(options && options.sort === 'desc' ? { createdAt: -1 } : { createdAt: 1 })
         .session(session || null);
 
-      return Promise.resolve(result);
+      return Promise.resolve(result as mongoose.HydratedDocument<T>);
     } catch (e) {
       return Promise.reject(e);
     }

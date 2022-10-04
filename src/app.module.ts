@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module } from "@nestjs/common";
-import { USER_LOCK, USER_SIGNUP_STATUS_TYPE } from "./lib/constants";
+import { USER_SIGNUP_STATUS_TYPE } from "./lib/constants";
 import { HomeServices } from "./services/use-cases/home/home.service";
 import services from "./services";
 import controller from "./controllers";
@@ -12,11 +12,11 @@ declare global {
   namespace Express {
     export interface Request {
       user?: {
-        _id?: string ;
+        _id?: string;
         fullName?: string;
         email?: string;
         authStatus?: USER_SIGNUP_STATUS_TYPE;
-        lock?: USER_LOCK;
+        lock?: boolean;
         emailVerified?: boolean;
         phoneVerified?: boolean;
         roles?: RoleType[]

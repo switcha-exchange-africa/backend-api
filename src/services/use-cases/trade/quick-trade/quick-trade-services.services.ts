@@ -75,7 +75,7 @@ export class QuickTradeServices {
 
           const txDebitPayload = {
             userId,
-            walletId: debitWallet?._id,
+            walletId: String(debitWallet?._id),
             currency: payingCoin,
             amount: amount,
             signedAmount: -amount,
@@ -146,7 +146,7 @@ export class QuickTradeServices {
 
             const sellerCreditTransactionPayload = {
               userId: String(seller._id),
-              walletId: sellerWallet?._id,
+              walletId: String(sellerWallet?._id),
               currency: sellerWallet.coin,
               amount: amount,
               signedAmount: amount,
@@ -188,7 +188,7 @@ export class QuickTradeServices {
               ])
               const buyerCreditTransactionPayload = {
                 userId,
-                walletId: creditWallet?._id,
+                walletId: String(creditWallet?._id),
                 currency: creditWallet?.coin,
                 amount: matchingTradeContract.price,
                 signedAmount: matchingTradeContract.price,
@@ -237,7 +237,7 @@ export class QuickTradeServices {
 
             const buyerCreditTransactionPayload = {
               userId,
-              walletId: creditWallet?._id,
+              walletId: String(creditWallet?._id),
               currency: creditWallet?.coin,
               amount: priceToPayBuyer,
               signedAmount: priceToPayBuyer,
@@ -417,7 +417,7 @@ export class QuickTradeServices {
           }
           const debitTransactionPayload = {
             userId,
-            walletId: debitWallet?._id,
+            walletId: String(debitWallet?._id),
             currency: sell,
             amount: amount,
             signedAmount: -amount,
@@ -480,7 +480,7 @@ export class QuickTradeServices {
             ])
             const buyerCreditTransactionPayload = {
               userId: String(buyer._id),
-              walletId: buyerWallet?._id,
+              walletId: String(buyerWallet?._id),
               currency: buyerWallet.coin,
               amount: amount,
               signedAmount: amount,
@@ -522,7 +522,7 @@ export class QuickTradeServices {
               ])
               const sellerCreditTransactionPayload = {
                 userId,
-                walletId: creditWallet?._id,
+                walletId: String(creditWallet?._id),
                 currency: creditWallet?.coin,
                 amount: matchingTradeContract.price,
                 signedAmount: matchingTradeContract.price,
@@ -572,7 +572,7 @@ export class QuickTradeServices {
 
             const sellerCreditTransactionPayload = {
               userId,
-              walletId: creditWallet?._id,
+              walletId: String(creditWallet?._id),
               currency: creditWallet?.coin,
               amount: priceToPaySeller,
               signedAmount: priceToPaySeller,

@@ -203,7 +203,7 @@ export class BuySellServices {
 
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: debitWallet?._id,
+            walletId: String(debitWallet?._id),
             currency: debitCoin,
             amount: amount,
             signedAmount: -amount,
@@ -223,7 +223,7 @@ export class BuySellServices {
           };
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: creditWallet?._id,
+            walletId: String(creditWallet?._id),
             currency: creditCoin,
             amount: fee,
             signedAmount: -fee,
@@ -239,9 +239,9 @@ export class BuySellServices {
             generalTransactionReference,
             reference: generateReference('debit'),
           };
-          const txFeeCreditPayload: OptionalQuery<Transaction> = {
+          const txFeeCreditPayload = {
             userId,
-            walletId: creditFeeWallet?._id,
+            walletId: String(creditFeeWallet?._id),
             currency: creditCoin,
             amount: fee,
             signedAmount: fee,
@@ -494,7 +494,7 @@ export class BuySellServices {
 
           const txDebitedPayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: debitWallet?._id,
+            walletId: String(debitWallet?._id),
             currency: debitCoin,
             amount,
             reference: generateReference('debit'),
@@ -514,7 +514,7 @@ export class BuySellServices {
           };
           const txCreditedPayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: creditWallet?._id,
+            walletId: String(creditWallet?._id),
             currency: creditCoin,
             amount: creditedAmount,
             signedAmount: creditedAmount,
@@ -535,9 +535,9 @@ export class BuySellServices {
 
           const txDebitFeePayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: debitWallet?._id,
+            walletId: String(debitWallet?._id),
             currency: debitCoin,
-            amount:fee,
+            amount: fee,
             reference: generateReference('debit'),
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,

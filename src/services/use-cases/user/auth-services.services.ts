@@ -465,8 +465,8 @@ export class AuthServices {
       if (!user.emailVerified) {
 
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-          _id: user?._id,
-          fullName: user?.fullName,
+          _id: String(user?._id),
+          fullName: `${user?.firstName} ${user?.lastName}`,
           email: user?.email,
           lock: user?.lock,
           emailVerified: user.emailVerified,
@@ -483,7 +483,7 @@ export class AuthServices {
       }
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: user?._id,
+        _id: String(user?._id),
         fullName: `${user?.firstName} ${user?.lastName}`,
         email: user?.email,
         lock: user?.lock,
