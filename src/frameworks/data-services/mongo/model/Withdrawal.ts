@@ -26,7 +26,6 @@ export class Withdrawal {
   @Prop({
     type: Types.ObjectId,
     ref: "Transaction",
-    required: true
   })
   transactionId: string;
 
@@ -40,7 +39,6 @@ export class Withdrawal {
   @Prop({
     type: Types.ObjectId,
     ref: "Bank",
-    required: true
   })
   bankId: string
 

@@ -145,7 +145,7 @@ export class WithdrawalServices {
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             rate: {
-              pair: `${coin}usd`,
+              pair: `${coin}USD`,
               rate: rate.sellRate
             },
             generalTransactionReference,
@@ -196,6 +196,7 @@ export class WithdrawalServices {
             this.data.withdrawals.create(withdrawalFactory, session),
             this.data.notifications.create(notificationFactory, session),
             this.data.activities.create(activityFactory, session),
+            this.data.wallets.update({ _id: wallet._id }, { lastWithdrawal: amountBeforeFee }, session)
           ])
 
         } catch (error) {
