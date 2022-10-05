@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { Coin, IGetCoins } from "src/core/entities/Coin";
+import { Coin, CoinType, IGetCoins } from "src/core/entities/Coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 
 @Injectable()
@@ -28,6 +28,7 @@ export class CoinServices {
         {
           userId,
           coin: 'BTC',
+          type: CoinType.CRYPTO,
           canSwap: true,
           canBuy: true,
           canSell: true,
@@ -40,6 +41,7 @@ export class CoinServices {
         {
           userId,
           coin: 'ETH',
+          type: CoinType.CRYPTO,
           canSwap: true,
           canBuy: true,
           canSell: true,
@@ -53,6 +55,7 @@ export class CoinServices {
         {
           userId,
           coin: 'USDT',
+          type: CoinType.CRYPTO,
           canSwap: true,
           canBuy: true,
           canSell: true,
@@ -66,6 +69,7 @@ export class CoinServices {
         {
           userId,
           coin: 'USDT_TRON',
+          type: CoinType.CRYPTO,
           canSwap: true,
           canBuy: true,
           canSell: true,
@@ -80,6 +84,7 @@ export class CoinServices {
           userId,
           coin: 'USDC',
           canSwap: true,
+          type: CoinType.CRYPTO,
           canBuy: true,
           canSell: true,
           canP2p: true,
@@ -92,6 +97,7 @@ export class CoinServices {
           userId,
           coin: 'NGN',
           canSwap: false,
+          type: CoinType.FIAT,
           canBuy: false,
           canSell: false,
           canP2p: false,

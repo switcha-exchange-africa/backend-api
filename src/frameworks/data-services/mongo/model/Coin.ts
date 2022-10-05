@@ -1,6 +1,7 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, now, Document } from "mongoose";
+import { CoinType, CoinTypeList } from "src/core/entities/Coin";
 
 export type CoinDocument = Coin & Document;
 
@@ -13,6 +14,8 @@ export class Coin {
   @Prop({ default: true })
   canSwap: boolean;
 
+  @Prop({ enum: CoinTypeList })
+  type: CoinType
 
   @Prop({ default: true })
   canBuy: boolean;
