@@ -45,7 +45,7 @@ export class AdminCoinController {
 
   @Get('/:id')
   @UseGuards(StrictAuthGuard)
-  async getSingleWallet(@Res() res: Response, @Param() param: FindByIdDto) {
+  async getSingleCoin(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
 
       const { id } = param;

@@ -3,6 +3,7 @@ import admin from "./admin";
 import { AuthenticationController } from "./authentication";
 import { BankController } from "./bank";
 import { BuySellController } from "./buy-sell";
+import { CoinController } from "./coins";
 import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
 import { HomeController } from "./home";
@@ -29,5 +30,6 @@ export default [
   QuickTradeController,
   ExchangeRatesController,
   WithdrawalController,
+  CoinController,
   ...admin
 ]
