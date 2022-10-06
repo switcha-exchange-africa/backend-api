@@ -7,6 +7,7 @@ import { CoinController } from "./coins";
 import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
 import { HomeController } from "./home";
+import { MiscController } from "./misc";
 import { NotificationController } from "./notification";
 import { P2pController } from "./p2p";
 import { QuickTradeController } from "./quick-trade";
@@ -33,5 +34,6 @@ export default [
   WithdrawalController,
   CoinController,
   P2pController,
+  MiscController,
   ...admin
 ]

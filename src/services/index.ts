@@ -21,6 +21,7 @@ import { SwapServicesModule } from "./use-cases/trade/swap/swap-services.module"
 import { TransferServicesModule } from "./use-cases/trade/transfer/transfer-services.module";
 import { TransactionServicesModule } from "./use-cases/transaction/transaction-services.module";
 import { UserServicesModule } from "./use-cases/user/user-service.module";
+import { UtilsServicesModule } from "./use-cases/utils/utils.module";
 import { WalletServicesModule } from "./use-cases/wallet/wallet-services.module";
 import { WebhookServicesModule } from "./use-cases/webhook/webhook-services.module";
 import { WithdrawalServicesModule } from "./use-cases/withdrawal/withdrawal.module";
@@ -51,5 +52,6 @@ export default [
   FeeWalletServicesModule,
   WithdrawalServicesModule,
   CoinServicesModule,
-  P2pServicesModule
+  P2pServicesModule,
+  UtilsServicesModule
 ]

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { Request, Response } from "express";
-import { ICreateP2pAd, IGetP2pAds, IUpdateP2pAds, P2pCreateAdDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { ICreateP2pAd, ICreateP2pAdBank, IGetP2pAdBank, IGetP2pAds, IUpdateP2pAds, P2pAdCreateBankDto, P2pCreateAdDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
@@ -30,16 +30,102 @@ export class P2pController {
     }
   }
 
-
-  @Get('/p2p/ads')
+  @Post('/p2p/bank')
   @UseGuards(StrictAuthGuard)
-  async getAllAds(
+  async createAdsBank(
     @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: P2pAdCreateBankDto
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const payload: ICreateP2pAdBank = { ...body, userId }
+
+      const response = await this.services.createAdsBank(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Get('/p2p/bank')
+  @UseGuards(StrictAuthGuard)
+  async getAllAdsBank(
     @Res() res: Response,
     @Query() query: any
   ) {
     try {
-      const userId = req?.user._id
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+
+        userId,
+        isActive,
+        isAcceptingToPaymentTo,
+        isWillingToPayTo
+      } = query
+      const payload: IGetP2pAdBank = {
+        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy,
+        isActive,
+        isAcceptingToPaymentTo,
+        isWillingToPayTo
+      }
+
+      const response = await this.services.getAllAdsBank(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Get('/p2p/bank/:id')
+  @UseGuards(StrictAuthGuard)
+  async getSingleAdBank(
+    @Res() res: Response,
+    @Param() params: FindByIdDto,
+  ) {
+    try {
+      const { id } = params
+
+      const response = await this.services.getSingleAdBank(id);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Post('/p2p/bank/:id')
+  @UseGuards(StrictAuthGuard)
+  async disableAdsBank(
+    @Res() res: Response,
+    @Param() params: FindByIdDto,
+
+  ) {
+    try {
+      const { id } = params
+
+      const response = await this.services.disableAdsBank(id);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @Get('/p2p/ads')
+  @UseGuards(StrictAuthGuard)
+  async getAllAds(
+    @Res() res: Response,
+    @Query() query: any
+  ) {
+    try {
       const {
         perpage,
         page,
@@ -49,7 +135,8 @@ export class P2pController {
         orderBy,
         type,
         isPublished,
-        coin
+        coin,
+        userId
       } = query
       const payload: IGetP2pAds = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,

@@ -69,13 +69,48 @@ export class P2pCreateAdDto {
   @IsBoolean()
   moreThanDot1Btc: boolean
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsArray()
   banks: string[]
 
   @IsOptional()
   @IsString()
   reply: string;
+}
+
+export class P2pAdCreateBankDto {
+
+  @IsOptional()
+  @IsString()
+  name: string
+
+
+  @IsOptional()
+  @IsString()
+  code: string
+
+
+  @IsOptional()
+  @IsString()
+  accountName: string
+
+  @IsOptional()
+  @IsString()
+  accountNumber: string
+
+
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  isWillingToPayTo: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  isAcceptingToPaymentTo: boolean
+
 }
 
 export type ICreateP2pAd = P2pCreateAdDto & {
@@ -93,4 +128,17 @@ export type IGetP2pAds = PaginationType & {
 export class UpdateP2pCreateAdDto extends PartialType(P2pCreateAdDto) { }
 export type IUpdateP2pAds = UpdateP2pCreateAdDto & {
   id: Types.ObjectId
+}
+
+export type ICreateP2pAdBank = P2pAdCreateBankDto & {
+  userId: string;
+
+}
+
+export type IGetP2pAdBank = PaginationType & {
+  userId: string
+  isActive: boolean
+  isAcceptingToPaymentTo: boolean
+  isWillingToPayTo: boolean
+
 }

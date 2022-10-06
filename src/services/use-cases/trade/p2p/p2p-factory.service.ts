@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { P2pAds } from "src/core/entities/P2pAds";
+import { P2pAdBank } from "src/core/entities/P2pAdsBank";
 import { OptionalQuery } from "src/core/types/database";
 
 @Injectable()
@@ -22,7 +23,25 @@ export class P2pFactoryService {
     if (data.counterPartConditions) ads.counterPartConditions = data.counterPartConditions;
     if (data.banks) ads.banks = data.banks;
 
-    
+
     return ads;
   }
 }
+
+@Injectable()
+export class P2pAdBankFactoryService {
+  create(data: OptionalQuery<P2pAdBank>) {
+    const bank = new P2pAdBank();
+    if (data.name) bank.name = data.name;
+    if (data.code) bank.code = data.code;
+    if (data.accountName) bank.accountName = data.accountName;
+    if (data.accountNumber) bank.accountNumber = data.accountNumber;
+    if (data.isActive) bank.isActive = data.isActive;
+    if (data.isWillingToPayTo) bank.isWillingToPayTo = data.isWillingToPayTo;
+    if (data.isAcceptingToPaymentTo) bank.isAcceptingToPaymentTo = data.isAcceptingToPaymentTo;
+    if (data.userId) bank.userId = data.userId;
+    return bank;
+  }
+}
+
+
