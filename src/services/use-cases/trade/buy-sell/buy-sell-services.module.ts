@@ -5,13 +5,13 @@ import { DataServicesModule } from "src/services/data-services/data-services.mod
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
-import { UtilsServices } from "../../utils/utils.service";
+import { UtilsServicesModule } from "../../utils/utils.module";
 import { BuySellServices } from "./buy-sell-services.services";
 
 
 @Module({
-    imports: [DataServicesModule, DiscordServicesModule],
-    providers: [BuySellServices, TransactionFactoryService, NotificationFactoryService, UtilsServices, ActivityFactoryService],
+    imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
+    providers: [BuySellServices, TransactionFactoryService, NotificationFactoryService, ActivityFactoryService],
     exports: [BuySellServices, TransactionFactoryService]
 })
 

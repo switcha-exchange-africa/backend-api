@@ -22,3 +22,9 @@ export class Notification {
   updatedAt?: Date
   userId?: string
 }
+export type INotification = {
+  userId: string
+  title: string
+  message: string
+
+}

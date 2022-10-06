@@ -15,6 +15,7 @@ import { KycServicesModule } from "./use-cases/kyc/kyc-services.module";
 import { NotificationServicesModule } from "./use-cases/notification/notification.module";
 import { RatesServicesModule } from "./use-cases/rates/rates-services.module";
 import { BuySellServicesModule } from "./use-cases/trade/buy-sell/buy-sell-services.module";
+import { P2pServicesModule } from "./use-cases/trade/p2p/p2p-service.module";
 import { QuickTradeServicesModule } from "./use-cases/trade/quick-trade/quick-trade-services.module";
 import { SwapServicesModule } from "./use-cases/trade/swap/swap-services.module";
 import { TransferServicesModule } from "./use-cases/trade/transfer/transfer-services.module";
@@ -49,5 +50,6 @@ export default [
   FeeServicesModule,
   FeeWalletServicesModule,
   WithdrawalServicesModule,
-  CoinServicesModule
+  CoinServicesModule,
+  P2pServicesModule
 ]

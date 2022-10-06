@@ -8,13 +8,22 @@ import * as mongoose from "mongoose";
 import { IFeeAmountType } from 'src/core/dtos/fee';
 import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_ETH_MNEMONIC } from 'src/configuration';
 import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
+import { IUtilsNotification } from 'src/core/types/utils';
+import { NotificationFactoryService } from '../notification/notification-factory.service';
+import { ActivityFactoryService } from '../activity/activity-factory.service';
+import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
+import { InjectConnection } from '@nestjs/mongoose';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 @Injectable()
 export class UtilsServices {
   constructor(
     private data: IDataServices,
-    private http: IHttpServices
+    private http: IHttpServices,
+    private readonly notificationFactory: NotificationFactoryService,
+    private readonly activityFactory: ActivityFactoryService,
+    @InjectConnection() private readonly connection: mongoose.Connection
+
 
   ) { }
 
@@ -230,6 +239,37 @@ export class UtilsServices {
         }
       }
       return {}
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+
+  async storeActivitySendNotification(payload: IUtilsNotification) {
+    try {
+      const { activity, notification } = payload
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const [notificationFactory, activityFactory] = await Promise.all([
+            this.notificationFactory.create(notification),
+            this.activityFactory.create(activity)
+          ])
+          await Promise.all([
+            this.data.notifications.create(notificationFactory, session),
+            this.data.activities.create(activityFactory, session),
+          ])
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+
+      }
+      await databaseHelper.executeTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      return
     } catch (error) {
       throw new Error(error)
     }

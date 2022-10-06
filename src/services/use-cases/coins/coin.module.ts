@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { DataServicesModule } from "src/services/data-services/data-services.module";
-import { UtilsServices } from "../utils/utils.service";
+import { UtilsServicesModule } from "../utils/utils.module";
 import { CoinServices } from "./coin.service";
 
 @Module({
-  imports: [DataServicesModule],
-  providers: [CoinServices, UtilsServices],
+  imports: [DataServicesModule, UtilsServicesModule],
+  providers: [CoinServices],
   exports: [CoinServices],
 })
 export class CoinServicesModule { }

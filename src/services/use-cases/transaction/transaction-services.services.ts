@@ -1,7 +1,8 @@
 import { IDataServices } from "src/core/abstracts";
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IGetTransactions } from "src/core/dtos/transactions";
+import { ResponseState } from "src/core/types/response";
 
 @Injectable()
 export class TransactionServices {
@@ -51,10 +52,13 @@ export class TransactionServices {
       });
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -69,10 +73,13 @@ export class TransactionServices {
       });
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

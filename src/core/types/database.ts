@@ -9,4 +9,5 @@ export type PaginationType = {
   dateTo: string,
   sortBy: string,
   orderBy: string,
+  q?: string
 }

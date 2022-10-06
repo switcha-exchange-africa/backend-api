@@ -27,6 +27,8 @@ import { FeeWallet, FeeWalletSchema } from "./model/Fee-Wallet";
 import { UserFeatureManagement, UserFeatureManagementSchema } from "./model/UserFeatureManagement";
 import { CoinWithdrawalFee, CoinWithdrawalFeeSchema } from "./model/CoinWithdrawalFee";
 import { Coin, CoinSchema } from "./model/Coin";
+import { P2pAds, P2pAdsSchema } from "./model/P2P-Ads";
+import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
 
 @Module({
   imports: [
@@ -49,13 +51,15 @@ import { Coin, CoinSchema } from "./model/Coin";
       { name: Kyc.name, schema: KycSchema },
       { name: Fee.name, schema: FeeSchema },
       { name: FeeWallet.name, schema: FeeWalletSchema },
-      { name: UserFeatureManagement.name, schema: UserFeatureManagementSchema }, 
-      { name: CoinWithdrawalFee.name, schema: CoinWithdrawalFeeSchema }, 
-      { name: Coin.name, schema: CoinSchema }, 
+      { name: UserFeatureManagement.name, schema: UserFeatureManagementSchema },
+      { name: CoinWithdrawalFee.name, schema: CoinWithdrawalFeeSchema },
+      { name: Coin.name, schema: CoinSchema },
+      { name: P2pAds.name, schema: P2pAdsSchema },
+      { name: P2pAdBank.name, schema: P2pAdBankSchema },
 
-      
-      
-      
+
+
+
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],

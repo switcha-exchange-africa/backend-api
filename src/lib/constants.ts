@@ -116,7 +116,11 @@ export const ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api
 export const ERROR_REPORTING_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1023610072066183299/fuALGLejZV0-S4C_d-1p3ffnwW7NmBwW1O8WWxtfKLHpbOsCPUtV426mHI95OG-1QLTL'
 
 
+export const P2P_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1027354392166412331/5H5sdHBtqMq_i3aqMjXp2LKcB_rXQumsg2qGUAe3QZBcVmxYtyLI8hLg-IyagXgnd3yi'
+export const P2P_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1027354442711969792/pxed9n76jB2r0fGRsUGm8z-6sTEq8Rjq8aeQvmxc6g3bwklfMoJyorLeTmK-RgYim-2b'
+
 export interface UserIDDocumentType {
   documentType: string;
   url: string;
 }
+

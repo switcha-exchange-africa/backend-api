@@ -24,6 +24,8 @@ import { FeeWallet, FeeWalletDocument } from './model/Fee-Wallet';
 import { UserFeatureManagement, UserFeatureManagementDocument } from './model/UserFeatureManagement';
 import { CoinWithdrawalFee, CoinWithdrawalFeeDocument } from './model/CoinWithdrawalFee';
 import { Coin, CoinDocument } from './model/Coin';
+import { P2pAds, P2pAdsDocument } from './model/P2P-Ads';
+import { P2pAdBank, P2pAdBankDocument } from './model/P2P-Ad-Banks';
 
 
 @Injectable()
@@ -50,7 +52,8 @@ export class MongoDataServices
   userFeatureManagement: MongoGenericRepository<UserFeatureManagement>;
   coinWithdrawalFee: MongoGenericRepository<CoinWithdrawalFee>;
   coins: MongoGenericRepository<Coin>;
-
+  p2pAds: MongoGenericRepository<P2pAds>
+  p2pAdBanks: MongoGenericRepository<P2pAdBank>
 
   constructor(
     @InjectModel(User.name)
@@ -116,6 +119,11 @@ export class MongoDataServices
     @InjectModel(Coin.name)
     private CoinRepository: Model<CoinDocument>,
 
+    @InjectModel(P2pAds.name)
+    private P2pAdsRepository: Model<P2pAdsDocument>,
+
+    @InjectModel(P2pAdBank.name)
+    private P2pAdBanksRepository: Model<P2pAdBankDocument>,
 
   ) { }
 
@@ -142,6 +150,8 @@ export class MongoDataServices
     this.userFeatureManagement = new MongoGenericRepository<UserFeatureManagement>(this.UserFeatureManagementRepository, ['userId'])
     this.coinWithdrawalFee = new MongoGenericRepository<CoinWithdrawalFee>(this.CoinWithdrawalFeeRepository, ['userId'])
     this.coins = new MongoGenericRepository<CoinDocument>(this.CoinRepository, ['userId'])
+    this.p2pAds = new MongoGenericRepository<P2pAdsDocument>(this.P2pAdsRepository, ['userId'])
+    this.p2pAdBanks = new MongoGenericRepository<P2pAdBankDocument>(this.P2pAdBanksRepository, ['userId'])
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
