@@ -4,7 +4,8 @@ export enum Status {
   PROCESSING = 'processing',
   APPROVED = 'approved',
   DENIED = 'denied',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  EXPIRED = 'EXPIRED'
 }
 export const STATUS_LIST = [
   Status.PENDING,
@@ -12,5 +13,6 @@ export const STATUS_LIST = [
   Status.APPROVED,
   Status.DENIED,
   Status.CANCELLED,
+  Status.EXPIRED,
 
 ]

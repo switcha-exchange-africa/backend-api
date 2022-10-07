@@ -21,6 +21,7 @@ import { CoinWithdrawalFee } from '../entities/CoinWithdrawalFee';
 import { Coin } from '../entities/Coin';
 import { P2pAds } from '../entities/P2pAds';
 import { P2pAdBank } from '../entities/P2pAdsBank';
+import { P2pOrder } from '../entities/P2pOrder';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -46,6 +47,7 @@ export abstract class IDataServices {
   abstract coins: IGenericRepository<Coin>
   abstract p2pAds: IGenericRepository<P2pAds>
   abstract p2pAdBanks: IGenericRepository<P2pAdBank>
+  abstract p2pOrders: IGenericRepository<P2pOrder>
 
   
 } 

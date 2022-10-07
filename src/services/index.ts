@@ -1,5 +1,4 @@
-import { BullServiceModule } from "src/frameworks/bull/bull-services.module";
-import { EventEmitterServiceModule } from "src/frameworks/event-emitter/event-emitter-service.module";
+import { EventEmitterServiceModule } from "src/services/use-cases/event-emitter/event-emitter-service.module";
 import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.module";
 import { RedisServiceModule } from "src/frameworks/in-memory-database/redis/redis-service.module";
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
@@ -25,6 +24,7 @@ import { UtilsServicesModule } from "./use-cases/utils/utils.module";
 import { WalletServicesModule } from "./use-cases/wallet/wallet-services.module";
 import { WebhookServicesModule } from "./use-cases/webhook/webhook-services.module";
 import { WithdrawalServicesModule } from "./use-cases/withdrawal/withdrawal.module";
+import { BullServiceModule } from "./use-cases/bull/bull-services.module";
 
 export default [
   AxiosServiceModule,

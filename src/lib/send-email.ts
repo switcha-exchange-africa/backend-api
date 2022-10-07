@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NODEMAILER_EMAIL_HOST, NODEMAILER_EMAIL_PASSWORD, NODEMAILER_EMAIL_PORT, NODEMAILER_EMAIL_USER, NODEMAILER_FROM_EMAIL } from 'src/configuration';
 import * as nodemailer from 'nodemailer';
-import { EMAIL_PAYLOAD_TYPE } from 'src/frameworks/event-emitter/event/email.event';
+import { EMAIL_PAYLOAD_TYPE } from 'src/services/use-cases/event-emitter/event/email.event';
 
 
 export const sendMail = async (payload: EMAIL_PAYLOAD_TYPE) => {

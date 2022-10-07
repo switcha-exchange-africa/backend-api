@@ -1,18 +1,21 @@
+import { InjectQueue } from "@nestjs/bull";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
+import { Queue } from "bull";
 import * as mongoose from "mongoose";
 import { env } from "src/configuration";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { ActivityAction } from "src/core/dtos/activity";
-import { ICreateP2pAd, ICreateP2pAdBank, IGetP2pAdBank, IGetP2pAds, IUpdateP2pAds } from "src/core/dtos/p2p";
+import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IUpdateP2pAds, P2pOrderType } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
 import { INotification } from "src/core/entities/notification.entity";
 import { P2pAdsType } from "src/core/entities/P2pAds";
 import { ResponseState } from "src/core/types/response";
+import { Status } from "src/core/types/status";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { P2P_CHANNEL_LINK_DEVELOPMENT, P2P_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { UtilsServices } from "../../utils/utils.service";
-import { P2pAdBankFactoryService, P2pFactoryService } from "./p2p-factory.service";
+import { P2pAdBankFactoryService, P2pFactoryService, P2pOrderFactoryService } from "./p2p-factory.service";
 
 @Injectable()
 export class P2pServices {
@@ -23,7 +26,10 @@ export class P2pServices {
     private readonly utils: UtilsServices,
     private readonly p2pAdsFactory: P2pFactoryService,
     private readonly p2pAdsBankFactory: P2pAdBankFactoryService,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    private readonly orderFactory: P2pOrderFactoryService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
+    @InjectQueue('order.expiry') private orderQueue: Queue,
+
   ) { }
 
   async createAds(payload: ICreateP2pAd) {
@@ -378,5 +384,81 @@ export class P2pServices {
       })
     }
   }
+
+  async createP2pOrder(payload: ICreateP2pOrder) {
+    try {
+      //
+      const { adId, clientId, quantity, clientAccountName, clientAccountNumber, clientBankName, type, bankId } = payload
+      const ad = await this.data.p2pAds.findOne({ _id: adId })
+      if (!ad) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Ad does not exists',
+          error: null
+        })
+      }
+      const merchant = await this.data.users.findOne({ _id: ad.userId, lock: true })
+
+      if (merchant.lock) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Something wrong with Merchant account, please do not continue with this merchant',
+          error: null
+        })
+      }
+
+      const orderPayload = {
+        merchantId: String(merchant._id),
+        clientId,
+        adId,
+        type,
+        quantity,
+        bankId,
+        status: Status.PENDING,
+        clientAccountName,
+        clientAccountNumber,
+        clientBankName,
+        price: ad.price,
+        totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(quantity))
+      }
+
+      const factory = await this.orderFactory.create(orderPayload)
+      const order = await this.data.p2pOrders.create(factory)
+      // send notification to merchant
+
+      const activity: IActivity = {
+        userId: clientId,
+        action: type === P2pOrderType.SELL ? ActivityAction.P2P_SELL : ActivityAction.P2P_BUY,
+        description: `Created P2P ${type} Order`
+      }
+      const notification: INotification = {
+        userId: String(merchant._id),
+        title: `Order created`,
+        message: `Order created successfully for your ad, order id ${order.orderId}`
+      }
+      this.utils.storeActivitySendNotification({ activity, notification })
+      this.orderQueue.add({ id: order._id }, { delay: Math.abs(Number(ad.paymentTimeLimit)) * 60 })
+
+      // create queue
+      return Promise.resolve({
+        message: "Order created succesfully",
+        status: HttpStatus.OK,
+        data: payload,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+
 }
 

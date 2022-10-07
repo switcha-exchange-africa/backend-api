@@ -1,4 +1,4 @@
-import { WalletCreatedEvent } from "./../event/wallet.event";
+import { WalletCreatedEvent } from "../event/wallet.event";
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { InjectQueue } from '@nestjs/bull';

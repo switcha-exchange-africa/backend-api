@@ -1,5 +1,5 @@
 import { PartialType } from "@nestjs/mapped-types";
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { Types } from "mongoose";
 import { P2pAdsType, P2pPriceType } from "src/core/entities/P2pAds";
 import { PaginationType } from "src/core/types/database";
@@ -78,6 +78,52 @@ export class P2pCreateAdDto {
   reply: string;
 }
 
+export enum P2pOrderType {
+  BUY = 'buy',
+  SELL = 'sell'
+}
+export const P2pOrderTypeList = [
+  P2pOrderType.BUY,
+  P2pOrderType.SELL,
+
+]
+export class P2pCreateOrderDto {
+  @IsNotEmpty()
+  @IsString()
+  adId: string
+
+  @IsNotEmpty()
+  @IsString()
+  bankId: string
+
+  @IsOptional()
+  @IsString()
+  clientAccountName: string
+
+  @IsOptional()
+  @IsString()
+  clientAccountNumber: string
+
+  @IsOptional()
+  @IsString()
+  clientBankName: string
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  quantity: number
+
+
+  @IsNotEmpty()
+  @IsEnum(P2pOrderType)
+  type: P2pOrderType
+
+}
+export type ICreateP2pOrder = P2pCreateOrderDto & {
+  merchantId?: string
+  clientId: string
+
+}
 export class P2pAdCreateBankDto {
 
   @IsOptional()

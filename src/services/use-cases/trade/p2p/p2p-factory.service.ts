@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { P2pAds } from "src/core/entities/P2pAds";
 import { P2pAdBank } from "src/core/entities/P2pAdsBank";
+import { P2pOrder } from "src/core/entities/P2pOrder";
 import { OptionalQuery } from "src/core/types/database";
+import { randomFixedInteger } from "src/lib/utils";
 
 @Injectable()
 export class P2pFactoryService {
@@ -43,5 +45,31 @@ export class P2pAdBankFactoryService {
     return bank;
   }
 }
+
+
+@Injectable()
+export class P2pOrderFactoryService {
+  create(data: OptionalQuery<P2pOrder>) {
+    const order = new P2pOrder();
+    if (data.merchantId) order.merchantId = data.merchantId;
+    if (data.clientId) order.clientId = data.clientId;
+    if (data.adId) order.adId = data.adId;
+    if (data.type) order.type = data.type;
+    if (data.status) order.status = data.status;
+    if (data.quantity) order.quantity = data.quantity;
+    if (data.price) order.price = data.price;
+    if (data.totalAmount) order.totalAmount = data.totalAmount;
+    if (data.bankId) order.bankId = data.bankId;
+    if (data.clientAccountName) order.clientAccountName = data.clientAccountName;
+    if (data.clientAccountNumber) order.clientAccountNumber = data.clientAccountNumber;
+    if (data.clientBankName) order.clientAccountName = data.clientAccountName;
+    order.orderId = String(randomFixedInteger(12))
+
+    return order;
+  }
+}
+
+
+
 
 

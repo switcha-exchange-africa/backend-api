@@ -29,6 +29,7 @@ import { CoinWithdrawalFee, CoinWithdrawalFeeSchema } from "./model/CoinWithdraw
 import { Coin, CoinSchema } from "./model/Coin";
 import { P2pAds, P2pAdsSchema } from "./model/P2P-Ads";
 import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
+import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
 
 @Module({
   imports: [
@@ -56,9 +57,7 @@ import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
       { name: Coin.name, schema: CoinSchema },
       { name: P2pAds.name, schema: P2pAdsSchema },
       { name: P2pAdBank.name, schema: P2pAdBankSchema },
-
-
-
+      { name: P2pOrder.name, schema: P2pOrderSchema },
 
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),

@@ -1,4 +1,4 @@
-import { WalletFactoryService } from "./../../services/use-cases/wallet/wallet-factory.service";
+import { WalletFactoryService } from "../wallet/wallet-factory.service";
 import { WalletServicesModule } from "src/services/use-cases/wallet/wallet-services.module";
 import { DataServicesModule } from "src/services/data-services/data-services.module";
 import { WalletCreateListener } from "./listener/wallet.listener";

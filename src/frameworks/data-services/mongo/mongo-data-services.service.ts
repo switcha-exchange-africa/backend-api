@@ -26,6 +26,7 @@ import { CoinWithdrawalFee, CoinWithdrawalFeeDocument } from './model/CoinWithdr
 import { Coin, CoinDocument } from './model/Coin';
 import { P2pAds, P2pAdsDocument } from './model/P2P-Ads';
 import { P2pAdBank, P2pAdBankDocument } from './model/P2P-Ad-Banks';
+import { P2pOrder, P2pOrderDocument } from './model/P2p-Order';
 
 
 @Injectable()
@@ -54,6 +55,7 @@ export class MongoDataServices
   coins: MongoGenericRepository<Coin>;
   p2pAds: MongoGenericRepository<P2pAds>
   p2pAdBanks: MongoGenericRepository<P2pAdBank>
+  p2pOrders: MongoGenericRepository<P2pOrder>
 
   constructor(
     @InjectModel(User.name)
@@ -125,6 +127,10 @@ export class MongoDataServices
     @InjectModel(P2pAdBank.name)
     private P2pAdBanksRepository: Model<P2pAdBankDocument>,
 
+
+    @InjectModel(P2pOrder.name)
+    private P2pOrderRepository: Model<P2pOrderDocument>,
+
   ) { }
 
 
@@ -152,6 +158,7 @@ export class MongoDataServices
     this.coins = new MongoGenericRepository<CoinDocument>(this.CoinRepository, ['userId'])
     this.p2pAds = new MongoGenericRepository<P2pAdsDocument>(this.P2pAdsRepository, ['userId'])
     this.p2pAdBanks = new MongoGenericRepository<P2pAdBankDocument>(this.P2pAdBanksRepository, ['userId'])
+    this.p2pOrders = new MongoGenericRepository<P2pOrderDocument>(this.P2pOrderRepository, ['userId'])
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
