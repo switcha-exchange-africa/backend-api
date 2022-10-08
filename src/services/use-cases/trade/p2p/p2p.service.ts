@@ -21,7 +21,10 @@ import { ResponseState } from "src/core/types/response";
 import { Status } from "src/core/types/status";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { P2P_CHANNEL_LINK_DEVELOPMENT, P2P_CHANNEL_LINK_PRODUCTION, THREE_MIN_IN_SECONDS } from "src/lib/constants";
-import { compareHash, generateReference, hash, isEmpty, randomFixedInteger } from "src/lib/utils";
+import {
+  // compareHash,
+  generateReference, hash, isEmpty, randomFixedInteger
+} from "src/lib/utils";
 import { UtilsServices } from "../../utils/utils.service";
 import { P2pAdBankFactoryService, P2pFactoryService, P2pOrderFactoryService } from "./p2p-factory.service";
 import * as _ from 'lodash'
@@ -142,22 +145,21 @@ export class P2pServices {
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const factory = await this.p2pAdsFactory.create({ ...payload, counterPartConditions })
-          const [, ad] = await Promise.all([
-            this.data.wallets.update(
-              {
-                _id: wallet._id,
+          await this.data.wallets.update(
+            {
+              _id: wallet._id,
+            },
+            {
+              $inc: {
+                balance: -totalAmount,
+                lockedBalance: totalAmount,
               },
-              {
-                $inc: {
-                  balance: -totalAmount,
-                  lockedBalance: totalAmount,
-                },
-                lastWithdrawal: totalAmount,
-              },
-              session
-            ),
-            this.data.p2pAds.create(factory, session)
-          ])
+              lastWithdrawal: totalAmount,
+            },
+            session
+          )
+          const ad = await this.data.p2pAds.create(factory, session)
+
           p2pId = ad._id
 
         } catch (error) {
@@ -560,7 +562,12 @@ export class P2pServices {
       return Promise.resolve({
         message: "Order created succesfully",
         status: HttpStatus.OK,
-        data: order,
+        data: {
+          order,
+          timeInMin: Math.abs(Number(ad.paymentTimeLimit)),
+          timeInMiliSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60000,
+          timeInSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60
+        },
       });
 
     } catch (error) {
@@ -589,7 +596,7 @@ export class P2pServices {
       }
       if (order.status !== Status.PENDING) {
         return Promise.reject({
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: 'Order already processed or expired',
           error: null
@@ -620,7 +627,7 @@ export class P2pServices {
         })
       }
       const redisKey = `${order._id}-confirm-${userId}`
-
+      // await this.inMemoryServices.del(redisKey)
       if (isEmpty(code)) {
         // send code to user phone number
         const verificationCode = randomFixedInteger(6)
@@ -638,27 +645,27 @@ export class P2pServices {
 
         ])
         return {
-          message: "Order created succesfully",
+          message: "Verification code sent to you",
           status: HttpStatus.ACCEPTED,
-          data: env.isProd ? null : code,
+          data: env.isProd ? null : verificationCode,
         }
       }
       // check verification code
-      const savedCode = await this.inMemoryServices.get(redisKey);
-      if (isEmpty(savedCode)) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      // const savedCode = await this.inMemoryServices.get(redisKey);
+      // if (isEmpty(savedCode)) return Promise.reject({
+      //   status: HttpStatus.BAD_REQUEST,
+      //   state: ResponseState.ERROR,
+      //   message: 'Code is incorrect, invalid or has expired',
+      //   error: null,
+      // })
 
-      const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      if (!correctCode) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      // const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
+      // if (!correctCode) return Promise.reject({
+      //   status: HttpStatus.BAD_REQUEST,
+      //   state: ResponseState.ERROR,
+      //   message: 'Code is incorrect, invalid or has expired',
+      //   error: null,
+      // })
 
       if (ad.type === P2pAdsType.BUY) {
         // order client id must be the logged in user
@@ -671,6 +678,7 @@ export class P2pServices {
       return this.processMerchantP2pOrder({
         merchant,
         order,
+        redisKey,
         ad
       })
       // update order status
@@ -861,19 +869,52 @@ export class P2pServices {
   async processMerchantP2pOrder(payload: {
     merchant: mongoose.HydratedDocument<User>,
     order: mongoose.HydratedDocument<P2pOrder>,
-    ad: mongoose.HydratedDocument<P2pAds>
+    ad: mongoose.HydratedDocument<P2pAds>,
+    redisKey: string
   }) {
     try {
-      const { merchant, order, ad } = payload
+      const { merchant, order, ad, redisKey } = payload
       const { coin } = ad
+      console.log("MERCHANT", merchant)
+      console.log("ORDER", order)
+      console.log("ad", ad)
 
-      const merchantWallet = await this.data.wallets.findOne({ coin, userId: merchant._id })
+      const merchantWallet = await this.data.wallets.findOne({ coin, userId: String(merchant._id) })
       const buyer = await this.data.users.findOne({ _id: order.clientId })
-      const buyerWallet = await this.data.wallets.findOne({ userId: buyer._id, coin })
-
+      if (!buyer) {
+        Logger.error('Buyer does not exists')
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          error: null,
+          message: 'Buyer does not exists',
+          state: ResponseState.ERROR
+        })
+      }
+      console.log("BUYER", buyer)
+      console.log("QUERY PARAMS", { userId: buyer._id, coin })
+      const buyerWallet = await this.data.wallets.findOne({ userId: String(buyer._id), coin })
+      if (!buyerWallet) {
+        Logger.error('Buyer wallet does not exists')
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          error: null,
+          message: 'Buyer wallet does not exists',
+          state: ResponseState.ERROR
+        })
+      }
       const { fee, amountAfterFee } = await this.calculateP2pFees({ feature: 'p2p-buy', amount: order.quantity })
       const buyerAmount = amountAfterFee
       const feeWallet = await this.data.feeWallets.findOne({ coin: ad.coin })
+      if (!feeWallet) {
+        Logger.error("FEE WALLET DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          error: null,
+          message: 'Service unavailable'
+        })
+      }
+      console.log("FEE WALLET", feeWallet)
+      console.log("BUYER WALLET ID", buyerWallet._id)
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const generalTransactionReference = generateReference('general')
@@ -901,7 +942,11 @@ export class P2pServices {
               lockedBalance: -order.quantity
             }
           }, session)
-          
+          console.log(generalTransactionReference)
+          console.log(creditedBuyerWallet)
+          console.log(creditedFeeWallet)
+          console.log(deductAdTotalAmount)
+
 
           const merchantTransactionPayload = {
             userId: String(merchant._id),
@@ -990,35 +1035,36 @@ export class P2pServices {
 
 
         } catch (error) {
+          Logger.error(error)
           throw new Error(error)
         }
       }
 
 
-      await Promise.all([
-        databaseHelper.executeTransaction(
-          atomicTransaction,
-          this.connection
-        ),
-        this.discord.inHouseNotification({
-          title: `Order Confirmed  :- ${env.env} environment`,
-          message: `
+      await databaseHelper.executeTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+      await this.discord.inHouseNotification({
+        title: `Order Confirmed  :- ${env.env} environment`,
+        message: `
 
             Order ID:- ${order._id}
 
-            Confirmed By:- ${merchant.username}  -${merchant.email}
+            Confirmed By:- ${merchant.username ? merchant.username : merchant.email }
 
             Amount Sold:- ${order.quantity} ${coin}
 
             Amount Transferred To Buyer:- ${buyerAmount} ${coin}
 
-            Buyer :- ${merchant.username}
+            Buyer :- ${merchant.username ? merchant.username : buyer.email}
 
             Fee :- ${fee}
       `,
-          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-        }),
-      ])
+        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+      })
+      await this.inMemoryServices.del(redisKey)
 
       return {
         message: "Order confirmed succesfully",
@@ -1026,6 +1072,7 @@ export class P2pServices {
         data: {},
       }
     } catch (error) {
+      Logger.error(error)
       throw new Error(error)
     }
   }

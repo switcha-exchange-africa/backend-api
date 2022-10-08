@@ -17,7 +17,6 @@ export class Transaction {
   @Prop({
     type: Types.ObjectId,
     ref: "Wallet",
-    required: true,
   })
   walletId: string;
 
