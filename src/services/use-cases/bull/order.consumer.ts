@@ -33,13 +33,15 @@ export class OrderExpiryTaskConsumer {
   async orderExpiry(job: Job) {
     try {
       const { id } = job.data
+      console.log("ORDER ID", id)
       const order = await this.data.p2pOrders.findOne({ _id: id })
-      const ad = await this.data.p2pAds.findOne({ _id: order.adId })
-
       if (!order) {
         Logger.warn(`@task-queue`, 'P2p Order does not exists')
         return
       }
+      const ad = await this.data.p2pAds.findOne({ _id: order.adId })
+
+
       if (order.status !== Status.PENDING) {
         Logger.warn(`@task-queue`, 'P2p Order not pending')
         return
@@ -66,19 +68,20 @@ export class OrderExpiryTaskConsumer {
             this.notificationFactory.create(clientNotification),
 
           ])
-          await Promise.all([
-            this.data.p2pOrders.update({ _id: id }, {
-              completionTime: new Date(),
-              status: Status.EXPIRED,
-            }, session),
-            this.data.p2pAds.update({ _id: ad._id }, {
-              $inc: {
-                totalAmount: order.quantity
-              }
-            }, session),
-            this.data.notifications.create(merchantNotificationFactory, session),
-            this.data.notifications.create(clientNotificationFactory, session),
-          ])
+          await this.data.p2pOrders.update({ _id: id }, {
+            completionTime: new Date(),
+            status: Status.EXPIRED,
+          }, session)
+          await this.data.p2pAds.update({ _id: ad._id }, {
+            $inc: {
+              totalAmount: order.quantity
+            }
+          }, session)
+          await this.data.notifications.create(merchantNotificationFactory, session)
+          await this.data.notifications.create(clientNotificationFactory, session)
+          // await Promise.all([
+
+          // ])
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
             await this.data.wallets.update(
@@ -100,7 +103,7 @@ export class OrderExpiryTaskConsumer {
 
       }
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
@@ -110,6 +113,7 @@ export class OrderExpiryTaskConsumer {
 
     } catch (e) {
       Logger.error(e)
+      throw new Error()
     }
 
   }

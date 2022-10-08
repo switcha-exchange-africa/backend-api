@@ -33,7 +33,6 @@ export class P2pOrder {
   @Prop({
     type: Types.ObjectId,
     ref: "Wallet",
-    required: true
   })
   clientWalletId: string
 

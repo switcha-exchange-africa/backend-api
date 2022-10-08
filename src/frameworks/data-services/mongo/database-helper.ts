@@ -82,32 +82,63 @@ const databaseHelper = {
   },
   executeTransactionWithStartTransaction: async (transactionProcess: any, connection: mongoose.Connection) => {
     const session = await connection.startSession();
-    // try {
-    session.withTransaction(async () => {
-      await transactionProcess(session);  // performs transaction
-      Logger.log("-------- Transaction Commited  ----------")
+    try {
+      // try {
 
-    })
-    // await session.startTransaction()
-    // await transactionProcess(session);  // performs transaction
+      await session.withTransaction(async () => {
+        await transactionProcess(session);  // performs transaction
 
-    // // commit transaction
-    // await session.commitTransaction(); // Uses write concern set at transaction start.
-    // Logger.log("-------- runTransactionWithRetry function ----------")
-    // Logger.log("Transaction commited.............")
-    // // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
+      })
+    } catch (error) {
+      Logger.error("--- ERROR FROM TRANSACTION --------")
+      Logger.error(error)
+      Logger.error(error.type)
+      Logger.error(error.errorLabels)
 
-    // } catch (error: any) {
-    //   await session.abortTransaction();
+      // // If we have no error labels rethrow the error
+      // if (error.errorLabels == null) {
+      //   throw error;
+      // }
 
-    //   throw new Error(error);
-    // } finally {
-    //   session.endSession();
-    //   // connection.close()
-    //   // .then(() => {
-    //   //   console.log("Connection Closed")
-    //   // })
-    // }
+      // Our error contains UnknownTransactionCommitResult label
+      if (error && error.errorLabels && error.errorLabels.includes("UnknownTransactionCommitResult")) {
+        // Retry the transaction commit
+        var exception = await retryUnknownTransactionCommit(session);
+        // No error, commit as successful, break the while loop
+        // Error has no errorLabels, rethrow the error
+        if (exception.errorLabels == null) throw exception;
+
+        // Error labels include TransientTransactionError label
+        // Start while loop again, creating a new transaction
+
+
+        // Rethrow the error
+        throw exception;
+      }
+      if (error && error.errorLabels && error.errorLabels.includes("TransientTransactionError")) {
+        // Retry the transaction commit
+        var exception = await retryUnknownTransactionCommit(session);
+        // No error, commit as successful, break the while loop
+        // Error has no errorLabels, rethrow the error
+        if (exception.errorLabels == null) throw exception;
+
+        // Error labels include TransientTransactionError label
+        // Start while loop again, creating a new transaction
+
+
+        // Rethrow the error
+        throw exception;
+      }
+      // await session.abortTransaction();
+      // await session.endSession();
+
+      // const exception2 = await retryUnknownTransactionCommit(session)
+      return Promise.reject(error)
+    } finally {
+      await session.endSession();
+      // await connection.close();
+    }
+
 
   },
   executeTransactionII: async (transactionProcess: any) => {
@@ -151,6 +182,31 @@ const databaseHelper = {
     }
   }
 
+}
+
+
+function retryUnknownTransactionCommit(session) {
+  while (true) {
+    try {
+      // Attempt to commit the transaction
+      session.commitTransaction();
+      break;
+    } catch (err) {
+      if (err.errorLabels != null
+        && err.errorLabels.includes("UnknownTransactionCommitResult")) {
+        // Keep retrying the transaction
+        continue;
+      }
+      if (err.errorLabels != null
+        && err.errorLabels.includes("TransientTransactionError")) {
+        // Keep retrying the transaction
+        continue;
+      }
+      // The transaction cannot be retried, 
+      // return the exception
+      return err;
+    }
+  }
 }
 
 export default databaseHelper

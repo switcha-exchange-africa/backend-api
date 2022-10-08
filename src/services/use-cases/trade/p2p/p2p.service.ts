@@ -1,13 +1,16 @@
-// import { InjectQueue } from "@nestjs/bull";
+import { InjectQueue } from "@nestjs/bull";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
-// import { Queue } from "bull";
+import { Queue } from "bull";
 import * as mongoose from "mongoose";
 import { env } from "src/configuration";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
-import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType } from "src/core/dtos/p2p";
+import {
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
+  // P2pOrderType
+} from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
 import { INotification } from "src/core/entities/notification.entity";
 import { P2pAds, P2pAdsType } from "src/core/entities/P2pAds";
@@ -40,7 +43,7 @@ export class P2pServices {
     private readonly transactionFactory: TransactionFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
     @InjectConnection() private readonly connection: mongoose.Connection,
-    // @InjectQueue('order.expiry') private orderQueue: Queue,
+    @InjectQueue('order.expiry') private orderQueue: Queue,
 
   ) { }
 
@@ -425,12 +428,20 @@ export class P2pServices {
           error: null
         })
       }
-      const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })
+      const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
+      if (quantity > ad.totalAmount) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Ad has been completed',
+          error: null
+        })
+      }
       if (quantity < ad.minLimit || quantity > ad.maxLimit) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
-          message: 'Quantity is more than limit',
+          message: 'Quantity is more  or less than limit',
           error: null
         })
       }
@@ -440,6 +451,14 @@ export class P2pServices {
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: 'Something wrong with Merchant account, please do not continue with this merchant',
+          error: null
+        })
+      }
+      if (String(merchant._id) === clientId) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Merchant cannot interact with his ad`,
           error: null
         })
       }
@@ -466,6 +485,7 @@ export class P2pServices {
           })
         }
       }
+      
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
 
@@ -481,17 +501,18 @@ export class P2pServices {
             clientAccountNumber,
             clientBankName,
             price: ad.price,
-            clientWalletId: String(clientWallet._id),
+            clientWalletId: clientWallet ? String(clientWallet._id) : null,
             totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(quantity))
           }
 
           const factory = await this.orderFactory.create(orderPayload)
           order = await this.data.p2pOrders.create(factory, session)
+
           await this.data.p2pAds.update({ _id: ad._id }, {
             $inc: {
               totalAmount: -quantity
             }
-          }, session)
+          }, session) // deduct quantity from ad
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
             await this.data.wallets.update(
@@ -503,20 +524,22 @@ export class P2pServices {
             }, session)
 
           }
+
+
+
         }
         catch (error) {
           Logger.error(error);
-          throw new Error(error);
+          return Promise.reject(error)
         }
       }
 
-      await databaseHelper.executeTransaction(
+      // try{}
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
-      // send notification to merchant
-      // deduct amount from ad
-
+      // create queue
       const activity: IActivity = {
         userId: clientId,
         action: type === P2pOrderType.SELL ? ActivityAction.P2P_SELL : ActivityAction.P2P_BUY,
@@ -528,13 +551,17 @@ export class P2pServices {
         message: `Order created successfully for your ad, order id ${order.orderId}`
       }
       await this.utils.storeActivitySendNotification({ activity, notification })
-      // this.orderQueue.add({ id: order._id }, { delay: Math.abs(Number(ad.paymentTimeLimit)) * 60 })
 
-      // create queue
+      await this.orderQueue.add({ id: order._id }, {
+        // delay: Math.abs(Number(ad.paymentTimeLimit)) * 60
+        delay: 2 * 60000
+      })
+
+
       return Promise.resolve({
         message: "Order created succesfully",
         status: HttpStatus.OK,
-        data: payload,
+        data: order,
       });
 
     } catch (error) {
@@ -558,6 +585,14 @@ export class P2pServices {
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
           message: 'Order does not exists',
+          error: null
+        })
+      }
+      if (order.status !== Status.PENDING) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Order already processed or expired',
           error: null
         })
       }
@@ -995,6 +1030,33 @@ export class P2pServices {
       }
     } catch (error) {
       throw new Error(error)
+    }
+  }
+
+  async getSingleP2pOrder(id: mongoose.Types.ObjectId) {
+    try {
+      const data = await this.data.p2pOrders.findOne({ _id: id })
+      if (!data) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Order does not exists',
+          error: null
+        })
+      }
+      return Promise.resolve({
+        message: "Order retrieved  succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

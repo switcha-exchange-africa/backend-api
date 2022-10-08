@@ -65,9 +65,8 @@ export class P2pOrderFactoryService {
     if (data.clientBankName) order.clientAccountName = data.clientAccountName;
     if (data.clientWalletId) order.clientWalletId = data.clientWalletId;
 
-    
-    order.orderId = String(randomFixedInteger(12))
 
+    order.orderId = String(randomFixedInteger(12))
     return order;
   }
 }

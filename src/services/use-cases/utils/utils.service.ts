@@ -245,6 +245,9 @@ export class UtilsServices {
   }
 
 
+  /**
+   * Promise.all affects mongo db transactions
+   */
   async storeActivitySendNotification(payload: IUtilsNotification) {
     try {
       const { activity, notification } = payload
@@ -254,11 +257,8 @@ export class UtilsServices {
             this.notificationFactory.create(notification),
             this.activityFactory.create(activity)
           ])
-          await Promise.all([
-            this.data.notifications.create(notificationFactory, session),
-            this.data.activities.create(activityFactory, session),
-          ])
-
+          await this.data.notifications.create(notificationFactory, session)
+          await this.data.activities.create(activityFactory, session)
         } catch (error) {
           Logger.error(error);
           throw new Error(error);
