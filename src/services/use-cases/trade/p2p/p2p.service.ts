@@ -79,16 +79,16 @@ export class P2pServices {
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
 
-      const adExists = await this.data.p2pAds.findOne({ userId, type, coin }) // check if ad exists
-      if (adExists) {
-        await this.editAds({ id: adExists._id, ...payload })
-        return {
-          message: `Buy ads added processing`,
-          data: payload,
-          status: HttpStatus.ACCEPTED,
-          state: ResponseState.SUCCESS,
-        };
-      }
+      // const adExists = await this.data.p2pAds.findOne({ userId, type, coin }) // check if ad exists
+      // if (adExists) {
+      //   await this.editAds({ id: adExists._id, ...payload })
+      //   return {
+      //     message: `Buy ads added processing`,
+      //     data: payload,
+      //     status: HttpStatus.ACCEPTED,
+      //     state: ResponseState.SUCCESS,
+      //   };
+      // }
       const activity: IActivity = {
         userId,
         action: type === P2pAdsType.SELL ? ActivityAction.P2P_SELL_AD : ActivityAction.P2P_BUY_AD,
@@ -147,9 +147,9 @@ export class P2pServices {
               {
                 $inc: {
                   balance: -totalAmount,
+                  lockedBalance: totalAmount,
                 },
                 lastWithdrawal: totalAmount,
-                lockedBalance: totalAmount,
               },
               session
             ),
@@ -166,7 +166,7 @@ export class P2pServices {
 
 
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),

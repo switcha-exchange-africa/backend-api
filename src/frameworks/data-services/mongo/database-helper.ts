@@ -66,17 +66,48 @@ const databaseHelper = {
       Logger.log("-------- runTransactionWithRetry function ----------")
       Logger.log("Transaction commited.............")
       // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
-      connection.close()
-        .then(() => {
-          console.log("Connection Closed")
-        })
+
     } catch (error: any) {
       await session.abortTransaction();
 
       throw new Error(error);
     } finally {
-      await session.endSession();
+      session.endSession();
+      // connection.close()
+      // .then(() => {
+      //   console.log("Connection Closed")
+      // })
     }
+
+  },
+  executeTransactionWithStartTransaction: async (transactionProcess: any, connection: mongoose.Connection) => {
+    const session = await connection.startSession();
+    // try {
+    session.withTransaction(async () => {
+      await transactionProcess(session);  // performs transaction
+      Logger.log("-------- Transaction Commited  ----------")
+
+    })
+    // await session.startTransaction()
+    // await transactionProcess(session);  // performs transaction
+
+    // // commit transaction
+    // await session.commitTransaction(); // Uses write concern set at transaction start.
+    // Logger.log("-------- runTransactionWithRetry function ----------")
+    // Logger.log("Transaction commited.............")
+    // // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
+
+    // } catch (error: any) {
+    //   await session.abortTransaction();
+
+    //   throw new Error(error);
+    // } finally {
+    //   session.endSession();
+    //   // connection.close()
+    //   // .then(() => {
+    //   //   console.log("Connection Closed")
+    //   // })
+    // }
 
   },
   executeTransactionII: async (transactionProcess: any) => {

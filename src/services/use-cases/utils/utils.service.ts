@@ -265,7 +265,7 @@ export class UtilsServices {
         }
 
       }
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
