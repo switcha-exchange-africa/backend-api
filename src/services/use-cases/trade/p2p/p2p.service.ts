@@ -61,7 +61,7 @@ export class P2pServices {
       const feePercent = _.divide(getFee.amountInPercentage, 100)
       const fee = _.floor(_.multiply(feePercent, amount), 3)
 
-      const amountAfterFee = _.subtract(amount, fee)
+      const amountAfterFee = Math.abs(Number(_.subtract(amount, fee)))
       return { fee, amountAfterFee }
 
     } catch (error) {
@@ -430,15 +430,24 @@ export class P2pServices {
           error: null
         })
       }
+      if (ad.status === Status.FILLED) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Ad has been filled',
+          error: null
+        })
+      }
       const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
       if (quantity > ad.totalAmount) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
-          message: 'Ad has been completed',
+          message: `Not enough ${ad.coin} in ad`,
           error: null
         })
       }
+
       if (quantity < ad.minLimit || quantity > ad.maxLimit) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
@@ -702,25 +711,51 @@ export class P2pServices {
     try {
 
       const { client, order, ad } = payload
-      const clientWallet = await this.data.wallets.findOne({ coin: ad.coin, userId: client._id })
+      const clientWallet = await this.data.wallets.findOne({ coin: ad.coin, userId: String(client._id) })
+      if (!clientWallet) {
+        Logger.error('Client wallet does not exist')
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null,
+          message: 'Client wallet does not exist'
+        })
+      }
 
-      const merchantWallet = await this.data.wallets.findOne({ coin: ad.coin, userId: ad.userId }, null, { populate: ['userId'] })
+      const buyerWallet = await this.data.wallets.findOne({ coin: ad.coin, userId: String((ad.userId as unknown as mongoose.HydratedDocument<User>)._id) }, null, { populate: ['userId'] })
+      if (!buyerWallet) {
+        Logger.error('Buyer wallet does not exist')
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null,
+          message: 'Buyer wallet does not exist'
+        })
+      }
       const { fee, amountAfterFee } = await this.calculateP2pFees({ feature: 'p2p-sell', amount: order.quantity })
 
-      const merchantAmount = amountAfterFee
-      const merchant = merchantWallet?.userId! as unknown as User
+      const buyerAmount: number = amountAfterFee
+      const buyer = buyerWallet?.userId! as unknown as User
 
       const feeWallet = await this.data.feeWallets.findOne({ coin: ad.coin })
-
+      if (!feeWallet) {
+        Logger.error('Fee Wallet not set')
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          error: null,
+          message: 'Service unavailable'
+        })
+      }
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const generalTransactionReference = generateReference('general')
-          const creditedMerchantWallet = await this.data.wallets.update(
-            { _id: merchantWallet._id }, {
+          const creditedBuyerWallet = await this.data.wallets.update(
+            { _id: buyerWallet._id }, {
             $inc: {
-              balance: merchantAmount
+              balance: buyerAmount
             },
-            lastDeposit: merchantAmount
+            lastDeposit: buyerAmount
           }, session)// credit merchant wallet
           const creditedFeeWallet = await this.data.feeWallets.update(
             { _id: feeWallet._id }, {
@@ -747,7 +782,7 @@ export class P2pServices {
             amount: order.quantity,
             signedAmount: -order.quantity,
             type: TRANSACTION_TYPE.DEBIT,
-            description: `Sold ${order.quantity} ${ad.coin} to ${merchant.username}`,
+            description: `Sold ${order.quantity} ${ad.coin} to ${buyer.username}`,
             status: TRANSACTION_STATUS.COMPLETED,
             balanceAfter: clientWallet?.balance,
             balanceBefore: _.add(clientWallet.balance, clientWallet.lockedBalance) || 0,
@@ -760,15 +795,15 @@ export class P2pServices {
           }
           const merchantTransactionPayload = {
             userId: ad.userId,
-            walletId: String(merchantWallet._id),
+            walletId: String(buyerWallet._id),
             currency: ad.coin as CoinType,
-            amount: merchantAmount,
-            signedAmount: merchantAmount,
+            amount: buyerAmount,
+            signedAmount: buyerAmount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Recieved ${merchantAmount} ${ad.coin} from ${client.username}`,
+            description: `Recieved ${buyerAmount} ${ad.coin} from ${client.username}`,
             status: TRANSACTION_STATUS.COMPLETED,
-            balanceAfter: creditedMerchantWallet.balance,
-            balanceBefore: merchantWallet?.balance,
+            balanceAfter: creditedBuyerWallet.balance,
+            balanceBefore: buyerWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.P2P,
             generalTransactionReference,
@@ -778,7 +813,7 @@ export class P2pServices {
           }
 
           const feeTransactionPayload = {
-            feeWalletId: String(merchantWallet._id),
+            feeWalletId: String(buyerWallet._id),
             currency: ad.coin as CoinType,
             amount: fee,
             signedAmount: fee,
@@ -801,7 +836,7 @@ export class P2pServices {
             message: clientTransactionPayload.description
           }
           const merchantNotificationPayload: INotification = {
-            userId: merchantWallet.userId,
+            userId: buyerWallet.userId,
             title: `Order confirmed #${order._id}`,
             message: merchantTransactionPayload.description
           }
@@ -831,31 +866,28 @@ export class P2pServices {
         }
       }
 
-      await Promise.all([
-        databaseHelper.executeTransaction(
-          atomicTransaction,
-          this.connection
-        ),
-        this.discord.inHouseNotification({
-          title: `Order Confirmed  :- ${env.env} environment`,
-          message: `
+      await databaseHelper.executeTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      await this.discord.inHouseNotification({
+        title: `Order Confirmed  :- ${env.env} environment`,
+        message: `
 
-            Order ID:- ${order._id}
+          Order ID:- ${order._id}
 
-            Confirmed By:- ${client.username}  -${client.email}
+          Confirmed By:- ${client.username ? client.username : client.email}  -${client.email}
 
-            Amount Sold:- ${order.quantity} ${ad.coin}
+          Amount Sold:- ${order.quantity} ${ad.coin}
 
-            Amount Transferred To Merchant:- ${merchantAmount} ${ad.coin}
+          Amount Transferred To Merchant:- ${buyerAmount} ${ad.coin}
 
-            Merchant :- ${merchant.username}
+          Buyer :- ${buyer.username ? buyer.username : buyer.email}
 
-            Fee :- ${fee}
-      `,
-          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-        }),
-      ])
-
+          Fee :- ${fee} ${feeWallet.coin}
+    `,
+        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+      })
       return {
         message: "Order confirmed succesfully",
         status: HttpStatus.OK,
@@ -875,9 +907,7 @@ export class P2pServices {
     try {
       const { merchant, order, ad, redisKey } = payload
       const { coin } = ad
-      console.log("MERCHANT", merchant)
-      console.log("ORDER", order)
-      console.log("ad", ad)
+
 
       const merchantWallet = await this.data.wallets.findOne({ coin, userId: String(merchant._id) })
       const buyer = await this.data.users.findOne({ _id: order.clientId })
@@ -890,8 +920,7 @@ export class P2pServices {
           state: ResponseState.ERROR
         })
       }
-      console.log("BUYER", buyer)
-      console.log("QUERY PARAMS", { userId: buyer._id, coin })
+
       const buyerWallet = await this.data.wallets.findOne({ userId: String(buyer._id), coin })
       if (!buyerWallet) {
         Logger.error('Buyer wallet does not exists')
@@ -913,8 +942,7 @@ export class P2pServices {
           message: 'Service unavailable'
         })
       }
-      console.log("FEE WALLET", feeWallet)
-      console.log("BUYER WALLET ID", buyerWallet._id)
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const generalTransactionReference = generateReference('general')
@@ -1052,15 +1080,15 @@ export class P2pServices {
 
             Order ID:- ${order._id}
 
-            Confirmed By:- ${merchant.username ? merchant.username : merchant.email }
+            Confirmed By:- ${merchant.username ? merchant.username : merchant.email}
 
             Amount Sold:- ${order.quantity} ${coin}
 
             Amount Transferred To Buyer:- ${buyerAmount} ${coin}
 
-            Buyer :- ${merchant.username ? merchant.username : buyer.email}
+            Buyer :- ${buyer.username ? buyer.username : buyer.email}
 
-            Fee :- ${fee}
+            Fee :- ${fee} ${feeWallet.coin}
       `,
         link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
       })
