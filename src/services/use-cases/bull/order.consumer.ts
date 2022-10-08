@@ -8,6 +8,7 @@ import * as mongoose from "mongoose";
 import { NotificationFactoryService } from 'src/services/use-cases/notification/notification-factory.service';
 import { InjectConnection } from '@nestjs/mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
+import { P2pAdsType } from 'src/core/entities/P2pAds';
 
 
 
@@ -33,6 +34,7 @@ export class OrderExpiryTaskConsumer {
     try {
       const { id } = job.data
       const order = await this.data.p2pOrders.findOne({ _id: id })
+      const ad = await this.data.p2pAds.findOne({ _id: order.adId })
 
       if (!order) {
         Logger.warn(`@task-queue`, 'P2p Order does not exists')
@@ -42,7 +44,10 @@ export class OrderExpiryTaskConsumer {
         Logger.warn(`@task-queue`, 'P2p Order not pending')
         return
       }
-
+      if (!ad) {
+        Logger.warn(`@task-queue`, 'P2p Ad does not exists')
+        return
+      }
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
 
@@ -66,16 +71,27 @@ export class OrderExpiryTaskConsumer {
               completionTime: new Date(),
               status: Status.EXPIRED,
             }, session),
-
+            this.data.p2pAds.update({ _id: ad._id }, {
+              $inc: {
+                totalAmount: order.quantity
+              }
+            }, session),
             this.data.notifications.create(merchantNotificationFactory, session),
             this.data.notifications.create(clientNotificationFactory, session),
           ])
+          if (ad.type === P2pAdsType.BUY) {
+            // check if seller has wallet and enough coin
+            await this.data.wallets.update(
+              { userId: order.clientId, coin: ad.coin }, {
+              $inc: {
+                balance: order.quantity,
+                lockedBalance: -order.quantity
+              }
+            }, session)
 
-          await databaseHelper.executeTransaction(
-            atomicTransaction,
-            this.connection
-          ),
-          Logger.log('Task Queue completed')
+          }
+
+
 
         } catch (error) {
           Logger.error(error);
@@ -83,6 +99,13 @@ export class OrderExpiryTaskConsumer {
         }
 
       }
+
+      await databaseHelper.executeTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      Logger.log('Task Queue completed')
+
 
 
     } catch (e) {

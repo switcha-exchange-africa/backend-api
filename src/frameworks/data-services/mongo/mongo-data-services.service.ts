@@ -158,7 +158,7 @@ export class MongoDataServices
     this.coins = new MongoGenericRepository<CoinDocument>(this.CoinRepository, ['userId'])
     this.p2pAds = new MongoGenericRepository<P2pAdsDocument>(this.P2pAdsRepository, ['userId'])
     this.p2pAdBanks = new MongoGenericRepository<P2pAdBankDocument>(this.P2pAdBanksRepository, ['userId'])
-    this.p2pOrders = new MongoGenericRepository<P2pOrderDocument>(this.P2pOrderRepository, ['userId'])
+    this.p2pOrders = new MongoGenericRepository<P2pOrderDocument>(this.P2pOrderRepository)
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

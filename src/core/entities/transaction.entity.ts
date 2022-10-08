@@ -87,5 +87,8 @@ export class Transaction {
   senderAddress: string
   reference: string
   generalTransactionReference: string
+  p2pAdId: string;
+  p2pOrderId: string;
+  feeWalletId: string
 }
 

@@ -2,6 +2,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, now, Document } from "mongoose";
 import { CounterpartConditionsType, P2pAdsList, P2pAdsType, P2pPriceType, P2pPriceTypeList } from "src/core/entities/P2pAds";
+import { Status, STATUS_LIST } from "src/core/types/status";
 
 export type P2pAdsDocument = P2pAds & Document;
 
@@ -35,6 +36,8 @@ export class P2pAds {
   @Prop({ enum: P2pAdsList })
   type: P2pAdsType;
 
+  @Prop({ enum: STATUS_LIST, default: Status.PENDING })
+  status: Status
 
   @Prop({ enum: P2pPriceTypeList })
   priceType: P2pPriceType;

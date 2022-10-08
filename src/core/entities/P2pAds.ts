@@ -1,3 +1,5 @@
+import { Status } from "../types/status"
+
 export enum P2pAdsType {
   BUY = 'buy',
   SELL = 'sell'
@@ -36,6 +38,7 @@ export class P2pAds {
   counterPartConditions: CounterpartConditionsType
   banks: string[];
   isPublished: boolean
+  status: Status
 }
 
 

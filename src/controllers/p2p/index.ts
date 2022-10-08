@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { Request, Response } from "express";
-import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IUpdateP2pAds, P2pAdCreateBankDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
@@ -209,4 +209,34 @@ export class P2pController {
       return res.status(error.status || 500).json(error);
     }
   }
+
+
+  @Post('/p2p/order/:id')
+  @UseGuards(StrictAuthGuard)
+  async confirmP2pOrder(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: P2pConfirmOrderDto,
+    @Param() params: FindByIdDto
+
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user?.email
+      const { id } = params
+      const payload: IP2pConfirmOrder = {
+        ...body, userId, orderId: id, email
+      }
+
+      const response = await this.services.confirmP2pOrder(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+
+
+
 }

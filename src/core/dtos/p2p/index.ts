@@ -92,7 +92,7 @@ export class P2pCreateOrderDto {
   @IsString()
   adId: string
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   bankId: string
 
@@ -187,4 +187,14 @@ export type IGetP2pAdBank = PaginationType & {
   isAcceptingToPaymentTo: boolean
   isWillingToPayTo: boolean
 
+}
+export class P2pConfirmOrderDto {
+  @IsOptional()
+  @IsString()
+  public readonly code: string
+}
+export type IP2pConfirmOrder = P2pConfirmOrderDto & {
+  userId: string
+  email?: string
+  orderId: Types.ObjectId
 }

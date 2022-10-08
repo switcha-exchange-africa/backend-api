@@ -30,6 +30,13 @@ export class P2pOrder {
   })
   adId: string;
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: "Wallet",
+    required: true
+  })
+  clientWalletId: string
+
   @Prop({ enum: P2pOrderTypeList })
   type: P2pOrderType;
 

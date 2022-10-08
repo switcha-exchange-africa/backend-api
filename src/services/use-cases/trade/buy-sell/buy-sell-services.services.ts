@@ -240,8 +240,7 @@ export class BuySellServices {
             reference: generateReference('debit'),
           };
           const txFeeCreditPayload = {
-            userId,
-            walletId: String(creditFeeWallet?._id),
+            feeWalletId: String(creditFeeWallet?._id),
             currency: creditCoin,
             amount: fee,
             signedAmount: fee,
@@ -553,8 +552,7 @@ export class BuySellServices {
           };
 
           const txFeeCreditPayload: OptionalQuery<Transaction> = {
-            userId,
-            walletId: creditedFeeWallet?._id,
+            feeWalletId: creditedFeeWallet?._id,
             currency: debitCoin,
             amount: fee,
             signedAmount: fee,

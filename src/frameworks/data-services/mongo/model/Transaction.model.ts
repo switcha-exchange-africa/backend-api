@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { Types } from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_STATUS, TRANSACTION_STATUS_LIST, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
-import { COIN_TYPES_LIST ,CoinType} from "src/core/types/coin";
+import { COIN_TYPES_LIST, CoinType } from "src/core/types/coin";
 
 export type TransactionDocument = Transaction & Document;
 
@@ -11,7 +11,6 @@ export class Transaction {
   @Prop({
     type: Types.ObjectId,
     ref: "User",
-    required: true,
   })
   userId: string;
 
@@ -22,6 +21,24 @@ export class Transaction {
   })
   walletId: string;
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: "FeeWallet",
+    required: true,
+  })
+  feeWalletId: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: "P2pAds",
+  })
+  p2pAdId: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: "P2pOrder",
+  })
+  p2pOrderId: string;
 
   @Prop({ enum: COIN_TYPES_LIST })
   currency: CoinType;

@@ -46,11 +46,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
-  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: { sort?: 'desc' | 'asc' }): Promise<mongoose.HydratedDocument<T>>  {
+  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: {
+    sort?: 'desc' | 'asc',
+    populate?: any
+  }): Promise<mongoose.HydratedDocument<T>> {
     try {
+      const populated = !isEmpty(options) ? options.populate || [] : this._populateOnFind
       const result = await this._repository
         .findOne(key)
-        .populate(this._populateOnFind)
+        .populate(populated)
         .sort(options && options.sort === 'desc' ? { createdAt: -1 } : { createdAt: 1 })
         .session(session || null);
 

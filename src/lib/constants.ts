@@ -50,6 +50,7 @@ export type JWT_USER_PAYLOAD_TYPE = {
 };
 export const JWT_EXPIRY_TIME: number = 5;
 export const SIGNUP_CODE_EXPIRY: number = 600;
+export const THREE_MIN_IN_SECONDS: number = 60 * 3
 export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1;
 
 export enum ErrorResponseType {

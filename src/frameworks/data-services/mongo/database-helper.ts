@@ -66,6 +66,10 @@ const databaseHelper = {
       Logger.log("-------- runTransactionWithRetry function ----------")
       Logger.log("Transaction commited.............")
       // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
+      connection.close()
+        .then(() => {
+          console.log("Connection Closed")
+        })
     } catch (error: any) {
       await session.abortTransaction();
 
@@ -74,8 +78,68 @@ const databaseHelper = {
       await session.endSession();
     }
 
+  },
+  executeTransactionII: async (transactionProcess: any) => {
+    const session = await mongoose.startSession();
+    try {
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      await session.startTransaction()
+      await transactionProcess(session);  // performs transaction
+
+      // commit transaction
+      await session.commitTransaction(); // Uses write concern set at transaction start.
+      Logger.log("-------- runTransactionWithRetry function ----------")
+      Logger.log("Transaction commited.............")
+      // await databaseHelper.runTransactionWithRetry(transactionProcess, session);
+    } catch (error: any) {
+      await session.abortTransaction();
+
+      throw new Error(error);
+    } finally {
+      await session.endSession();
+    }
+
+  },
+  runTransactionWithRetryII: async (txnFunc: any) => {
+    let session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      await txnFunc(session);
+    } catch (error) {
+      console.log('Transaction aborted. Caught exception during transaction.');
+
+      // If transient error, retry the whole transaction
+      if (error.errorLabels && error.errorLabels.indexOf('TransientTransactionError') >= 0) {
+        console.log('TransientTransactionError, retrying transaction ...');
+        await databaseHelper.runTransactionWithRetryII(txnFunc);
+      } else {
+        session.abortTransaction();
+        console.log("runTransactionWithRetry error: ");
+        throw error;
+      }
+    }
   }
+
 }
 
 export default databaseHelper
 
+
+
+// async function commitWithRetry(session) {
+//   try {
+//     await session.commitTransaction();
+//     console.log('Transaction committed.');
+//   } catch (error) {
+//     if (
+//       error.errorLabels &&
+//       error.errorLabels.indexOf('UnknownTransactionCommitResult') >= 0
+//     ) {
+//       console.log('UnknownTransactionCommitResult, retrying commit operation ...');
+//       await commitWithRetry(session);
+//     } else {
+//       console.log('Error during commit ...');
+//       throw error;
+//     }
+//   }
+// }
