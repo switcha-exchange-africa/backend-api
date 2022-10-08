@@ -485,7 +485,7 @@ export class P2pServices {
           })
         }
       }
-      
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
 
@@ -553,8 +553,7 @@ export class P2pServices {
       await this.utils.storeActivitySendNotification({ activity, notification })
 
       await this.orderQueue.add({ id: order._id }, {
-        // delay: Math.abs(Number(ad.paymentTimeLimit)) * 60
-        delay: 2 * 60000
+        delay: Math.abs(Number(ad.paymentTimeLimit)) * 60000
       })
 
 
@@ -708,35 +707,31 @@ export class P2pServices {
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const generalTransactionReference = generateReference('general')
-          const [creditedMerchantWallet, creditedFeeWallet, deductAdTotalAmount,] = await Promise.all([
-            this.data.wallets.update(
-              { _id: merchantWallet._id }, {
-              $inc: {
-                balance: merchantAmount
-              },
-              lastDeposit: merchantAmount
-            }, session),// credit merchant wallet
+          const creditedMerchantWallet = await this.data.wallets.update(
+            { _id: merchantWallet._id }, {
+            $inc: {
+              balance: merchantAmount
+            },
+            lastDeposit: merchantAmount
+          }, session)// credit merchant wallet
+          const creditedFeeWallet = await this.data.feeWallets.update(
+            { _id: feeWallet._id }, {
+            $inc: {
+              balance: fee
+            },
+            lastDeposit: fee
+          }, session)// credit switcha fee wallet
+          const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
+            $inc: {
+              totalAmount: -order.quantity
+            }
+          }, session)// deduct ad totalAmount 
+          await this.data.wallets.update({ _id: clientWallet._id }, {
+            $inc: {
+              lockedBalance: -order.quantity
+            }
+          }, session) // release locked balance 
 
-            this.data.feeWallets.update(
-              { _id: feeWallet._id }, {
-              $inc: {
-                balance: fee
-              },
-              lastDeposit: fee
-            }, session), // credit switcha fee wallet
-            this.data.p2pAds.update({ _id: ad._id }, {
-              $inc: {
-                totalAmount: -order.quantity
-              }
-            }, session), // deduct ad totalAmount 
-
-            this.data.wallets.update({ _id: clientWallet._id }, {
-              $inc: {
-                lockedBalance: -order.quantity
-              }
-            }, session) // release locked balance 
-
-          ])
           const clientTransactionPayload = {
             userId: String(client._id),
             walletId: String(order.clientWalletId),
@@ -811,17 +806,17 @@ export class P2pServices {
             this.notificationFactory.create(merchantNotificationPayload),
           ])
 
-          await Promise.all([
-            this.data.transactions.create(clientTransactionFactory, session),
-            this.data.transactions.create(merchantTransactionFactory, session),
-            this.data.transactions.create(feeTransactionFactory, session),
-            this.data.notifications.create(clientNotificationFactory, session),
-            this.data.notifications.create(merchantNotificationFactory, session),
-            this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session),
+
+          await this.data.transactions.create(clientTransactionFactory, session)
+          await this.data.transactions.create(merchantTransactionFactory, session)
+          await this.data.transactions.create(feeTransactionFactory, session)
+          await this.data.notifications.create(clientNotificationFactory, session)
+          await this.data.notifications.create(merchantNotificationFactory, session)
+          await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session),
             deductAdTotalAmount.balance === 0 ?
-              this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
-              this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
-          ])
+              await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
+              await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
+
 
         } catch (error) {
           throw new Error(error)
@@ -882,30 +877,32 @@ export class P2pServices {
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const generalTransactionReference = generateReference('general')
-          const [creditedBuyerWallet, creditedFeeWallet, deductAdTotalAmount] = await Promise.all([
-            this.data.wallets.update({ _id: buyerWallet._id }, {
-              $inc: {
-                balance: buyerAmount
-              },
-              lastDeposit: buyerAmount
-            }, session),
-            this.data.feeWallets.update({ _id: feeWallet._id }, {
-              $inc: {
-                balance: fee
-              },
-              lastDeposit: fee
-            }, session),
-            this.data.p2pAds.update({ _id: ad._id }, {
-              $inc: {
-                totalAmount: -order.quantity
-              }
-            }, session),
-            this.data.wallets.update({ _id: merchantWallet._id }, {
-              $inc: {
-                lockedBalance: -order.quantity
-              }
-            }, session)
-          ])
+
+          const creditedBuyerWallet = await this.data.wallets.update({ _id: buyerWallet._id }, {
+            $inc: {
+              balance: buyerAmount
+            },
+            lastDeposit: buyerAmount
+          }, session)
+          const creditedFeeWallet = await this.data.feeWallets.update({ _id: feeWallet._id }, {
+            $inc: {
+              balance: fee
+            },
+            lastDeposit: fee
+          }, session)
+
+          const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
+            $inc: {
+              totalAmount: -order.quantity
+            }
+          }, session)
+          await this.data.wallets.update({ _id: merchantWallet._id }, {
+            $inc: {
+              lockedBalance: -order.quantity
+            }
+          }, session)
+          
+
           const merchantTransactionPayload = {
             userId: String(merchant._id),
             walletId: String(merchantWallet._id),
@@ -979,18 +976,18 @@ export class P2pServices {
             this.notificationFactory.create(merchantNotificationPayload),
           ])
 
-          await Promise.all([
-            this.data.transactions.create(merchantTransactionFactory, session),
-            this.data.transactions.create(buyerTransactionFactory, session),
-            this.data.transactions.create(feeTransactionFactory, session),
-            this.data.notifications.create(buyerNotificationFactory, session),
-            this.data.notifications.create(merchantNotificationFactory, session),
-            this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session),
-            deductAdTotalAmount.balance === 0 ?
-              this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
-              this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
-          ])
+          await this.data.transactions.create(merchantTransactionFactory, session)
+          await this.data.transactions.create(buyerTransactionFactory, session)
+          await this.data.transactions.create(feeTransactionFactory, session)
+          await this.data.notifications.create(buyerNotificationFactory, session)
+          await this.data.notifications.create(merchantNotificationFactory, session)
+          await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session)
+          deductAdTotalAmount.balance === 0 ?
+            await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
+            await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
+
+
 
         } catch (error) {
           throw new Error(error)

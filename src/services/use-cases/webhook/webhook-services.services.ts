@@ -111,10 +111,9 @@ export class WebhookServices {
             this.notificationFactory.create(notificationPayload),
             this.txFactoryServices.create(txCreditPayload)
           ])
-          await Promise.all([
-            this.data.transactions.create(txCreditFactory, session),
-            this.data.notifications.create(notificationFactory, session)
-          ])
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.notifications.create(notificationFactory, session)
+
 
         } catch (error) {
           Logger.error(error);
