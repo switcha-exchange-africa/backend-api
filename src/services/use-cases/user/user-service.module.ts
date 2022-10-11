@@ -8,9 +8,10 @@ import { UserFactoryService, UserFeatureManagementFactoryService } from "./user-
 import { WalletFactoryService } from '../wallet/wallet-factory.service';
 import { UserServices } from './user-services.services';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
+import { UtilsServicesModule } from '../utils/utils.module';
 
 @Module({
-  imports: [DataServicesModule, DiscordServicesModule],
+  imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
   providers: [
     UserFactoryService,
     AuthServices,

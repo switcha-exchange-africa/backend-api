@@ -2,11 +2,12 @@ import { DataServicesModule } from "src/services/data-services/data-services.mod
 import { Module } from "@nestjs/common";
 import { FeeWalletFactoryService } from "./fee-wallet-factory.service";
 import { FeeWalletServices } from "./fee-wallet.service";
+import { UtilsServicesModule } from "../utils/utils.module";
 
 @Module({
   imports: [
     DataServicesModule,
-
+    UtilsServicesModule
   ],
   providers: [FeeWalletServices, FeeWalletFactoryService],
   exports: [FeeWalletServices, FeeWalletFactoryService],

@@ -4,12 +4,13 @@ import { DiscordServicesModule } from "src/frameworks/notification-services/disc
 import { DataServicesModule } from "src/services/data-services/data-services.module";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
+import { UtilsServicesModule } from "../../utils/utils.module";
 import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTradeServices } from "./quick-trade-services.services";
 
 
 @Module({
-    imports: [DataServicesModule, DiscordServicesModule],
+    imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
     providers: [QuickTradeServices, TransactionFactoryService, NotificationFactoryService, QuickTradeFactoryService, QuickTradeContractFactoryService],
     exports: [QuickTradeServices, TransactionFactoryService]
 })
