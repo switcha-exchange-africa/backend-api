@@ -7,7 +7,7 @@ import LogsMiddleware from "./middleware-guards/logs.middleware";
 import { APP_GUARD } from "@nestjs/core";
 import { PermissionGuard } from "./middleware-guards/permission-guard.middleware";
 import { RoleType } from "./core/types/roles";
-import { AuthGuard } from "./middleware-guards/auth-guard.middleware";
+import { AuthGuard, BypassGuard } from "./middleware-guards/auth-guard.middleware";
 
 declare global {
   namespace Express {
@@ -40,8 +40,11 @@ declare global {
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: BypassGuard,
+    },
 
-    
   ],
 })
 

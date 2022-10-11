@@ -46,12 +46,17 @@ export class AuthGuard implements CanActivate {
 
 @Injectable()
 export class BypassGuard implements CanActivate {
-  constructor() { }
+  constructor(
+    private readonly reflector: Reflector
+
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
 
     try {
       const request: any = context.switchToHttp().getRequest();
+      const decorator = this.reflector.get<string>('by-pass', context.getHandler());
+      if (isEmpty(decorator)) return true
 
       const token = request.headers.bypass;
       if (token !== ADMIN_CYPHER_SECRET) throw new UnAuthorizedException("unauthorized")

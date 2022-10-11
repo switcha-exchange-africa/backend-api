@@ -4,6 +4,7 @@ import { CreateExchangeRateDto, FindByCoinDto, ICreateExchangeRate, IGetExchange
 import { ExchangeRateServices } from "src/services/use-cases/exchange-rates/exchange-rates.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
+import { ByPass } from "src/decorator";
 
 @Controller('admin/exchange-rates')
 export class AdminExchangeRatesController {
@@ -14,6 +15,7 @@ export class AdminExchangeRatesController {
 
   @Post('/')
   @isAuthenticated('strict')
+  @ByPass('pass')
   async createExchangeRate(
     @Req() req: Request,
     @Res() res: Response,

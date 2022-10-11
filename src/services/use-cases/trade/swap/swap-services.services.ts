@@ -38,9 +38,10 @@ export class SwapServices {
   ) { }
 
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
+    let email
     try {
       const { amount, sourceCoin, destinationCoin } = body;
-      const [user, sourceWallet, destinationWallet, sourceFeeWallet, destinationFeeWallet] = await Promise.all([
+      const [user, sourceWallet, destinationWallet, destinationFeeWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
         this.dataServices.wallets.findOne({
           userId,
@@ -50,41 +51,20 @@ export class SwapServices {
           userId,
           coin: destinationCoin,
         }),
-        this.dataServices.wallets.findOne({
-          coin: sourceCoin,
-        }),
-        this.dataServices.wallets.findOne({
+        this.dataServices.feeWallets.findOne({
           userId,
           coin: destinationCoin,
         }),
       ]);
-  
+
       if (!user) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
         message: `User does not exist`,
         error: null,
       })
-      if (!sourceFeeWallet) {
-        this.discord.inHouseNotification({
-          title: `Error Reporter :- ${env.env} environment`,
-          message: `
-  
-              Action: Buy Action
-  
-              User: ${user.email}
-  
-              ${sourceCoin} fee wallet not set by admin
-      `,
-          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-        })
-        return Promise.reject({
-          status: HttpStatus.SERVICE_UNAVAILABLE,
-          state: ResponseState.ERROR,
-          message: `Feature under maintenance`,
-          error: null,
-        });
-      }
+      email = user.email
+
       if (!destinationFeeWallet) {
         this.discord.inHouseNotification({
           title: `Error Reporter :- ${env.env} environment`,
@@ -117,14 +97,15 @@ export class SwapServices {
         message: `${destinationWallet} does not exists`,
         error: null,
       });
-  
-  
+
+
       // const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
       // const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
-  
-  
+
+
       const { rate, destinationAmount } = await this.utils.swap({ amount, source: sourceCoin, destination: destinationCoin })
-  
+      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount: destinationAmount })
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const creditDestinationWallet = await this.dataServices.wallets.update(
@@ -133,14 +114,14 @@ export class SwapServices {
             },
             {
               $inc: {
-                balance: destinationAmount,
+                balance: deduction,
               },
-              lastDeposit: destinationAmount
-  
+              lastDeposit: deduction
+
             },
             session
           );
-  
+
           if (!creditDestinationWallet) {
             Logger.error("Error Occurred");
             return Promise.reject({
@@ -150,7 +131,7 @@ export class SwapServices {
               error: null,
             });
           }
-  
+
           const debitSourceWallet = await this.dataServices.wallets.update(
             {
               _id: sourceWallet.id,
@@ -173,9 +154,20 @@ export class SwapServices {
               error: null,
             });
           }
-  
+          const creditedFeeWallet = await this.dataServices.feeWallets.update(
+            {
+              _id: destinationFeeWallet._id,
+            },
+            {
+              $inc: {
+                balance: fee,
+              },
+              lastDeposit: fee
+            },
+            session
+          );
           const generalTransactionReference = generateReference('general')
-  
+
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
@@ -196,7 +188,7 @@ export class SwapServices {
               rate: rate
             },
           };
-  
+
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(sourceWallet?._id),
@@ -217,29 +209,70 @@ export class SwapServices {
               rate: rate
             },
           };
-  
-          const [txCreditFactory, txDebitFactory, activityFactory] = await Promise.all([
+          const txFeePayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(destinationWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: fee,
+            signedAmount: -fee,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: `Charged ${fee} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+            generalTransactionReference,
+            reference: generateReference('debit'),
+          };
+
+          const txFeeWalletPayload = {
+            feeWalletId: String(destinationFeeWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: fee,
+            signedAmount: fee,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Charged ${fee} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+            balanceBefore: destinationFeeWallet.balance,
+            balanceAfter: creditedFeeWallet.balance,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+          };
+
+          const [txCreditFactory, txDebitFactory, activityFactory, txFeeFactory, txFeeWalletFactory] = await Promise.all([
             this.txFactoryServices.create(txCreditPayload),
             this.txFactoryServices.create(txDebitPayload),
             this.activityFactory.create({
               action: ActivityAction.SWAP,
               description: 'Swapped crypto',
               userId
-            })
+            }),
+            this.txFactoryServices.create(txFeePayload),
+            this.txFactoryServices.create(txFeeWalletPayload),
+
           ])
-  
-          await Promise.all([
-            this.dataServices.transactions.create(txCreditFactory, session),
-            this.dataServices.transactions.create(txDebitFactory, session),
-            this.dataServices.activities.create(activityFactory, session)
-          ])
-  
+
+          this.dataServices.transactions.create(txCreditFactory, session)
+          this.dataServices.transactions.create(txDebitFactory, session)
+          this.dataServices.activities.create(activityFactory, session)
+          this.dataServices.transactions.create(txFeeFactory, session)
+          this.dataServices.transactions.create(txFeeWalletFactory, session)
+
         } catch (error) {
           Logger.error(error);
           throw new Error(error);
         }
       };
-  
+
       await Promise.all([
         databaseHelper.executeTransaction(
           atomicTransaction,
@@ -270,11 +303,12 @@ export class SwapServices {
         status: 200,
         state: ResponseState.SUCCESS,
       };
-     } catch (error) {
+    } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'SWAP CRYPTO',
         error,
+        email,
         message: error.message
       }
 
@@ -286,6 +320,6 @@ export class SwapServices {
         error: error
       })
     }
-    
+
   }
 }

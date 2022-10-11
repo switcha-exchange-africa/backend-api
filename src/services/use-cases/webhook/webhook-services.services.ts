@@ -127,12 +127,12 @@ export class WebhookServices {
         this.connection
       )
 
-      this.discord.inHouseNotification({
+      await this.discord.inHouseNotification({
         title: `External Deposit :- ${env.env} environment`,
         message: `
 
         External Deposit
-        
+
         Recieved ${amount} ${currency} 
         
         FROM:-  ${from}

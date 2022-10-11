@@ -2,6 +2,7 @@ import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
 import { isAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { ByPass } from "src/decorator";
 import { FeeWalletServices } from "src/services/use-cases/fee-wallet/fee-wallet.service";
 
 @Controller('admin/fee-wallets')
@@ -12,6 +13,7 @@ export class AdminFeeWalletsController {
 
   @Post('/')
   @isAuthenticated('strict')
+  @ByPass('pass')
   async seedWallets(@Req() req: Request, @Res() res: Response) {
     try {
 

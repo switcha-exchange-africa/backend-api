@@ -4,6 +4,7 @@ import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { FeeServices } from "src/services/use-cases/fees/fee.service";
 import { IGetFee } from "src/core/dtos/fee";
 import { isAuthenticated } from "src/core/decorators";
+import { ByPass } from "src/decorator";
 
 @Controller('admin/fees')
 export class AdminFeeController {
@@ -14,6 +15,7 @@ export class AdminFeeController {
 
   @Post('/')
   @isAuthenticated('strict')
+  @ByPass('pass')
   async seedFeed(
     @Req() req: Request,
     @Res() res: Response,
