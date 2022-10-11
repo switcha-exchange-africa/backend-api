@@ -98,7 +98,8 @@ export class WebhookServices {
             senderAddress: from,
             hash: blockHash,
             reference,
-            tatumTransactionId: txId
+            tatumTransactionId: txId,
+            metadata: payload
           };
 
           const notificationPayload = {

@@ -27,7 +27,7 @@ export class TransactionFactoryService {
     if (data.p2pAdId) transaction.p2pAdId = data.p2pAdId
     if (data.p2pOrderId) transaction.p2pOrderId = data.p2pOrderId
     if (data.feeWalletId) transaction.feeWalletId = data.feeWalletId
-
+    if (data.metadata) transaction.metadata = data.metadata
 
 
     transaction.createdAt = new Date();

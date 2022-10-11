@@ -99,7 +99,8 @@ export class Transaction {
   @Prop()
   hash: string
 
-
+  @Prop({ type: Object })
+  metadata: Object
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
