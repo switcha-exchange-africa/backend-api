@@ -1,6 +1,6 @@
-import { Controller, Get, Param, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { isAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { FeeWalletServices } from "src/services/use-cases/fee-wallet/fee-wallet.service";
 
@@ -11,10 +11,10 @@ export class AdminFeeWalletsController {
 
 
   @Post('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async seedWallets(@Req() req: Request, @Res() res: Response) {
     try {
-      
+
       const userId = req?.user?._id
       const response = await this.services.seedWallets(userId);
 
@@ -26,7 +26,7 @@ export class AdminFeeWalletsController {
     }
   }
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllWallets(@Res() res: Response, @Query() query) {
     try {
 
@@ -42,7 +42,7 @@ export class AdminFeeWalletsController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleWallet(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
 

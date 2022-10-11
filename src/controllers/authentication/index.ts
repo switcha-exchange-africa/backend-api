@@ -6,12 +6,10 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthServices } from "src/services/use-cases/user/auth-services.services";
 import { VerifyUserDto } from "src/core/dtos/verifyEmail.dto";
-import { LooseAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   ResetPasswordBodyDto,
   ResetPasswordDto,
@@ -20,6 +18,7 @@ import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto";
 import { ILogin, ISignup, LoginDto, SignupDto } from "src/core/dtos/authentication/login.dto";
 import { generateGoogleAuthUrl } from "src/lib/utils";
 import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class AuthenticationController {
@@ -48,7 +47,7 @@ export class AuthenticationController {
   }
 
   @Get(AUTHENTICATION_ROUTE.VERIFY_USER)
-  @UseGuards(LooseAuthGuard)
+  @isAuthenticated('loose')
   async issueEmailVerificationCode(@Req() req: Request, @Res() res: Response) {
     try {
       const response = await this.services.issueEmailVerificationCode(req);
@@ -59,7 +58,7 @@ export class AuthenticationController {
   }
 
   @Post(AUTHENTICATION_ROUTE.VERIFY_USER)
-  @UseGuards(LooseAuthGuard)
+  @isAuthenticated('loose')
   async verifyUser(
     @Req() req: Request,
     @Res() res: Response,
@@ -114,7 +113,7 @@ export class AuthenticationController {
   }
 
   @Get(AUTHENTICATION_ROUTE.GET_USER)
-  @UseGuards(LooseAuthGuard)
+  @isAuthenticated('loose')
   async getUser(
     @Req() req: Request,
     @Res() res: Response,

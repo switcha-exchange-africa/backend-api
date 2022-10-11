@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, HttpException, Logger, Param, Patch, Post, Put,  Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, HttpException, Logger, Param, Patch, Post, Put, Res } from "@nestjs/common";
 import { ADMIN_ROUTE } from "src/lib/route-constant";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
-import {  Response } from 'express';
+import { Response } from 'express';
 import { AdminServices } from "src/services/use-cases/admin/admin-services.services";
 import { AddAdminImageDto, AddAdminRoleDto, AdminDto, AdminLoginDto, ChangeAdminPasswordDto, IAddAdminImage, IAddAdminRoles, IChangeAdminPassword } from "src/core/dtos/admin";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('admin')
 export class AdminAuthenticationController {
@@ -12,7 +12,7 @@ export class AdminAuthenticationController {
   constructor(private services: AdminServices) { }
 
   @Post(ADMIN_ROUTE.SIGNUP_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async signup(
     @Body() body: AdminDto,
     @Res() res: Response
@@ -31,7 +31,7 @@ export class AdminAuthenticationController {
   }
 
   @Post(ADMIN_ROUTE.LOGIN_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async login(
     @Body() body: AdminLoginDto,
     @Res() res: Response
@@ -49,11 +49,11 @@ export class AdminAuthenticationController {
     }
   }
 
-  
+
 
 
   @Put(ADMIN_ROUTE.IMAGE_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async addImages(
     @Param() params: FindByIdDto,
     @Body() body: AddAdminImageDto,
@@ -77,7 +77,7 @@ export class AdminAuthenticationController {
     }
   }
   @Put(ADMIN_ROUTE.TWO_FA_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async enableTwoFa(
     @Param() params: FindByIdDto,
     @Res() res: Response
@@ -97,7 +97,7 @@ export class AdminAuthenticationController {
   }
 
   @Patch(ADMIN_ROUTE.TWO_FA_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async disableTwoFa(
     @Param() params: FindByIdDto,
     @Res() res: Response
@@ -115,10 +115,9 @@ export class AdminAuthenticationController {
       throw new HttpException(error.message, 500);
     }
   }
-  TWO_FA_ROUTE
 
   @Delete(ADMIN_ROUTE.IMAGE_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async removeImage(
     @Param() params: FindByIdDto,
     @Res() res: Response
@@ -138,7 +137,7 @@ export class AdminAuthenticationController {
   }
 
   @Put(ADMIN_ROUTE.ROLES_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async addRoles(
     @Param() params: FindByIdDto,
     @Body() body: AddAdminRoleDto,
@@ -163,7 +162,7 @@ export class AdminAuthenticationController {
   }
 
   @Put(ADMIN_ROUTE.PASSWORD_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async changePassword(
     @Param() params: FindByIdDto,
     @Body() body: ChangeAdminPasswordDto,

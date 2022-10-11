@@ -1,11 +1,9 @@
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   Body,
   Controller,
   Post,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
@@ -16,6 +14,7 @@ import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { SwapServices } from "src/services/use-cases/trade/swap/swap-services.services";
 import { TransferDto } from "src/core/dtos/trade/transfer.dto";
 import { TransferServices } from "src/services/use-cases/trade/transfer/transfer-services.services";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class BuySellController {
@@ -26,7 +25,7 @@ export class BuySellController {
   ) {}
 
   @Post(TRADE_ROUTE.BUY)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async buy(
     @Req() req: Request,
     @Res() res: Response,
@@ -42,7 +41,7 @@ export class BuySellController {
   }
 
   @Post(TRADE_ROUTE.SELL)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async sell(
     @Req() req: Request,
     @Res() res: Response,
@@ -59,7 +58,7 @@ export class BuySellController {
   }
 
   @Post(TRADE_ROUTE.SWAP)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async swap(@Req() req: Request, @Res() res: Response, @Body() body: SwapDto) {
     try {
       const userId = req?.user?._id;
@@ -71,7 +70,7 @@ export class BuySellController {
   }
 
   @Post(TRADE_ROUTE.TRANSFER)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async transfer(
     @Req() req: Request,
     @Res() res: Response,

@@ -1,6 +1,6 @@
-import { Controller, Get, Param, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { isAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { CoinServices } from "src/services/use-cases/coins/coin.service";
 
@@ -11,7 +11,7 @@ export class AdminCoinController {
 
 
   @Post('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async seed(@Req() req: Request, @Res() res: Response) {
     try {
 
@@ -26,7 +26,7 @@ export class AdminCoinController {
     }
   }
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllCoins(@Res() res: Response, @Query() query) {
     try {
 
@@ -44,7 +44,7 @@ export class AdminCoinController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleCoin(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
 

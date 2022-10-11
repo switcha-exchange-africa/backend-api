@@ -1,16 +1,16 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res } from "@nestjs/common";
 import { AddBankDto, IBank } from "src/core/dtos/bank";
 import { BANK_ROUTE } from "src/lib/route-constant";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { Request, Response } from 'express';
 import { BankServices } from "src/services/use-cases/bank/bank-services.services";
 import { nigeriaBanks } from "src/lib/nigerian-banks";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class BankController {
   constructor(private services: BankServices) { }
   @Post(BANK_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async create(
     @Req() req: Request,
     @Body() body: AddBankDto,
@@ -34,7 +34,7 @@ export class BankController {
 
 
   @Get(BANK_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async findAllWithPagination(
     @Req() req: Request,
     @Query() query: any,
@@ -53,7 +53,7 @@ export class BankController {
   }
 
   @Get(BANK_ROUTE.NIGERIA_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getNigeriaBanks(
     @Res() res: Response
   ) {

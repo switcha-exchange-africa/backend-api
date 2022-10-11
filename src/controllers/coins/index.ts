@@ -1,9 +1,9 @@
-import { Controller, Get, Res, UseGuards, Query, Param } from "@nestjs/common";
+import { Controller, Get, Res, Query, Param } from "@nestjs/common";
 import { Response } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { CoinServices } from "src/services/use-cases/coins/coin.service";
 import { IGetCoins } from "src/core/entities/Coin";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('coins')
 export class CoinController {
@@ -12,7 +12,7 @@ export class CoinController {
 
 
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllCoins(
     @Res() res: Response,
     @Query() query: any
@@ -35,7 +35,7 @@ export class CoinController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleCoin(
     @Res() res: Response,
     @Param() params: FindByIdDto

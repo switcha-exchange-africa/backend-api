@@ -1,4 +1,3 @@
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   Body,
   Controller,
@@ -7,12 +6,12 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { TRADE_ROUTE } from "src/lib/route-constant";
 import { QuickTradeServices } from "src/services/use-cases/trade/quick-trade/quick-trade-services.services";
 import { IQuickTradeBuy, IQuickTradeSell, QuickTradeBuyDto, QuickTradeSellDto } from "src/core/dtos/trade/quick-trade.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class QuickTradeController {
@@ -21,7 +20,7 @@ export class QuickTradeController {
   ) { }
 
   @Post(TRADE_ROUTE.QUICK_TRADE_BUY)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async buyAd(
     @Req() req: Request,
     @Res() res: Response,
@@ -47,7 +46,7 @@ export class QuickTradeController {
   }
 
   @Get(TRADE_ROUTE.QUICK_TRADE_BUY)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getBuyAds(
     @Req() req: Request,
     @Res() res: Response,
@@ -68,7 +67,7 @@ export class QuickTradeController {
   }
 
   @Post(TRADE_ROUTE.QUICK_TRADE_SELL)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async sell(
     @Req() req: Request,
     @Res() res: Response,

@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Query, Res, UseGuards } from "@nestjs/common";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { UserServices } from "src/services/use-cases/user/user-services.services";
 import { Response } from 'express'
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('admin/users')
 export class AdminUsersController {
@@ -10,7 +10,7 @@ export class AdminUsersController {
   constructor(private services: UserServices) { }
 
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllUsers(@Res() res: Response, @Query() query) {
     try {
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, id, authStatus, country, emailVerified, device, lock, level, dob } = query
@@ -24,7 +24,7 @@ export class AdminUsersController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

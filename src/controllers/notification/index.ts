@@ -1,4 +1,3 @@
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   Controller,
   Get,
@@ -6,7 +5,6 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
@@ -14,12 +12,13 @@ import { NOTIFICATION_ROUTE } from "src/lib/route-constant";
 import { NotificationServices } from "src/services/use-cases/notification/notification.service";
 import { IGetNotifications } from "src/core/dtos/notification";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class NotificationController {
   constructor(private services: NotificationServices) { }
   @Get(NOTIFICATION_ROUTE.GET)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async findAll(@Req() req: Request, @Query() query: any, @Res() res: Response) {
     try {
 
@@ -39,7 +38,7 @@ export class NotificationController {
 
 
   @Get(NOTIFICATION_ROUTE.GET_SINGLE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async detail(
     @Res() res: Response,
     @Param() param: FindByIdDto

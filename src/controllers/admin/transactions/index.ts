@@ -1,9 +1,9 @@
-import { Controller, Get, Param, Query, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { TransactionServices } from "src/services/use-cases/transaction/transaction-services.services";
 import { Response } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetTransactions } from "src/core/dtos/transactions";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('admin/transactions')
 export class AdminTransactionsController {
@@ -11,7 +11,7 @@ export class AdminTransactionsController {
   constructor(private services: TransactionServices) { }
 
   @Get("/")
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async findAll(@Query() query: any, @Res() res: Response) {
     try {
 
@@ -31,7 +31,7 @@ export class AdminTransactionsController {
 
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleTransaction(
     @Res() res: Response,
     @Param() param: FindByIdDto

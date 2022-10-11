@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Req, Res, UseGuards, Query, Param } from "@nestjs/common";
+import { Controller, Get, Post, Req, Res, Query, Param } from "@nestjs/common";
 import { Response, Request } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { FeeServices } from "src/services/use-cases/fees/fee.service";
 import { IGetFee } from "src/core/dtos/fee";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('admin/fees')
 export class AdminFeeController {
@@ -13,7 +13,7 @@ export class AdminFeeController {
 
 
   @Post('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async seedFeed(
     @Req() req: Request,
     @Res() res: Response,
@@ -32,7 +32,7 @@ export class AdminFeeController {
   }
 
   @Post('/withdrawals-fees')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async seedWithdrawalFees(
     @Req() req: Request,
     @Res() res: Response,
@@ -51,7 +51,7 @@ export class AdminFeeController {
   }
 
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllFees(
     @Res() res: Response,
     @Query() query: any
@@ -75,7 +75,7 @@ export class AdminFeeController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleFee(
     @Res() res: Response,
     @Param() params: FindByIdDto

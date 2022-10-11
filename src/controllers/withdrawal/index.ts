@@ -1,4 +1,3 @@
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import {
   Body,
   Controller,
@@ -9,7 +8,6 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 
 import { Request, Response } from "express";
@@ -17,6 +15,7 @@ import { ICreateWithdrawal, WithdrawalCreateDto } from "src/core/dtos/withdrawal
 import { WithdrawalServices } from "src/services/use-cases/withdrawal/withdrawal.service";
 import { IGetWithdrawals } from "src/core/entities/Withdrawal";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('/withdrawal')
 export class WithdrawalController {
@@ -24,7 +23,7 @@ export class WithdrawalController {
   constructor(private services: WithdrawalServices) { }
 
   @Post('/crypto')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createCryptoWithdrawalManual(
     @Req() req: Request,
     @Body() body: WithdrawalCreateDto,
@@ -44,7 +43,7 @@ export class WithdrawalController {
 
 
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getWithdrawals(
     @Req() req: Request,
     @Query() query: any,
@@ -68,7 +67,7 @@ export class WithdrawalController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleWithdrawal(
     @Req() req: Request,
     @Param() params: FindByIdDto,
@@ -88,7 +87,7 @@ export class WithdrawalController {
   }
 
   @Put('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async cancelWithdrawal(
     @Req() req: Request,
     @Param() params: FindByIdDto,

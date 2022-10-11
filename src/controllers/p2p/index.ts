@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, Res, UseGuards } from "@nestjs/common";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class P2pController {
@@ -12,7 +12,7 @@ export class P2pController {
   ) { }
 
   @Post('/p2p/ads')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createAds(
     @Req() req: Request,
     @Res() res: Response,
@@ -31,7 +31,7 @@ export class P2pController {
   }
 
   @Post('/p2p/bank')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createAdsBank(
     @Req() req: Request,
     @Res() res: Response,
@@ -50,7 +50,7 @@ export class P2pController {
   }
 
   @Get('/p2p/bank')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllAdsBank(
     @Res() res: Response,
     @Query() query: any
@@ -85,7 +85,7 @@ export class P2pController {
   }
 
   @Get('/p2p/bank/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleAdBank(
     @Res() res: Response,
     @Param() params: FindByIdDto,
@@ -102,7 +102,7 @@ export class P2pController {
   }
 
   @Post('/p2p/bank/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async disableAdsBank(
     @Res() res: Response,
     @Param() params: FindByIdDto,
@@ -120,7 +120,7 @@ export class P2pController {
   }
 
   @Get('/p2p/ads')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllAds(
     @Res() res: Response,
     @Query() query: any
@@ -154,7 +154,7 @@ export class P2pController {
 
 
   @Get('/p2p/ads/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleAd(
     @Res() res: Response,
     @Param() params: FindByIdDto
@@ -170,7 +170,7 @@ export class P2pController {
   }
 
   @Put('/p2p/ads/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async editAds(
     @Res() res: Response,
     @Param() params: FindByIdDto,
@@ -191,7 +191,7 @@ export class P2pController {
 
 
   @Post('/p2p/order')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createP2pOrder(
     @Req() req: Request,
     @Res() res: Response,
@@ -212,7 +212,7 @@ export class P2pController {
 
 
   @Post('/p2p/order/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async confirmP2pOrder(
     @Req() req: Request,
     @Res() res: Response,
@@ -237,7 +237,7 @@ export class P2pController {
   }
 
   @Get('/p2p/order/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleP2pOrder(
     @Res() res: Response,
     @Param() params: FindByIdDto
@@ -246,7 +246,7 @@ export class P2pController {
     try {
 
       const { id } = params
-      
+
 
       const response = await this.services.getSingleP2pOrder(id);
       return res.status(response.status).json(response);

@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards, Query, Param } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res, Query, Param } from "@nestjs/common";
 import { Response, Request } from "express"
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 import { CreateExchangeRateDto, FindByCoinDto, ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
 import { ExchangeRateServices } from "src/services/use-cases/exchange-rates/exchange-rates.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller('admin/exchange-rates')
 export class AdminExchangeRatesController {
@@ -13,7 +13,7 @@ export class AdminExchangeRatesController {
 
 
   @Post('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createExchangeRate(
     @Req() req: Request,
     @Res() res: Response,
@@ -34,7 +34,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getAllExchangeRates(
     @Res() res: Response,
     @Query() query: any
@@ -57,7 +57,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/:id')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleExchangeRate(
     @Res() res: Response,
     @Param() params: FindByIdDto
@@ -75,7 +75,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/rate/coin')
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async getSingleExchangeRateByCoin(
     @Res() res: Response,
     @Query() query: FindByCoinDto

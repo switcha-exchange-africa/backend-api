@@ -8,15 +8,14 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 
 import { WALLET_ROUTE } from "src/lib/route-constant";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
 import { CreateWalletDto, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class WalletController {
@@ -25,7 +24,7 @@ export class WalletController {
   ) { }
 
   @Post(WALLET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async create(@Req() req: Request, @Body() body: CreateWalletDto, @Res() res: Response) {
     try {
       const user = req?.user!
@@ -43,7 +42,7 @@ export class WalletController {
   }
 
   @Get(WALLET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
 
@@ -62,7 +61,7 @@ export class WalletController {
   }
 
   @Get(WALLET_ROUTE.SINGLE_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

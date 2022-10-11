@@ -20,16 +20,16 @@ import { FAUCET_ROUTE } from "src/lib/route-constant";
 import { Response, Request } from "express";
 import {
   BypassGuard,
-  StrictAuthGuard,
 } from "src/middleware-guards/auth-guard.middleware";
 import { FaucetServices } from "src/services/use-cases/faucet/faucet-services.services";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class FaucetController {
   constructor(private faucetServices: FaucetServices) { }
 
   @Post(FAUCET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   @UseGuards(BypassGuard)
   async create(
     @Req() req: Request,
@@ -49,7 +49,7 @@ export class FaucetController {
   }
 
   @Get(FAUCET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   @UseGuards(BypassGuard)
   async findAll(
     @Res() res: Response,
@@ -67,7 +67,7 @@ export class FaucetController {
   }
 
   @Get(FAUCET_ROUTE.SINGLE_ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   @UseGuards(BypassGuard)
   async findOne(
     @Res() res: Response,
@@ -87,7 +87,7 @@ export class FaucetController {
 
   
   @Post(FAUCET_ROUTE.FUND)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   @UseGuards(BypassGuard)
   async fund(
     @Req() req: Request,
