@@ -31,6 +31,7 @@ import * as _ from 'lodash'
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { CoinType } from "src/core/types/coin";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
+import { IErrorReporter } from "src/core/types/error";
 @Injectable()
 export class P2pServices {
 
@@ -45,6 +46,7 @@ export class P2pServices {
     private readonly discordServices: INotificationServices,
     private readonly transactionFactory: TransactionFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection,
     @InjectQueue('order.expiry') private orderQueue: Queue,
 
@@ -69,6 +71,7 @@ export class P2pServices {
     }
   }
   async createAds(payload: ICreateP2pAd) {
+    let email
     try {
       const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo } = payload
       let p2pId
@@ -84,7 +87,8 @@ export class P2pServices {
       }
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
-
+      const user = await this.data.users.findOne({ _id: userId })
+      email = user.email
       // const adExists = await this.data.p2pAds.findOne({ userId, type, coin }) // check if ad exists
       // if (adExists) {
       //   await this.editAds({ id: adExists._id, ...payload })
@@ -196,6 +200,14 @@ export class P2pServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CREATE P2P ADS',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -257,6 +269,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET P2P ADS',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -278,6 +297,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE P2P AD',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -300,6 +326,13 @@ export class P2pServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'EDIT P2P ADS',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -312,7 +345,6 @@ export class P2pServices {
   async createAdsBank(payload: ICreateP2pAdBank) {
     try {
       const { accountNumber, userId } = payload
-      console.log(userId)
       const bankExists = await this.data.p2pAdBanks.findOne({ userId, accountNumber })
       if (bankExists) {
         return Promise.reject({
@@ -334,6 +366,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CREATE AD BANK',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -366,6 +405,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET ALL ADS BANK',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -387,6 +433,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE AD BANK',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -408,6 +461,13 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'DISABLE ADS BANK',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -418,9 +478,12 @@ export class P2pServices {
   }
 
   async createP2pOrder(payload: ICreateP2pOrder) {
+    let email
     try {
       //
       const { adId, clientId, quantity, clientAccountName, clientAccountNumber, clientBankName, type, bankId } = payload
+      const user = await this.data.users.findOne({ _id: clientId })
+      email = user.email
       const ad = await this.data.p2pAds.findOne({ _id: adId })
       if (!ad) {
         return Promise.reject({
@@ -581,6 +644,14 @@ export class P2pServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CREATE P2P ORDER',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -1123,6 +1194,13 @@ export class P2pServices {
       });
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE P2P ORDER',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

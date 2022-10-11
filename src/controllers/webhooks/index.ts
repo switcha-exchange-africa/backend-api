@@ -49,8 +49,17 @@ export class WebhookController {
             //     return res.status(200).json({ message: "Webhook discarded" })
 
             // }
-
-            console.log("BODY", req.body)
+            if (env.isProd) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("hex");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
+            }
             const response = await this.services.incomingTransactions(req.body)
             return res.status(200).json(response)
         } catch (error) {

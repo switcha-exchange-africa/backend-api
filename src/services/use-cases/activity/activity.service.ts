@@ -3,10 +3,15 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { Activity } from "src/core/entities/Activity";
 import { IGetActivities } from "src/core/dtos/activity";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class ActivityServices {
-  constructor(private data: IDataServices) { }
+  constructor(
+    private data: IDataServices,
+    private utilsService: UtilsServices
+  ) { }
 
   cleanQueryPayload(payload: IGetActivities) {
     let key = {}
@@ -47,6 +52,13 @@ export class ActivityServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET ACTIVITIES',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

@@ -18,6 +18,7 @@ import { NotificationFactoryService } from "../../notification/notification-fact
 import { UtilsServices } from "../../utils/utils.service";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
 import { ActivityAction } from "src/core/dtos/activity";
+import { IErrorReporter } from "src/core/types/error";
 
 @Injectable()
 export class BuySellServices {
@@ -29,13 +30,14 @@ export class BuySellServices {
     private notificationFactory: NotificationFactoryService,
     private readonly utils: UtilsServices,
     private readonly activityFactory: ActivityFactoryService,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
   async buy(body: BuySellDto, userId: string): Promise<ResponsesType<any>> {
     const { amount, debitCoin, creditCoin } = body;
+    let email
     try {
-
 
       const [user, creditWallet, debitWallet, creditFeeWallet, debitFeeWallet] = await Promise.all([
         this.dataServices.users.findOne({ _id: userId }),
@@ -63,6 +65,7 @@ export class BuySellServices {
         message: 'User does not exist',
         error: null,
       });
+      email = user.email
       if (!creditFeeWallet) {
         this.discord.inHouseNotification({
           title: `Error Reporter :- ${env.env} environment`,
@@ -332,6 +335,14 @@ export class BuySellServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'BUY CRYPTO',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -343,7 +354,7 @@ export class BuySellServices {
 
   async sell(body: BuySellDto, userId: string): Promise<ResponsesType<any>> {
     const { amount, creditCoin, debitCoin } = body;
-
+    let email
     try {
 
 
@@ -370,6 +381,7 @@ export class BuySellServices {
         message: "User does not exist",
         error: null,
       });
+      email = user.email
       if (!creditWallet) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
@@ -636,6 +648,14 @@ export class BuySellServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'SELL CRYPTO',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

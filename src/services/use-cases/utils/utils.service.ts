@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IDataServices } from 'src/core/abstracts';
+import { IDataServices, INotificationServices } from 'src/core/abstracts';
 import { CoinType, FiatCoinType, ISwap, StableCoins, SwapableCoins } from 'src/core/types/coin';
 import * as _ from "lodash"
 import { ActivityAction } from 'src/core/dtos/activity';
@@ -13,6 +13,8 @@ import { NotificationFactoryService } from '../notification/notification-factory
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { InjectConnection } from '@nestjs/mongoose';
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION } from 'src/lib/constants';
+import { IErrorReporter } from 'src/core/types/error';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 @Injectable()
@@ -22,6 +24,7 @@ export class UtilsServices {
     private http: IHttpServices,
     private readonly notificationFactory: NotificationFactoryService,
     private readonly activityFactory: ActivityFactoryService,
+    private discord: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
 
@@ -270,6 +273,30 @@ export class UtilsServices {
         this.connection
       )
       return
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  errorReporter(payload: IErrorReporter) {
+    try {
+
+      const { action, error, email, message } = payload
+      this.discord.inHouseNotification({
+        title: `Error Reporter :- ${env.env} environment`,
+        message: `
+        
+        ACTION :- ${action}
+
+        ERROR :- ${typeof error === 'string' ? error : JSON.stringify(error)}
+
+        MESSAGE :- ${message}
+        
+        USER :- ${email}
+      `,
+        link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+      })
+
     } catch (error) {
       throw new Error(error)
     }

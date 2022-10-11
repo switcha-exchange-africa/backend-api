@@ -63,3 +63,34 @@ export class BypassGuard implements CanActivate {
     }
   }
 }
+
+
+// @Injectable()
+// export class UserFeatureManagementGuard implements CanActivate {
+//   constructor(
+//     private readonly data: IDataServices,
+//     private readonly reflector: Reflector
+//   ) { }
+
+//   async canActivate(context: ExecutionContext): Promise<boolean> {
+
+//     try {
+//       const request: any = context.switchToHttp().getRequest();
+//       const decorator = this.reflector.get<string>('user-feature-management', context.getHandler());
+//       if (isEmpty(decorator)) return true
+
+//       const userId = request.user._id
+//       const userFeature = await this.data.userFeatureManagement.findOne({ userId })
+//       if (!userFeature) throw new BadRequestsException('No able to use this feature, please contact support@switcha.africa')
+
+//       if (decorator !== 'strict') return true
+//       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
+
+//       return true;
+
+//     } catch (error) {
+//       Logger.error(error)
+//       throw new UnAuthorizedException(error)
+//     }
+//   }
+// }

@@ -8,12 +8,15 @@ import { Admin } from "src/core/entities/Admin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { JWT_USER_PAYLOAD_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class AdminServices {
   constructor(
     private data: IDataServices,
-    private factory: AdminFactoryService
+    private factory: AdminFactoryService,
+    private utilsService: UtilsServices
   ) { }
 
   async signup(payload: IAdmin) {
@@ -42,6 +45,14 @@ export class AdminServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN SIGNUP',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -64,6 +75,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN ADD ROLES',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -86,6 +104,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN ADD IMAGE',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -107,6 +132,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN REMOVE IMAGE',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -128,6 +160,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN ENABLE 2 FA',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -149,6 +188,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN DISABLE TWO FA',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -179,6 +225,13 @@ export class AdminServices {
       };
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN CHANGE PASSWORD',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -238,6 +291,14 @@ export class AdminServices {
       }
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ADMIN LOGIN',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

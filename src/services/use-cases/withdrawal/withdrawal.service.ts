@@ -22,6 +22,7 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper"
 import { InjectConnection } from "@nestjs/mongoose"
 import { WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
+import { IErrorReporter } from "src/core/types/error"
 
 @Injectable()
 export class WithdrawalServices {
@@ -34,6 +35,7 @@ export class WithdrawalServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly discord: INotificationServices,
     private readonly http: IHttpServices,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -248,6 +250,14 @@ export class WithdrawalServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CRYPTO WITHDRAWAL',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

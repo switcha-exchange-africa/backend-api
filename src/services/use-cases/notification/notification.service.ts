@@ -2,13 +2,15 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
 import { IGetNotifications } from "src/core/dtos/notification";
+import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class NotificationServices {
   constructor(
-    private data: IDataServices,
-
+    private readonly data: IDataServices,
+    private readonly utilsService: UtilsServices
   ) { }
 
   cleanQueryPayload(payload: IGetNotifications) {
@@ -39,6 +41,13 @@ export class NotificationServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET ALL NOTIFICATIONS',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -58,6 +67,13 @@ export class NotificationServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE NOTIFICATION',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

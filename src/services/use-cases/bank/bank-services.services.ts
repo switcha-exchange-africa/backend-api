@@ -3,10 +3,15 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IBank } from "src/core/dtos/bank";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { Bank } from "src/core/entities/Bank";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class BankServices {
-  constructor(private data: IDataServices) { }
+  constructor(
+    private data: IDataServices,
+    private readonly utilsService: UtilsServices
+  ) { }
 
   async create(payload: IBank): Promise<ResponsesType<Bank>> {
     try {
@@ -22,6 +27,13 @@ export class BankServices {
       });
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CREATE BANK',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -33,7 +45,7 @@ export class BankServices {
 
   async findAllWithPagination(payload: { query: Record<string, any>, userId: string }): Promise<ResponsesType<Bank>> {
     try {
-      
+
       const { query, userId } = payload
       const { data, pagination } = await this.data.banks.findAllWithPagination({
         query,
@@ -50,6 +62,14 @@ export class BankServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET USER BANK',
+        error,
+        email: payload.userId,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

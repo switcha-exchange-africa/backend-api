@@ -119,6 +119,8 @@ export const ERROR_REPORTING_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/
 
 export const P2P_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1027354392166412331/5H5sdHBtqMq_i3aqMjXp2LKcB_rXQumsg2qGUAe3QZBcVmxYtyLI8hLg-IyagXgnd3yi'
 export const P2P_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1027354442711969792/pxed9n76jB2r0fGRsUGm8z-6sTEq8Rjq8aeQvmxc6g3bwklfMoJyorLeTmK-RgYim-2b'
+export const ERROR_REPORTER_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1029503115847794708/N4nKIeVSOSN8fccaC64ksAnRri6tiu5Ed7_qrH4lQ7Pm28_YdM4op5cPBAL6_V0SB15x'
+export const ERROR_REPORTER_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1029503174601613312/oY7tZF_K6IqWCmVNgTze5CgNAyqsFKU_6mUhpGCCsU5zy2CwpxS0snDSEEFQMVAUsmaf'
 
 export interface UserIDDocumentType {
   documentType: string;

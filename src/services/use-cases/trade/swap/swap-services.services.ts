@@ -17,6 +17,7 @@ import { CoinType } from "src/core/types/coin";
 import { UtilsServices } from "../../utils/utils.service";
 import { ActivityAction } from "src/core/dtos/activity";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
+import { IErrorReporter } from "src/core/types/error";
 
 // const TATUM_CONFIG = {
 //   headers: {
@@ -32,241 +33,259 @@ export class SwapServices {
     private discord: INotificationServices,
     private readonly utils: UtilsServices,
     private readonly activityFactory: ActivityFactoryService,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
 
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
-
-    const { amount, sourceCoin, destinationCoin } = body;
-    const [user, sourceWallet, destinationWallet, sourceFeeWallet, destinationFeeWallet] = await Promise.all([
-      this.dataServices.users.findOne({ _id: userId }),
-      this.dataServices.wallets.findOne({
-        userId,
-        coin: sourceCoin,
-      }),
-      this.dataServices.wallets.findOne({
-        userId,
-        coin: destinationCoin,
-      }),
-      this.dataServices.wallets.findOne({
-        coin: sourceCoin,
-      }),
-      this.dataServices.wallets.findOne({
-        userId,
-        coin: destinationCoin,
-      }),
-    ]);
-
-    if (!user) return Promise.reject({
-      status: HttpStatus.NOT_FOUND,
-      state: ResponseState.ERROR,
-      message: `User does not exist`,
-      error: null,
-    })
-    if (!sourceFeeWallet) {
-      this.discord.inHouseNotification({
-        title: `Error Reporter :- ${env.env} environment`,
-        message: `
-
-            Action: Buy Action
-
-            User: ${user.email}
-
-            ${sourceCoin} fee wallet not set by admin
-    `,
-        link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-      })
-      return Promise.reject({
-        status: HttpStatus.SERVICE_UNAVAILABLE,
-        state: ResponseState.ERROR,
-        message: `Feature under maintenance`,
-        error: null,
-      });
-    }
-    if (!destinationFeeWallet) {
-      this.discord.inHouseNotification({
-        title: `Error Reporter :- ${env.env} environment`,
-        message: `
-
-            Action: Buy Action
-
-            User: ${user.email}
-
-            ${destinationCoin} fee wallet not set by admin
-    `,
-        link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-      })
-      return Promise.reject({
-        status: HttpStatus.SERVICE_UNAVAILABLE,
-        state: ResponseState.ERROR,
-        message: `Feature under maintenance`,
-        error: null,
-      });
-    }
-    if (!sourceWallet) return Promise.reject({
-      status: HttpStatus.NOT_FOUND,
-      state: ResponseState.ERROR,
-      message: `${sourceWallet} does not exists`,
-      error: null,
-    });
-    if (!destinationWallet) return Promise.reject({
-      status: HttpStatus.NOT_FOUND,
-      state: ResponseState.ERROR,
-      message: `${destinationWallet} does not exists`,
-      error: null,
-    });
-
-
-    // const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
-    // const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
-
-
-    const { rate, destinationAmount } = await this.utils.swap({ amount, source: sourceCoin, destination: destinationCoin })
-
-    const atomicTransaction = async (session: mongoose.ClientSession) => {
-      try {
-        const creditDestinationWallet = await this.dataServices.wallets.update(
-          {
-            _id: destinationWallet._id,
-          },
-          {
-            $inc: {
-              balance: destinationAmount,
-            },
-            lastDeposit: destinationAmount
-
-          },
-          session
-        );
-
-        if (!creditDestinationWallet) {
-          Logger.error("Error Occurred");
-          return Promise.reject({
-            status: HttpStatus.BAD_REQUEST,
-            state: ResponseState.ERROR,
-            message: "Destination wallet does not match criteria",
-            error: null,
-          });
-        }
-
-        const debitSourceWallet = await this.dataServices.wallets.update(
-          {
-            _id: sourceWallet.id,
-            balance: { $gt: 0, $gte: amount },
-          },
-          {
-            $inc: {
-              balance: -amount,
-            },
-            lastWithdrawal: amount
-          },
-          session
-        );
-        if (!debitSourceWallet) {
-          Logger.error("Error Occurred");
-          return Promise.reject({
-            status: HttpStatus.BAD_REQUEST,
-            state: ResponseState.ERROR,
-            message: "Source wallet does not match criteria",
-            error: null,
-          });
-        }
-
-        const generalTransactionReference = generateReference('general')
-
-        const txCreditPayload: OptionalQuery<Transaction> = {
+    try {
+      const { amount, sourceCoin, destinationCoin } = body;
+      const [user, sourceWallet, destinationWallet, sourceFeeWallet, destinationFeeWallet] = await Promise.all([
+        this.dataServices.users.findOne({ _id: userId }),
+        this.dataServices.wallets.findOne({
           userId,
-          walletId: String(destinationWallet?._id),
-          currency: destinationCoin as unknown as CoinType,
-          amount: destinationAmount,
-          signedAmount: destinationAmount,
-          type: TRANSACTION_TYPE.CREDIT,
-          description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
-          status: TRANSACTION_STATUS.COMPLETED,
-          balanceAfter: creditDestinationWallet?.balance,
-          balanceBefore: destinationWallet?.balance,
-          subType: TRANSACTION_SUBTYPE.CREDIT,
-          customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
-          generalTransactionReference,
-          reference: generateReference('credit'),
-          rate: {
-            pair: `${sourceCoin}${destinationCoin}`,
-            rate: rate
-          },
-        };
-
-        const txDebitPayload: OptionalQuery<Transaction> = {
+          coin: sourceCoin,
+        }),
+        this.dataServices.wallets.findOne({
           userId,
-          walletId: String(sourceWallet?._id),
-          currency: sourceCoin as unknown as CoinType,
-          amount: amount,
-          signedAmount: -amount,
-          type: TRANSACTION_TYPE.DEBIT,
-          description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
-          status: TRANSACTION_STATUS.COMPLETED,
-          balanceAfter: debitSourceWallet?.balance,
-          balanceBefore: sourceWallet?.balance,
-          subType: TRANSACTION_SUBTYPE.DEBIT,
-          customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
-          generalTransactionReference,
-          reference: generateReference('debit'),
-          rate: {
-            pair: `${sourceCoin}${destinationCoin}`,
-            rate: rate
-          },
-        };
-
-        const [txCreditFactory, txDebitFactory, activityFactory] = await Promise.all([
-          this.txFactoryServices.create(txCreditPayload),
-          this.txFactoryServices.create(txDebitPayload),
-          this.activityFactory.create({
-            action: ActivityAction.SWAP,
-            description: 'Swapped crypto',
-            userId
-          })
-        ])
-
-        await Promise.all([
-          this.dataServices.transactions.create(txCreditFactory, session),
-          this.dataServices.transactions.create(txDebitFactory, session),
-          this.dataServices.activities.create(activityFactory, session)
-        ])
-
-      } catch (error) {
-        Logger.error(error);
-        throw new Error(error);
+          coin: destinationCoin,
+        }),
+        this.dataServices.wallets.findOne({
+          coin: sourceCoin,
+        }),
+        this.dataServices.wallets.findOne({
+          userId,
+          coin: destinationCoin,
+        }),
+      ]);
+  
+      if (!user) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `User does not exist`,
+        error: null,
+      })
+      if (!sourceFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+  
+              Action: Buy Action
+  
+              User: ${user.email}
+  
+              ${sourceCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
       }
-    };
+      if (!destinationFeeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+  
+              Action: Buy Action
+  
+              User: ${user.email}
+  
+              ${destinationCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
+      if (!sourceWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `${sourceWallet} does not exists`,
+        error: null,
+      });
+      if (!destinationWallet) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `${destinationWallet} does not exists`,
+        error: null,
+      });
+  
+  
+      // const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
+      // const destinationRateUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=${CoinType.USD}`;
+  
+  
+      const { rate, destinationAmount } = await this.utils.swap({ amount, source: sourceCoin, destination: destinationCoin })
+  
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const creditDestinationWallet = await this.dataServices.wallets.update(
+            {
+              _id: destinationWallet._id,
+            },
+            {
+              $inc: {
+                balance: destinationAmount,
+              },
+              lastDeposit: destinationAmount
+  
+            },
+            session
+          );
+  
+          if (!creditDestinationWallet) {
+            Logger.error("Error Occurred");
+            return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: "Destination wallet does not match criteria",
+              error: null,
+            });
+          }
+  
+          const debitSourceWallet = await this.dataServices.wallets.update(
+            {
+              _id: sourceWallet.id,
+              balance: { $gt: 0, $gte: amount },
+            },
+            {
+              $inc: {
+                balance: -amount,
+              },
+              lastWithdrawal: amount
+            },
+            session
+          );
+          if (!debitSourceWallet) {
+            Logger.error("Error Occurred");
+            return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: "Source wallet does not match criteria",
+              error: null,
+            });
+          }
+  
+          const generalTransactionReference = generateReference('general')
+  
+          const txCreditPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(destinationWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: destinationAmount,
+            signedAmount: destinationAmount,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: creditDestinationWallet?.balance,
+            balanceBefore: destinationWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.CREDIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+          };
+  
+          const txDebitPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(sourceWallet?._id),
+            currency: sourceCoin as unknown as CoinType,
+            amount: amount,
+            signedAmount: -amount,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: debitSourceWallet?.balance,
+            balanceBefore: sourceWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.DEBIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            generalTransactionReference,
+            reference: generateReference('debit'),
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+          };
+  
+          const [txCreditFactory, txDebitFactory, activityFactory] = await Promise.all([
+            this.txFactoryServices.create(txCreditPayload),
+            this.txFactoryServices.create(txDebitPayload),
+            this.activityFactory.create({
+              action: ActivityAction.SWAP,
+              description: 'Swapped crypto',
+              userId
+            })
+          ])
+  
+          await Promise.all([
+            this.dataServices.transactions.create(txCreditFactory, session),
+            this.dataServices.transactions.create(txDebitFactory, session),
+            this.dataServices.activities.create(activityFactory, session)
+          ])
+  
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+      };
+  
+      await Promise.all([
+        databaseHelper.executeTransaction(
+          atomicTransaction,
+          this.connection
+        ),
+        this.discord.inHouseNotification({
+          title: `Swap Coins :- ${env.env} environment`,
+          message: `
+  
+              Swap Crypto
+  
+              User: ${user.email}
+  
+              Swapped ${amount} ${sourceCoin} to ${destinationCoin}
+  
+              ${destinationAmount} ${destinationCoin} gotten
+  
+      `,
+          link: env.isProd ? SWAP_CHANNEL_LINK_PRODUCTION : SWAP_CHANNEL_LINK_DEVELOPMENT,
+        })
+      ])
+      return {
+        message: `Swap successful`,
+        data: {
+          rate,
+          destinationAmount
+        },
+        status: 200,
+        state: ResponseState.SUCCESS,
+      };
+     } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'SWAP CRYPTO',
+        error,
+        message: error.message
+      }
 
-    await Promise.all([
-      databaseHelper.executeTransaction(
-        atomicTransaction,
-        this.connection
-      ),
-      this.discord.inHouseNotification({
-        title: `Swap Coins :- ${env.env} environment`,
-        message: `
-
-            Swap Crypto
-
-            User: ${user.email}
-
-            Swapped ${amount} ${sourceCoin} to ${destinationCoin}
-
-            ${destinationAmount} ${destinationCoin} gotten
-
-    `,
-        link: env.isProd ? SWAP_CHANNEL_LINK_PRODUCTION : SWAP_CHANNEL_LINK_DEVELOPMENT,
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
       })
-    ])
-    return {
-      message: `Swap successful`,
-      data: {
-        rate,
-        destinationAmount
-      },
-      status: 200,
-      state: ResponseState.SUCCESS,
-    };
+    }
+    
   }
 }

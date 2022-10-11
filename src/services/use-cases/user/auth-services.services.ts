@@ -16,16 +16,19 @@ import { ILogin, ISignup } from 'src/core/dtos/authentication/login.dto';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import { ActivityAction } from 'src/core/dtos/activity';
 import { EmailTemplates } from 'src/core/types/email'
+import { UtilsServices } from '../utils/utils.service';
+import { IErrorReporter } from 'src/core/types/error';
 @Injectable()
 export class AuthServices {
   constructor(
-    private data: IDataServices,
-    private discordServices: INotificationServices,
-    private inMemoryServices: IInMemoryServices,
-    private factory: UserFactoryService,
-    private emitter: EventEmitter2,
-    private userFeatureManagementFactory: UserFeatureManagementFactoryService,
+    private readonly data: IDataServices,
+    private readonly discordServices: INotificationServices,
+    private readonly inMemoryServices: IInMemoryServices,
+    private readonly factory: UserFactoryService,
+    private readonly emitter: EventEmitter2,
+    private readonly userFeatureManagementFactory: UserFeatureManagementFactoryService,
     private readonly activityFactory: ActivityFactoryService,
+    private readonly utilsService: UtilsServices,
   ) { }
 
   async signup(data: ISignup): Promise<ResponsesType<User>> {
@@ -94,7 +97,16 @@ export class AuthServices {
       };
 
     } catch (error) {
+
       Logger.error(error)
+      const payload: IErrorReporter = {
+        action: 'SIGNUP',
+        error,
+        email: data.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(payload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -180,6 +192,14 @@ export class AuthServices {
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const payload: IErrorReporter = {
+        action: 'VERIFY EMAIL',
+        error,
+        email: req.user.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(payload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -248,6 +268,14 @@ export class AuthServices {
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const payload: IErrorReporter = {
+        action: 'ISSUE VERIFICATION EMAIL',
+        error,
+        email: req.user.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(payload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -311,6 +339,14 @@ export class AuthServices {
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'RESET PASSWORD',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -427,6 +463,14 @@ export class AuthServices {
       }
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'RECOVER PASSWORD',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -507,6 +551,14 @@ export class AuthServices {
 
     } catch (error: Error | any | unknown) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'LOGIN ',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -526,11 +578,19 @@ export class AuthServices {
       }
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET AUTH USER',
+        error,
+        email: data.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
         message: error.message,
-        error
+        error: error
       })
     }
   }
