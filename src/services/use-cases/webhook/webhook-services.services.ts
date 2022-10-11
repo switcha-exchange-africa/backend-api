@@ -122,24 +122,27 @@ export class WebhookServices {
         }
       };
 
-      await Promise.all([
-        databaseHelper.executeTransaction(
-          atomicTransaction,
-          this.connection
-        ),
-        this.discord.inHouseNotification({
-          title: `External Deposit :- ${env.env} environment`,
-          message: `
-  
-          External Deposit
-          Recieved ${amount} ${currency} from ${from}
-  
-          BODY : ${JSON.stringify(payload)}
-  `,
-          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
-        })
-      ])
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
 
+      this.discord.inHouseNotification({
+        title: `External Deposit :- ${env.env} environment`,
+        message: `
+
+        External Deposit
+        
+        Recieved ${amount} ${currency} 
+        
+        FROM:-  ${from}
+        
+        TO :- ${to}
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
       return { message: "Webhook received successfully", status: 200, data: payload }
     } catch (error) {
       Logger.error(error)
