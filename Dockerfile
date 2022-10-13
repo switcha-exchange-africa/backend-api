@@ -35,7 +35,7 @@ WORKDIR /home/node
 COPY --from=builder --chown=node:node /home/node/package*.json ./
 COPY --from=builder --chown=node:node /home/node/node_modules/ ./node_modules/
 COPY --from=builder --chown=node:node /home/node/dist/ ./dist/
-COPY --from=builder --chown=node:node /home/node/env_p0sff8.txt ./.env
+COPY --from=builder --chown=node:node /home/node/env_bj57to ./.env
 EXPOSE 3464
 
 CMD ["node", "dist/main.js"]
