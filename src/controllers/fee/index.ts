@@ -1,6 +1,6 @@
 import { Controller, Get, Res, Param, Query } from "@nestjs/common";
 import { Response } from "express"
-import { CalculateTradeFeeDto, FindByFeatureDto } from "src/core/dtos/authentication/login.dto";
+import { CalculateTradeFeeDto, CalculateWithdrawalFeeDto, FindByFeatureDto } from "src/core/dtos/authentication/login.dto";
 import { FeeServices } from "src/services/use-cases/fees/fee.service";
 import { isAuthenticated } from "src/core/decorators";
 
@@ -8,24 +8,6 @@ import { isAuthenticated } from "src/core/decorators";
 export class FeeController {
 
   constructor(private services: FeeServices) { }
-
-  @Get('/:feature')
-  @isAuthenticated('strict')
-  async getSingleFeeByFeature(
-    @Res() res: Response,
-    @Param() params: FindByFeatureDto
-  ) {
-    try {
-
-      const { feature } = params
-      const response = await this.services.getSingleFeeByFeature(feature);
-      return res.status(response.status).json(response);
-
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-
-    }
-  }
 
   @Get('/trade')
   @isAuthenticated('strict')
@@ -48,5 +30,47 @@ export class FeeController {
 
     }
   }
+
+  @Get('/withdrawal')
+  @isAuthenticated('strict')
+  async calculateWithdrawalFees(
+    @Res() res: Response,
+    @Query() query: CalculateWithdrawalFeeDto
+  ) {
+    try {
+
+      const { coin, amount } = query
+      const payload = {
+        coin,
+        amount
+      }
+      const response = await this.services.calculateWithdrawalFees(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  @Get('/:feature')
+  @isAuthenticated('strict')
+  async getSingleFeeByFeature(
+    @Res() res: Response,
+    @Param() params: FindByFeatureDto
+  ) {
+    try {
+
+      const { feature } = params
+      const response = await this.services.getSingleFeeByFeature(feature);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+
 
 }

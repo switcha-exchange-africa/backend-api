@@ -241,8 +241,32 @@ export class FeeServices {
     amount: number
   }) {
     try {
-      
+
       const data = await this.utils.calculateFees(payload)
+      return Promise.resolve({
+        message: "Fee retrieved succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async calculateWithdrawalFees(payload: {
+    coin: string,
+    amount: number
+  }) {
+    try {
+
+      const data = await this.utils.calculateWithdrawalFees(payload)
       return Promise.resolve({
         message: "Fee retrieved succesfully",
         status: HttpStatus.OK,

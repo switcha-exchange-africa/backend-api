@@ -11,6 +11,7 @@ import { PartialType } from '@nestjs/mapped-types';
 import { SwitchaDeviceType } from 'src/lib/constants';
 import { Types } from 'mongoose';
 import { ActivityAction } from "../activity";
+import { Type } from "class-transformer";
 
 export class LoginDto {
   @IsString()
@@ -82,6 +83,22 @@ export class CalculateTradeFeeDto {
 
 
   @IsNotEmpty()
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  public amount: number;
+
+}
+
+
+export class CalculateWithdrawalFeeDto {
+  @IsNotEmpty()
+  @IsString()
+  public coin: string;
+
+
+  @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   @IsPositive()
   public amount: number;
