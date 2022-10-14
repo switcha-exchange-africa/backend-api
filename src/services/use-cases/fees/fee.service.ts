@@ -1,13 +1,17 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import { Types } from "mongoose"
 import { IDataServices } from "src/core/abstracts"
+import { ActivityAction } from "src/core/dtos/activity"
 import { IFeeAmountType, IGetFee } from "src/core/dtos/fee"
 import { ResponseState } from "src/core/types/response"
+import { UtilsServices } from "../utils/utils.service"
 
 @Injectable()
 export class FeeServices {
   constructor(
-    private data: IDataServices
+    private data: IDataServices,
+    private readonly utils: UtilsServices,
+
   ) { }
 
   cleanQueryPayload(payload: IGetFee) {
@@ -131,7 +135,7 @@ export class FeeServices {
         },
         {
           coin: "ETH",
-          fee:  0.004,
+          fee: 0.004,
           userId
         },
       ]
@@ -189,6 +193,56 @@ export class FeeServices {
     try {
 
       const data = await this.data.fees.findOne({ _id: id });
+      return Promise.resolve({
+        message: "Fee retrieved succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+  async getSingleFeeByFeature(feature: string) {
+    try {
+
+      const data = await this.data.fees.findOne({ feature });
+      if (!data) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: `Fee for this feature don't exists`,
+        error: null
+      })
+      return Promise.resolve({
+        message: "Fee retrieved succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async calculateTradeFees(payload: {
+    operation: ActivityAction,
+    amount: number
+  }) {
+    try {
+      
+      const data = await this.utils.calculateFees(payload)
       return Promise.resolve({
         message: "Fee retrieved succesfully",
         status: HttpStatus.OK,

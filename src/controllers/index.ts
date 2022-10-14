@@ -6,6 +6,7 @@ import { BuySellController } from "./buy-sell";
 import { CoinController } from "./coins";
 import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
+import { FeeController } from "./fee";
 import { HomeController } from "./home";
 import { MiscController } from "./misc";
 import { NotificationController } from "./notification";
@@ -35,5 +36,6 @@ export default [
   CoinController,
   P2pController,
   MiscController,
+  FeeController,
   ...admin
 ]
