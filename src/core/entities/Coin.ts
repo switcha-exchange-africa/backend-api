@@ -15,13 +15,14 @@ export class Coin {
 
 export type IGetCoins = PaginationType & {
   coin: string
+  type: string
   userId?: string
 }
 
 export enum CoinType {
   CRYPTO = 'crypto',
   FIAT = 'fiat'
-} 
+}
 export const CoinTypeList = [
   CoinType.CRYPTO,
   CoinType.FIAT,

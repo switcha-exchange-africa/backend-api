@@ -18,6 +18,7 @@ export class CoinServices {
     if (payload.sortBy) key['sortBy'] = payload.sortBy
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.coin) key['coin'] = payload.coin
+    if (payload.type) key['type'] = payload.type
 
     return key
   }

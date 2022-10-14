@@ -21,7 +21,7 @@ export class CoinController {
 
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin } = query
       const payload: IGetCoins = {
-        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy,
+        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,
         coin
       }
 
