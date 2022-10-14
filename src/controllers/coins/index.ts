@@ -19,7 +19,7 @@ export class CoinController {
   ) {
     try {
 
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, type } = query
       const payload: IGetCoins = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,
         coin

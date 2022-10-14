@@ -32,9 +32,9 @@ export class AdminCoinController {
   async getAllCoins(@Res() res: Response, @Query() query) {
     try {
 
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, type } = query
       const response = await this.services.getAllCoins({
-        perpage, page, dateFrom, dateTo, sortBy, orderBy, coin,
+        perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, type
       });
 
       return res.status(response.status).json(response);
