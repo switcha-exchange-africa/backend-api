@@ -7,7 +7,7 @@ import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
-import { IQuickTradeBuy, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
+import { IQuickTradeBuy, IQuickTradeBuyV2, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
@@ -17,6 +17,9 @@ import { env } from "src/configuration";
 import { QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT, QUICK_TRADE_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { User } from "src/core/entities/user.entity";
 import * as _ from 'lodash';
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../../utils/utils.service";
+import { Status } from "src/core/types/status";
 
 @Injectable()
 export class QuickTradeServices {
@@ -28,6 +31,7 @@ export class QuickTradeServices {
     private transactionFactory: TransactionFactoryService,
     private discord: INotificationServices,
     private notificationFactory: NotificationFactoryService,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -842,6 +846,87 @@ export class QuickTradeServices {
         state: 'error',
         error
       });
+    }
+  }
+
+  async buyV2(payload: IQuickTradeBuyV2) {
+    try {
+      const { amount, cash, coin, method } = payload
+      const ads = await this.data.p2pAds.find({
+        type: 'sell',
+        cash,
+        coin,
+        status: { $ne: Status.COMPLETED },
+        minLimit: { $lt: amount },
+        maxLimit: { $gt: amount },
+        isPublished: true,
+        isSwitchaMerchant: true
+      })
+
+      return {
+        message: `Bought ${amount} ${coin}`,
+        data: {
+          amount,
+          cash,
+          coin,
+          method,
+          ads
+        },
+        status: 200,
+        state: ResponseState.SUCCESS,
+      };
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'QUICK TRADE BUY CRYPTO',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async sellV2(payload: IQuickTradeBuyV2) {
+    try {
+      const { amount, cash, coin, method } = payload
+      const ads = await this.data.p2pAds.find({ type: 'buy' })
+
+      return {
+        message: `Bought ${amount} ${coin}`,
+        data: {
+          amount,
+          cash,
+          coin,
+          method,
+          ads
+        },
+        status: 200,
+        state: ResponseState.SUCCESS,
+      };
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'QUICK TRADE SELL CRYPTO',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

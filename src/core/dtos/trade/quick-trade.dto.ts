@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 import { CoinType } from "src/core/types/coin";
 
 export class QuickTradeBuyDto {
@@ -25,8 +25,43 @@ export class QuickTradeBuyDto {
 
 }
 
+export enum QuickTradePaymentMethod {
+  BANK = 'bank',
+  WALLET = 'wallet'
+}
+
+export enum QuickTradeType {
+  BUY = 'buy',
+  SELL = 'sell'
+}
 
 
+export class QuickTradeBuySellV2Dto {
+
+
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
+
+
+  @IsNotEmpty()
+  @IsString()
+  cash: string
+
+  @IsNotEmpty()
+  @IsString()
+  coin: string
+
+  @IsNotEmpty()
+  @IsEnum(QuickTradePaymentMethod)
+  method: QuickTradePaymentMethod
+}
+
+
+export type IQuickTradeBuyV2 = QuickTradeBuySellV2Dto & {
+  userId: string
+  email: string
+}
 export class QuickTradeSellDto {
 
 

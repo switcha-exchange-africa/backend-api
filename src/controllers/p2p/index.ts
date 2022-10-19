@@ -136,11 +136,12 @@ export class P2pController {
         type,
         isPublished,
         coin,
-        userId
+        userId,
+        isSwitchaMerchant
       } = query
       const payload: IGetP2pAds = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,
-        isPublished, coin
+        isPublished, coin, isSwitchaMerchant
       }
 
       const response = await this.services.getAllAds(payload);

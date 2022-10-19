@@ -20,6 +20,9 @@ export class P2pAds {
   @Prop({ default: false })
   isPublished: boolean
 
+  @Prop({ default: true })
+  isSwitchaMerchant: boolean
+
   @Prop()
   paymentTimeLimit: string
 

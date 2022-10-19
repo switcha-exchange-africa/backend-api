@@ -1,3 +1,5 @@
+import { P2pAdsType } from "./P2pAds"
+
 export class P2pAdBank {
   name: string
   code: string
@@ -7,4 +9,6 @@ export class P2pAdBank {
   isWillingToPayTo: boolean
   isAcceptingToPaymentTo: boolean
   userId: string;
+  type: P2pAdsType;
+
 }

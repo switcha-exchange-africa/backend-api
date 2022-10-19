@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory, } from "@nestjs/mongoose";
 import { Types, now, Document } from "mongoose";
+import { P2pAdsList, P2pAdsType } from "src/core/entities/P2pAds";
 
 export type P2pAdBankDocument = P2pAdBank & Document;
 
@@ -25,6 +26,9 @@ export class P2pAdBank {
 
   @Prop()
   isAcceptingToPaymentTo: boolean
+  
+  @Prop({ enum: P2pAdsList })
+  type: P2pAdsType;
 
   @Prop({
     type: Types.ObjectId,

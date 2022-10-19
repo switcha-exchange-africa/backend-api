@@ -24,6 +24,7 @@ export class P2pFactoryService {
     if (data.highestPriceOrder) ads.highestPriceOrder = data.highestPriceOrder;
     if (data.counterPartConditions) ads.counterPartConditions = data.counterPartConditions;
     if (data.banks) ads.banks = data.banks;
+    if (data.isSwitchaMerchant) ads.isSwitchaMerchant = data.isSwitchaMerchant;
 
 
     return ads;
@@ -42,6 +43,8 @@ export class P2pAdBankFactoryService {
     if (data.isWillingToPayTo) bank.isWillingToPayTo = data.isWillingToPayTo;
     if (data.isAcceptingToPaymentTo) bank.isAcceptingToPaymentTo = data.isAcceptingToPaymentTo;
     if (data.userId) bank.userId = data.userId;
+    if (data.type) bank.type = data.type;
+
     return bank;
   }
 }

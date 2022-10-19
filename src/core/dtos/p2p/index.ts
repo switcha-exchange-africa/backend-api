@@ -58,7 +58,11 @@ export class P2pCreateAdDto {
 
   @IsOptional()
   @IsBoolean()
-  isPublished
+  isPublished: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  isSwitchaMerchant: boolean
 
   @IsOptional()
   @IsBoolean()
@@ -135,6 +139,9 @@ export class P2pAdCreateBankDto {
   @IsString()
   code: string
 
+  @IsNotEmpty()
+  @IsEnum(P2pAdsType)
+  type: P2pAdsType;
 
   @IsOptional()
   @IsString()
@@ -169,6 +176,7 @@ export type IGetP2pAds = PaginationType & {
   userId: string
   coin: string;
   isPublished: boolean
+  isSwitchaMerchant: boolean
 }
 
 export class UpdateP2pCreateAdDto extends PartialType(P2pCreateAdDto) { }
