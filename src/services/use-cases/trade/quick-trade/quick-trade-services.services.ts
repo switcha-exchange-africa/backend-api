@@ -20,6 +20,14 @@ import * as _ from 'lodash';
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../../utils/utils.service";
 import { Status } from "src/core/types/status";
+import { P2pOrderFactoryService } from "../p2p/p2p-factory.service";
+import { P2pAdsType } from "src/core/entities/P2pAds";
+import { IActivity } from "src/core/entities/Activity";
+import { P2pOrderType } from "src/core/dtos/p2p";
+import { ActivityAction } from "src/core/dtos/activity";
+import { INotification } from "src/core/entities/notification.entity";
+import { Queue } from "bull";
+import { InjectQueue } from "@nestjs/bull";
 
 @Injectable()
 export class QuickTradeServices {
@@ -32,6 +40,8 @@ export class QuickTradeServices {
     private discord: INotificationServices,
     private notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
+    private readonly orderFactory: P2pOrderFactoryService,
+    @InjectQueue('order.expiry') private orderQueue: Queue,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -851,30 +861,145 @@ export class QuickTradeServices {
 
   async buyV2(payload: IQuickTradeBuyV2) {
     try {
-      const { amount, cash, coin, method } = payload
-      const ads = await this.data.p2pAds.find({
+
+      const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type } = payload
+      const ad = await this.data.p2pAds.findOne({
         type: 'sell',
         cash,
         coin,
-        status: { $ne: Status.COMPLETED },
+        status: { $ne: Status.FILLED },
         minLimit: { $lt: amount },
+        totalAmount: { $gt: amount },
+        // amount
         maxLimit: { $gt: amount },
         isPublished: true,
         isSwitchaMerchant: true
       })
 
-      return {
-        message: `Bought ${amount} ${coin}`,
+      if (!ad) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Ad does not exists',
+          error: null
+        })
+      }
+      const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
+      if (!merchant || merchant.lock) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Something wrong with Merchant account, please do not continue with this merchant',
+          error: null
+        })
+      }
+
+      let order, clientWallet
+
+      if (ad.type === P2pAdsType.BUY) {
+        // check if seller has wallet and enough coin
+        clientWallet = await this.data.wallets.findOne({ userId, coin: ad.coin })
+        if (!clientWallet) {
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `Please create a ${ad.coin.toUpperCase()} wallet before interacting with trade`,
+            error: null
+          })
+        }
+        if (ad.minLimit >= clientWallet.balance) {
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `Insufficient balance in your ${ad.coin.toUpperCase()} balance to sell`,
+            error: null
+          })
+        }
+      }
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+
+          const orderPayload = {
+            merchantId: String(merchant._id),
+            clientId: userId,
+            adId: String(ad._id),
+            type: P2pOrderType.BUY,
+            quantity: amount,
+            // bankId,
+            status: Status.PENDING,
+            clientAccountName,
+            clientAccountNumber,
+            clientBankName,
+            method,
+            price: ad.price,
+            clientWalletId: clientWallet ? String(clientWallet._id) : null,
+            totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(amount))
+          }
+
+          const factory = await this.orderFactory.create(orderPayload)
+          order = await this.data.p2pOrders.create(factory, session)
+
+          await this.data.p2pAds.update({ _id: ad._id }, {
+            $inc: {
+              totalAmount: -amount
+            }
+          }, session) // deduct quantity from ad
+          if (ad.type === P2pAdsType.BUY) {
+            // check if seller has wallet and enough coin
+            await this.data.wallets.update(
+              { userId, coin: ad.coin }, {
+              $inc: {
+                balance: -amount,
+                lockedBalance: amount
+              }
+            }, session)
+
+          }
+
+
+
+        }
+        catch (error) {
+          Logger.error(error);
+          return Promise.reject(error)
+        }
+      }
+
+      // try{}
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      // create queue
+      const activity: IActivity = {
+        userId,
+        action: type === P2pOrderType.SELL ? ActivityAction.QUICK_TRADE_SELL : ActivityAction.QUICK_TRADE_BUY,
+        description: `Created P2P ${type} Order`
+      }
+      const notification: INotification = {
+        userId: String(merchant._id),
+        title: `Order created`,
+        message: `Order created successfully for your ad, order id ${order.orderId}`
+      }
+      await this.utilsService.storeActivitySendNotification({ activity, notification })
+
+      await this.orderQueue.add({ id: order._id }, {
+        delay: Math.abs(Number(ad.paymentTimeLimit)) * 60000
+      })
+
+
+
+      return Promise.resolve({
+        message: "Order created succesfully",
+        status: HttpStatus.OK,
         data: {
-          amount,
-          cash,
-          coin,
-          method,
-          ads
+          order,
+          timeInMin: Math.abs(Number(ad.paymentTimeLimit)),
+          timeInMiliSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60000,
+          timeInSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60
         },
-        status: 200,
-        state: ResponseState.SUCCESS,
-      };
+      })
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {

@@ -1,5 +1,6 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { CoinType } from "src/core/types/coin";
+import { P2pOrderType } from "../p2p";
 
 export class QuickTradeBuyDto {
 
@@ -55,6 +56,23 @@ export class QuickTradeBuySellV2Dto {
   @IsNotEmpty()
   @IsEnum(QuickTradePaymentMethod)
   method: QuickTradePaymentMethod
+
+  @IsOptional()
+  @IsEnum(P2pOrderType)
+  type: P2pOrderType
+
+  @IsOptional()
+  @IsString()
+  clientAccountName: string
+
+  @IsOptional()
+  @IsString()
+  clientAccountNumber: string
+
+  @IsOptional()
+  @IsString()
+  clientBankName: string
+
 }
 
 

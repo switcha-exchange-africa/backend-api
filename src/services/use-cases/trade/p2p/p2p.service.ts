@@ -231,7 +231,7 @@ export class P2pServices {
     if (payload.coin) key['coin'] = payload.coin
     if (payload.isSwitchaMerchant) key['isSwitchaMerchant'] = payload.isSwitchaMerchant
 
-    
+
 
     return key
   }
@@ -248,7 +248,7 @@ export class P2pServices {
     if (payload.isAcceptingToPaymentTo) key['isAcceptingToPaymentTo'] = payload.isAcceptingToPaymentTo
     if (payload.isWillingToPayTo) key['isWillingToPayTo'] = payload.isWillingToPayTo
 
-    
+
 
     return key
   }

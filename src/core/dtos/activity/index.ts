@@ -17,6 +17,8 @@ export enum ActivityAction {
   SELL = 'sell',
   P2P_SELL = 'p2p-sell',
   P2P_BUY = 'p2p-buy',
+  QUICK_TRADE_SELL = 'quick-trade-sell',
+  QUICK_TRADE_BUY = 'quick-trade-buy',
   P2P_SELL_AD = 'p2p-sell-ad',
   P2P_BUY_AD = 'p2p-buy-ad',
 

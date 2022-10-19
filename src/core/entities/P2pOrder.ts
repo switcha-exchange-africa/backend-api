@@ -13,6 +13,7 @@ export class P2pOrder {
   clientAccountNumber: string
   clientBankName: string
   orderId: string
+  method: string
   price: number
   totalAmount: number
   clientWalletId: string

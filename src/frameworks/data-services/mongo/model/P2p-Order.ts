@@ -71,6 +71,9 @@ export class P2pOrder {
   clientBankName: string
 
   @Prop()
+  method: string
+
+  @Prop()
   completionTime: Date;
 
   @Prop({ default: now() })

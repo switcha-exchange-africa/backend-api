@@ -25,8 +25,9 @@ export class P2pFactoryService {
     if (data.counterPartConditions) ads.counterPartConditions = data.counterPartConditions;
     if (data.banks) ads.banks = data.banks;
     if (data.isSwitchaMerchant) ads.isSwitchaMerchant = data.isSwitchaMerchant;
+    if (data.isPublished) ads.isPublished = data.isPublished;
 
-
+    
     return ads;
   }
 }
@@ -67,8 +68,9 @@ export class P2pOrderFactoryService {
     if (data.clientAccountNumber) order.clientAccountNumber = data.clientAccountNumber;
     if (data.clientBankName) order.clientAccountName = data.clientAccountName;
     if (data.clientWalletId) order.clientWalletId = data.clientWalletId;
+    if (data.method) order.method = data.method;
 
-
+    
     order.orderId = String(randomFixedInteger(12))
     return order;
   }
