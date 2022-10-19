@@ -36,7 +36,7 @@ export class AuthServices {
       const { email } = payload
       const userExists = await this.data.users.findOne({ email })
       if (userExists) return Promise.reject({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        status: HttpStatus.CONFLICT,
         state: ResponseState.ERROR,
         message: 'Email already added',
         error: null
