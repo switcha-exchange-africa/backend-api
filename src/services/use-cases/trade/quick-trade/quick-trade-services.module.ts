@@ -30,8 +30,6 @@ import { QuickTradeServices } from "./quick-trade-services.services";
         QuickTradeFactoryService,
         QuickTradeContractFactoryService,
         P2pOrderFactoryService,
-
-    
     ],
     exports: [QuickTradeServices, TransactionFactoryService]
 })

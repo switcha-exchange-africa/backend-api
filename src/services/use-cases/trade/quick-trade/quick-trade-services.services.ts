@@ -864,7 +864,7 @@ export class QuickTradeServices {
 
       const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type } = payload
       const ad = await this.data.p2pAds.findOne({
-        type: 'sell',
+        type: type === 'buy' ? 'sell' : 'buy',
         cash,
         coin,
         status: { $ne: Status.FILLED },
