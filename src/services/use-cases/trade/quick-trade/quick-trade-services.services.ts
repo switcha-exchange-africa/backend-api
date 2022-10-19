@@ -875,7 +875,7 @@ export class QuickTradeServices {
         isPublished: true,
         isSwitchaMerchant: true
       })
-
+      console.log(ad)
       if (!ad) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,

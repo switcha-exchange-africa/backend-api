@@ -57,7 +57,7 @@ export class P2pOrder {
   @Prop({
     type: Types.ObjectId,
     ref: "P2pAdBank",
-    required: true
+    // required: true
   })
   bankId: string
 

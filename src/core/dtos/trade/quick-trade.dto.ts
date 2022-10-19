@@ -57,7 +57,7 @@ export class QuickTradeBuySellV2Dto {
   @IsEnum(QuickTradePaymentMethod)
   method: QuickTradePaymentMethod
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsEnum(P2pOrderType)
   type: P2pOrderType
 
