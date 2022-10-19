@@ -20,6 +20,7 @@ export class User {
   avatar: string
   level: USER_LEVEL_TYPE
   dob: string
+  isWaitList: boolean
 }
 
 

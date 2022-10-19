@@ -65,13 +65,14 @@ export class User {
   @Prop()
   createdAt: Date
 
- 
-
   @Prop()
   updatedAt: Date
 
   @Prop({ default: false })
   lock: boolean;
+
+  @Prop({ default: false })
+  isWaitList: boolean;
 
   @Prop()
   transactionPin: string

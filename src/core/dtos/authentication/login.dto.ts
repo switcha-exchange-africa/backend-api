@@ -14,15 +14,28 @@ import { ActivityAction } from "../activity";
 import { Type } from "class-transformer";
 
 export class LoginDto {
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   password: string;
 
-  @IsEmail()
   @IsNotEmpty()
+  @IsEmail()
   email: string;
 }
 
+export class WaitListDto {
+
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsEnum(SwitchaDeviceType)
+  device: SwitchaDeviceType
+}
+export type IWaitList = WaitListDto & {
+
+}
 export class SignupDto {
 
   @IsString()

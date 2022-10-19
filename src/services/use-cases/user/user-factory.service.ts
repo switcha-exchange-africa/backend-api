@@ -21,6 +21,9 @@ export class UserFactoryService {
     if (data.transactionPin) user.transactionPin = data.transactionPin;
     if (data.level) user.level = data.level;
     if (data.avatar) user.avatar = data.avatar;
+    if (data.isWaitList) user.isWaitList = data.isWaitList;
+
+    
     user.emailVerified = false;
     user.lock = false;
     user.authenticator=false

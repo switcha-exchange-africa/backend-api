@@ -12,7 +12,7 @@ import { UserFactoryService, UserFeatureManagementFactoryService } from './user-
 import { ResponseState, ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { ILogin, ISignup } from 'src/core/dtos/authentication/login.dto';
+import { ILogin, ISignup, IWaitList } from 'src/core/dtos/authentication/login.dto';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import { ActivityAction } from 'src/core/dtos/activity';
 import { EmailTemplates } from 'src/core/types/email'
@@ -30,6 +30,48 @@ export class AuthServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
   ) { }
+
+  async waitlist(payload: IWaitList) {
+    try {
+      const { email } = payload
+      const userExists = await this.data.users.findOne({ email })
+      if (userExists) return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: 'Email already added',
+        error: null
+      })
+
+      const factory = await this.factory.createNewUser({
+        ...payload,
+        isWaitList: true,
+      })
+      await this.data.users.create(factory);
+      return {
+        status: HttpStatus.CREATED,
+        message: "Email added to waitlist",
+        data: {},
+        state: ResponseState.SUCCESS
+      };
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'WAITLIST',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 
   async signup(data: ISignup): Promise<ResponsesType<User>> {
     try {

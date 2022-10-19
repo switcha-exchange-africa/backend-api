@@ -14,6 +14,7 @@ import { P2pController } from "./p2p";
 import { QuickTradeController } from "./quick-trade";
 import { RatesController } from "./rates";
 import { TransactionController } from "./transaction";
+import { WaitListController } from "./waitlist";
 import { WalletController } from "./wallet";
 import { WebhookController } from "./webhooks";
 import { WithdrawalController } from "./withdrawal";
@@ -37,5 +38,6 @@ export default [
   P2pController,
   MiscController,
   FeeController,
+  WaitListController,
   ...admin
 ]
