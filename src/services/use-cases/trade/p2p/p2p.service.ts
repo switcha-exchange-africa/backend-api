@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -230,12 +230,20 @@ export class P2pServices {
     if (payload.type) key['type'] = payload.type
     if (payload.coin) key['coin'] = payload.coin
     if (payload.isSwitchaMerchant) key['isSwitchaMerchant'] = payload.isSwitchaMerchant
-
-
-
     return key
   }
+  cleanP2pBankQueryPayload(payload: IGetP2pBanks) {
+    let key = {}
+    if (payload.accountNumber) key['accountNumber'] = payload.accountNumber
+    if (payload.isActive) key['isActive'] = payload.isActive
+    if (payload.isWillingToPayTo) key['isWillingToPayTo'] = payload.isWillingToPayTo
+    if (payload.isAcceptingToPaymentTo) key['isAcceptingToPaymentTo'] = payload.isAcceptingToPaymentTo
+    if (payload.userId) key['userId'] = payload.userId
+    if (payload.type) key['type'] = payload.type
 
+    return key
+
+  }
   cleanBankPayload(payload: IGetP2pAdBank) {
     let key = {}
     if (payload.userId) key['userId'] = payload.userId
@@ -247,8 +255,9 @@ export class P2pServices {
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.isAcceptingToPaymentTo) key['isAcceptingToPaymentTo'] = payload.isAcceptingToPaymentTo
     if (payload.isWillingToPayTo) key['isWillingToPayTo'] = payload.isWillingToPayTo
+    if (payload.type) key['type'] = payload.type
 
-
+    
 
     return key
   }
@@ -287,6 +296,7 @@ export class P2pServices {
       })
     }
   }
+
 
   async getSingleAd(id: mongoose.Types.ObjectId) {
     try {

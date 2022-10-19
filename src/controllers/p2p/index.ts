@@ -49,9 +49,12 @@ export class P2pController {
     }
   }
 
+
+
   @Get('/p2p/bank')
   @isAuthenticated('strict')
   async getAllAdsBank(
+    @Req() req: Request,
     @Res() res: Response,
     @Query() query: any
   ) {
@@ -63,14 +66,17 @@ export class P2pController {
         dateTo,
         sortBy,
         orderBy,
-
-        userId,
+        type,
         isActive,
         isAcceptingToPaymentTo,
         isWillingToPayTo
       } = query
+      const userId = req.user._id
       const payload: IGetP2pAdBank = {
-        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy,
+        perpage,
+        userId, page,
+        type,
+        dateFrom, dateTo, sortBy, orderBy,
         isActive,
         isAcceptingToPaymentTo,
         isWillingToPayTo

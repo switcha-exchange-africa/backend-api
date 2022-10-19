@@ -178,7 +178,15 @@ export type IGetP2pAds = PaginationType & {
   isPublished: boolean
   isSwitchaMerchant: boolean
 }
+export type IGetP2pBanks = PaginationType & {
+  accountNumber: string
+  isActive: boolean
+  isWillingToPayTo: boolean
+  isAcceptingToPaymentTo: boolean
+  userId: string;
+  type: P2pAdsType;
 
+}
 export class UpdateP2pCreateAdDto extends PartialType(P2pCreateAdDto) { }
 export type IUpdateP2pAds = UpdateP2pCreateAdDto & {
   id: Types.ObjectId
@@ -194,7 +202,7 @@ export type IGetP2pAdBank = PaginationType & {
   isActive: boolean
   isAcceptingToPaymentTo: boolean
   isWillingToPayTo: boolean
-
+  type: string
 }
 export class P2pConfirmOrderDto {
   @IsOptional()
