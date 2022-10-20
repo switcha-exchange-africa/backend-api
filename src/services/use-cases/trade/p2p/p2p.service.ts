@@ -710,6 +710,7 @@ export class P2pServices {
           error: null
         })
       }
+
       if (ad.type === P2pAdsType.SELL && order.merchantId !== userId) {
         // order client id must be the logged in user
         return Promise.reject({

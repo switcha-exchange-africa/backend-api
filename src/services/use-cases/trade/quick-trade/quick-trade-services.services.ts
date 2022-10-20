@@ -868,19 +868,18 @@ export class QuickTradeServices {
         cash,
         coin,
         status: { $ne: Status.FILLED },
-        minLimit: { $lt: amount },
-        totalAmount: { $gt: amount },
+        minLimit: { $lte: amount },
+        totalAmount: { $gte: amount },
         // amount
         maxLimit: { $gt: amount },
         isPublished: true,
         isSwitchaMerchant: true
       })
-      console.log(ad)
       if (!ad) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
-          message: 'Ad does not exists',
+          message:`No current ad match for ${amount}${coin}`,
           error: null
         })
       }
@@ -995,6 +994,7 @@ export class QuickTradeServices {
         status: HttpStatus.OK,
         data: {
           order,
+          ad,
           timeInMin: Math.abs(Number(ad.paymentTimeLimit)),
           timeInMiliSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60000,
           timeInSeconds: Math.abs(Number(ad.paymentTimeLimit)) * 60
