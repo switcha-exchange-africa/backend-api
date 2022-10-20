@@ -363,7 +363,7 @@ export class P2pServices {
         return Promise.reject({
           status: HttpStatus.CONFLICT,
           state: ResponseState.ERROR,
-          message: 'Bank already  exists',
+          message: 'Bank already exists',
           error: null
         })
       }
