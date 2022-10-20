@@ -257,7 +257,7 @@ export class P2pServices {
     if (payload.isWillingToPayTo) key['isWillingToPayTo'] = payload.isWillingToPayTo
     if (payload.type) key['type'] = payload.type
 
-    
+
 
     return key
   }
@@ -361,9 +361,9 @@ export class P2pServices {
       const bankExists = await this.data.p2pAdBanks.findOne({ userId, accountNumber })
       if (bankExists) {
         return Promise.reject({
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.CONFLICT,
           state: ResponseState.ERROR,
-          message: 'Bank does not exists',
+          message: 'Bank already  exists',
           error: null
         })
       }
