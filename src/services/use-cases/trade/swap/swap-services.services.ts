@@ -56,12 +56,15 @@ export class SwapServices {
         }),
       ]);
 
-      if (!user) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: `User does not exist`,
-        error: null,
-      })
+      if (!user) {
+        Logger.error("USER DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: `User does not exist`,
+          error: null,
+        })
+      }
       email = user.email
 
       if (!destinationFeeWallet) {
@@ -84,18 +87,24 @@ export class SwapServices {
           error: null,
         });
       }
-      if (!sourceWallet) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: `${sourceWallet} does not exists`,
-        error: null,
-      });
-      if (!destinationWallet) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: `${destinationWallet} does not exists`,
-        error: null,
-      });
+      if (!sourceWallet) {
+        Logger.error("SOURCE WALLET DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: `${sourceCoin} wallet does not exists`,
+          error: null,
+        });
+      }
+      if (!destinationWallet) {
+        Logger.error("DESTINATION WALLET DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: `${destinationCoin} wallet does not exists`,
+          error: null,
+        });
+      }
 
 
       // const sourceRateUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=${CoinType.USD}`;
@@ -260,11 +269,11 @@ export class SwapServices {
 
           ])
 
-          this.dataServices.transactions.create(txCreditFactory, session)
-          this.dataServices.transactions.create(txDebitFactory, session)
-          this.dataServices.activities.create(activityFactory, session)
-          this.dataServices.transactions.create(txFeeFactory, session)
-          this.dataServices.transactions.create(txFeeWalletFactory, session)
+          await this.dataServices.transactions.create(txCreditFactory, session)
+          await this.dataServices.transactions.create(txDebitFactory, session)
+          await this.dataServices.activities.create(activityFactory, session)
+          await this.dataServices.transactions.create(txFeeFactory, session)
+          await this.dataServices.transactions.create(txFeeWalletFactory, session)
 
         } catch (error) {
           Logger.error(error);
@@ -273,7 +282,7 @@ export class SwapServices {
       };
 
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),
