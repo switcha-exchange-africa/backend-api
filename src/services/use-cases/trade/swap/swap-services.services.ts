@@ -52,7 +52,6 @@ export class SwapServices {
           coin: destinationCoin,
         }),
         this.dataServices.feeWallets.findOne({
-          userId,
           coin: destinationCoin,
         }),
       ]);
