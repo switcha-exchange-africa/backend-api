@@ -237,7 +237,16 @@ export class AuthServices {
           email: updatedUser.email,
           fullName: `${updatedUser.firstName} ${updatedUser.lastName}`
         }),
-        this.userFeatureManagementFactory.manageUser({ userId: updatedUser._id }),
+        this.userFeatureManagementFactory.manageUser({
+          userId: updatedUser._id,
+          canBuy: true,
+          canSell: true,
+          canSwap: true,
+          canP2PBuy: false,
+          canP2PSell: false,
+          canWithdraw: false,
+
+        }),
         this.activityFactory.create({
           action: ActivityAction.VERIFY_EMAIL,
           description: 'Verify Email',
@@ -590,7 +599,7 @@ export class AuthServices {
       })
 
       const correctPassword: boolean = await compareHash(password, user?.password!);
-      if (!correctPassword){
+      if (!correctPassword) {
         const { state, retries } = await this.utilsService.shouldLimitUser({
           key: `${LOGIN_ATTEMPT_KEY}-${email}`,
           max: 5
@@ -616,7 +625,7 @@ export class AuthServices {
           message: 'Password is incorrect',
           error: null
         })
-      } 
+      }
 
       if (!user.emailVerified) {
 

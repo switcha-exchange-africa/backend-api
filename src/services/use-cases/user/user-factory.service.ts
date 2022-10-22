@@ -40,6 +40,13 @@ export class UserFeatureManagementFactoryService {
   async manageUser(data: OptionalQuery<UserFeatureManagement>) {
     const manage = new UserFeatureManagement();
     if (data.userId) manage.userId = data.userId;
+    if (data.canBuy) manage.canBuy = data.canBuy;
+    if (data.canSell) manage.canSell = data.canSell;
+    if (data.canSwap) manage.canSwap = data.canSwap;
+    if (data.canP2PBuy) manage.canP2PBuy = data.canP2PBuy;
+    if (data.canP2PSell) manage.canP2PSell = data.canP2PSell;
+    if (data.canWithdraw) manage.canWithdraw = data.canWithdraw;
+
     return manage;
   }
 
