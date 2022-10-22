@@ -27,7 +27,7 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       id: downloadfile  # Remember to give an ID if you need the output
       with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1656281820/switcha-production-env/env-production_alpqsh.txt"
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1666458445/switcha-production-env/env-production_rktalh.txt"
         target: ./
 
     - name: Install doctl
@@ -72,4 +72,4 @@ jobs:
             docker run --name switcha-production-api -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # deleting untagged image
-            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+            #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
