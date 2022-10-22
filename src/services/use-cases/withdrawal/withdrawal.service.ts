@@ -209,7 +209,7 @@ export class WithdrawalServices {
         }
       }
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),
@@ -397,20 +397,19 @@ export class WithdrawalServices {
 
           ])
 
-          await Promise.all([
-            this.data.notifications.create(notificationFactory, session),
-            this.data.activities.create(activityFactory, session),
-            this.data.transactions.create(transactionFactory, session),
-            this.data.transactions.update({ _id: withdrawal.transactionId }, { status: TRANSACTION_STATUS.FAILED }, session),
-            this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: TRANSACTION_STATUS.FAILED }, session),
-            this.data.wallets.update({ _id: wallet._id }, { lastDeposit: withdrawal.originalAmount }, session)
-          ])
+          await this.data.notifications.create(notificationFactory, session)
+          await this.data.activities.create(activityFactory, session)
+          await this.data.transactions.create(transactionFactory, session)
+          await this.data.transactions.update({ _id: withdrawal.transactionId }, { status: TRANSACTION_STATUS.FAILED }, session)
+          await this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: TRANSACTION_STATUS.FAILED }, session)
+          await this.data.wallets.update({ _id: wallet._id }, { lastDeposit: withdrawal.originalAmount }, session)
+
         } catch (error) {
           return Promise.reject(error)
         }
       }
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),

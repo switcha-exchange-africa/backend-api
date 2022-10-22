@@ -243,7 +243,7 @@ export class SeedServices {
           throw new Error(error);
         }
       }
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )

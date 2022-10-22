@@ -297,7 +297,7 @@ export class BuySellServices {
       };
 
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),
@@ -616,7 +616,7 @@ export class BuySellServices {
       };
 
       await Promise.all([
-        databaseHelper.executeTransaction(
+        databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
           this.connection
         ),

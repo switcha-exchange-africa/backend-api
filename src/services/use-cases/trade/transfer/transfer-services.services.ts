@@ -131,7 +131,7 @@ export class TransferServices {
           throw new Error(error);
         }
       };
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       );
