@@ -6,7 +6,6 @@ import { MongoGenericRepository } from './mongo-generic-repository';
 import { User, UserDocument } from './model/User';
 import { Wallet, WalletDocument } from './model/Wallet';
 import { IDataServices } from 'src/core/abstracts';
-import { TransactionReference, TransactionReferenceDocument } from './model/transaction-reference.model';
 import { FaucetDocument, Faucet } from './model/Faucet';
 import { Withdrawal, WithdrawalDocument } from './model/Withdrawal';
 import { Bank, BankDocument } from './model/Bank';
@@ -27,6 +26,7 @@ import { Coin, CoinDocument } from './model/Coin';
 import { P2pAds, P2pAdsDocument } from './model/P2P-Ads';
 import { P2pAdBank, P2pAdBankDocument } from './model/P2P-Ad-Banks';
 import { P2pOrder, P2pOrderDocument } from './model/P2p-Order';
+import { WebPush, WebPushDocument } from "./model/Web-Push";
 
 
 @Injectable()
@@ -34,7 +34,6 @@ export class MongoDataServices
   implements IDataServices, OnApplicationBootstrap {
   users: MongoGenericRepository<User>;
   wallets: MongoGenericRepository<Wallet>;
-  transactionReferences: MongoGenericRepository<TransactionReference>;
   transactions: MongoGenericRepository<Transaction>;
   faucets: MongoGenericRepository<Faucet>;
   withdrawals: MongoGenericRepository<Withdrawal>;
@@ -56,6 +55,8 @@ export class MongoDataServices
   p2pAds: MongoGenericRepository<P2pAds>
   p2pAdBanks: MongoGenericRepository<P2pAdBank>
   p2pOrders: MongoGenericRepository<P2pOrder>
+  webPush: MongoGenericRepository<WebPush>
+
 
   constructor(
     @InjectModel(User.name)
@@ -63,9 +64,6 @@ export class MongoDataServices
 
     @InjectModel(Wallet.name)
     private WalletRepository: Model<WalletDocument>,
-
-    @InjectModel(TransactionReference.name)
-    private TransactionReferenceRepository: Model<TransactionReferenceDocument>,
 
     @InjectModel(Transaction.name)
     private TransactionRepository: Model<TransactionDocument>,
@@ -131,6 +129,9 @@ export class MongoDataServices
     @InjectModel(P2pOrder.name)
     private P2pOrderRepository: Model<P2pOrderDocument>,
 
+    @InjectModel(WebPush.name)
+    private WebPushRepository: Model<WebPushDocument>,
+
   ) { }
 
 
@@ -138,7 +139,6 @@ export class MongoDataServices
     this.users = new MongoGenericRepository<User>(this.UserRepository);
     this.wallets = new MongoGenericRepository<Wallet>(this.WalletRepository)
     this.transactions = new MongoGenericRepository<Transaction>(this.TransactionRepository, ['userId'])
-    this.transactionReferences = new MongoGenericRepository<TransactionReference>(this.TransactionReferenceRepository)
     this.faucets = new MongoGenericRepository<Faucet>(this.FaucetRepository)
     this.withdrawals = new MongoGenericRepository<Withdrawal>(this.WithdrawalRepository)
     this.banks = new MongoGenericRepository<Bank>(this.BankRepository, ['userId'])
@@ -155,10 +155,11 @@ export class MongoDataServices
     this.feeWallets = new MongoGenericRepository<FeeWallet>(this.FeeWalletRepository, ['userId'])
     this.userFeatureManagement = new MongoGenericRepository<UserFeatureManagement>(this.UserFeatureManagementRepository, ['userId'])
     this.coinWithdrawalFee = new MongoGenericRepository<CoinWithdrawalFee>(this.CoinWithdrawalFeeRepository, ['userId'])
-    this.coins = new MongoGenericRepository<CoinDocument>(this.CoinRepository, ['userId'])
-    this.p2pAds = new MongoGenericRepository<P2pAdsDocument>(this.P2pAdsRepository, ['userId'])
-    this.p2pAdBanks = new MongoGenericRepository<P2pAdBankDocument>(this.P2pAdBanksRepository, ['userId'])
-    this.p2pOrders = new MongoGenericRepository<P2pOrderDocument>(this.P2pOrderRepository)
+    this.coins = new MongoGenericRepository<Coin>(this.CoinRepository, ['userId'])
+    this.p2pAds = new MongoGenericRepository<P2pAds>(this.P2pAdsRepository, ['userId'])
+    this.p2pAdBanks = new MongoGenericRepository<P2pAdBank>(this.P2pAdBanksRepository, ['userId'])
+    this.p2pOrders = new MongoGenericRepository<P2pOrder>(this.P2pOrderRepository)
+    this.webPush = new MongoGenericRepository<WebPush>(this.WebPushRepository)
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

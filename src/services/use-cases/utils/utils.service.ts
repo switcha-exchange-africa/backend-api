@@ -16,6 +16,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION } from 'src/lib/constants';
 import { IErrorReporter } from 'src/core/types/error';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
+import { INotification } from 'src/core/entities/notification.entity';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 @Injectable()
@@ -325,5 +326,43 @@ export class UtilsServices {
       throw new Error(error)
     }
   }
+
+  // util function for banning users and notification
+  async banUser(payload: { userId: string, reason: string }) {
+    try {
+
+      const { userId, reason } = payload
+      const notificationPayload: INotification = {
+        userId,
+        title: `Account Locked!!`,
+        message: `Account locked:- ${reason}`
+      }
+
+      const notificationFactory = await this.notificationFactory.create(notificationPayload)
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+
+          await this.data.users.update({ _id: userId }, { lock: true }, session)
+          await this.data.notifications.create(notificationFactory, session)
+
+          // in app notification
+          // email notification
+          
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+      }
+
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 }
+
 

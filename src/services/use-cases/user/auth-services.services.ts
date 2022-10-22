@@ -92,7 +92,7 @@ export class AuthServices {
         })
         if (state) {
           return Promise.reject({
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            status: HttpStatus.TOO_MANY_REQUESTS,
             state: ResponseState.ERROR,
             message: `Can't use this email in the next 1 hr`,
             error: null
@@ -561,7 +561,7 @@ export class AuthServices {
         })
         if (state) {
           return Promise.reject({
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            status: HttpStatus.TOO_MANY_REQUESTS,
             state: ResponseState.ERROR,
             message: `Too many requests`,
             error: null
@@ -581,6 +581,7 @@ export class AuthServices {
           error: null
         })
       }
+
       if (user.lock) return Promise.reject({
         status: HttpStatus.FORBIDDEN,
         state: ResponseState.ERROR,
@@ -596,7 +597,7 @@ export class AuthServices {
         })
         if (state) {
           return Promise.reject({
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            status: HttpStatus.TOO_MANY_REQUESTS,
             state: ResponseState.ERROR,
             message: `Too many requests`,
             error: null

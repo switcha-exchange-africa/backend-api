@@ -1,8 +1,9 @@
 import {
   Prop,
   Schema,
-  SchemaFactory
+  SchemaFactory,
 } from '@nestjs/mongoose';
+import {  Document } from "mongoose";
 
 export type AdminDocument = Admin & Document;
 

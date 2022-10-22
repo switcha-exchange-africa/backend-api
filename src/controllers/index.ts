@@ -16,6 +16,7 @@ import { RatesController } from "./rates";
 import { TransactionController } from "./transaction";
 import { WaitListController } from "./waitlist";
 import { WalletController } from "./wallet";
+import { WebPushController } from "./web-push";
 import { WebhookController } from "./webhooks";
 import { WithdrawalController } from "./withdrawal";
 
@@ -38,6 +39,7 @@ export default [
   P2pController,
   MiscController,
   FeeController,
-  WaitListController,
+  WaitListController, 
+  WebPushController,
   ...admin
 ]

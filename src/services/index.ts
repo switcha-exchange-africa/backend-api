@@ -26,6 +26,7 @@ import { WebhookServicesModule } from "./use-cases/webhook/webhook-services.modu
 import { WithdrawalServicesModule } from "./use-cases/withdrawal/withdrawal.module";
 import { BullServiceModule } from "./use-cases/bull/bull-services.module";
 import { SeedServicesModule } from "./use-cases/seed/seed.module";
+import { WebPushServicesModule } from "./use-cases/web-push/web-push.module";
 
 export default [
   AxiosServiceModule,
@@ -55,5 +56,6 @@ export default [
   CoinServicesModule,
   P2pServicesModule,
   UtilsServicesModule,
-  SeedServicesModule
+  SeedServicesModule,
+  WebPushServicesModule
 ]

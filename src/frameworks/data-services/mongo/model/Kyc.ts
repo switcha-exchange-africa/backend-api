@@ -3,7 +3,7 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { Status, STATUS_LIST } from 'src/core/types/status';
 
 

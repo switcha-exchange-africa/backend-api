@@ -10,7 +10,6 @@ export class Coin {
   @Prop()
   coin: string
 
-
   @Prop({ default: true })
   canSwap: boolean;
 

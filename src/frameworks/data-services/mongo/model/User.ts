@@ -9,6 +9,7 @@ import {
   USER_LEVEL_LIST,
   USER_LEVEL_TYPE
 } from 'src/lib/constants';
+import {  Document } from "mongoose";
 
 export type UserDocument = User & Document;
 

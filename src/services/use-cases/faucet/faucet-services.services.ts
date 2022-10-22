@@ -61,7 +61,7 @@ export class FaucetServices {
         }
       };
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         processAtomicAction,
         this.connection
       );
@@ -156,15 +156,13 @@ export class FaucetServices {
           const txCreditWalletFactory = await this.txFactoryServices.create(
             txWalletCreditPayload
           );
-          await Promise.all([
-            await this.data.transactions.create(txDebitFaucetFactory, session),
-            await this.data.transactions.create(txCreditWalletFactory, session),
-          ]);
+          await this.data.transactions.create(txDebitFaucetFactory, session)
+          await this.data.transactions.create(txCreditWalletFactory, session)
         } catch (error) {
           throw new HttpException(error.message, 500);
         }
       };
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         processAtomicAction,
         this.connection
       );

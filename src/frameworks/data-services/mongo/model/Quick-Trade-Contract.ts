@@ -4,7 +4,7 @@
 
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Types, Document } from "mongoose";
 import { QuickTradeContractStatus, QUICK_TRADE_CONTRACT_LIST } from "src/core/entities/QuickTrade";
 export type QuickTradeContractDocument = QuickTradeContract & Document;
 

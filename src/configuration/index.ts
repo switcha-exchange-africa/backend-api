@@ -60,6 +60,10 @@ export const TATUM_ETH_MNEMONIC = getEnv("TATUM_ETH_MNEMONIC", true)
 export const TATUM_ETH_XPUB_KEY = getEnv("TATUM_ETH_XPUB_KEY", true)
 export const TATUM_TRON_XPUB_KEY = getEnv("TATUM_TRON_XPUB_KEY", true)
 export const TATUM_BTC_XPUB_KEY = getEnv("TATUM_BTC_XPUB_KEY", true)
+export const WEB_PUSH_PUBLIC_KEY = getEnv("WEB_PUSH_PUBLIC_KEY", true)
+export const WEB_PUSH_PRIVATE_KEY = getEnv("WEB_PUSH_PRIVATE_KEY", true)
+export const FRONTEND_URL = getEnv("FRONTEND_URL", true)
+
 
 
 

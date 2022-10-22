@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Types , Document} from "mongoose";
 import { EmailChangeRequestStatus, EmailChangeRequestStatusList } from "src/core/entities/email-change-request.entity";
 
 export type EmailChangeRequestDocument = EmailChangeRequest & Document;

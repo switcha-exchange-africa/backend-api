@@ -1,7 +1,3 @@
-import {
-  TransactionReference,
-  TransactionReferenceSchema,
-} from "./model/transaction-reference.model";
 import { Transaction, TransactionSchema } from "./model/Transaction.model";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -30,6 +26,7 @@ import { Coin, CoinSchema } from "./model/Coin";
 import { P2pAds, P2pAdsSchema } from "./model/P2P-Ads";
 import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
 import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
+import { WebPush, WebPushSchema } from "./model/Web-Push";
 
 @Module({
   imports: [
@@ -37,7 +34,6 @@ import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
       { name: User.name, schema: UserSchema },
       { name: Wallet.name, schema: WalletSchema },
       { name: Transaction.name, schema: TransactionSchema },
-      { name: TransactionReference.name, schema: TransactionReferenceSchema },
       { name: Faucet.name, schema: FaucetSchema },
       { name: Withdrawal.name, schema: WithdrawalSchema },
       { name: Activity.name, schema: ActivitySchema },
@@ -58,7 +54,10 @@ import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
       { name: P2pAds.name, schema: P2pAdsSchema },
       { name: P2pAdBank.name, schema: P2pAdBankSchema },
       { name: P2pOrder.name, schema: P2pOrderSchema },
+      { name: WebPush.name, schema: WebPushSchema },
 
+
+      
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],
