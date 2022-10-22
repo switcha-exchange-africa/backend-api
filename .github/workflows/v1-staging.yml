@@ -27,7 +27,7 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       id: downloadfile  # Remember to give an ID if you need the output
       with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1655076813/switcha-staging-env/env_r2vems.txt"
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1666457617/switcha-staging-env/env_n37ey6.txt"
         target: ./
 
     - name: Install doctl
@@ -66,7 +66,7 @@ jobs:
             docker rm -f switcha-staging-api
 
             # deleting untagged image
-            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+            #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 
             # pull latest image
             docker pull registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
@@ -75,4 +75,5 @@ jobs:
             docker run --name switcha-staging-api -d --restart always --publish 3464:3464 registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
             # deleting untagged image
-            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+            #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+

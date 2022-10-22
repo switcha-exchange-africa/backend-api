@@ -6,17 +6,10 @@ import {
 import {
   SwitchaDeviceType,
   SWITCHA_DEVICES,
-  UserIDDocumentType,
   USER_LEVEL_LIST,
-  USER_LEVEL_TYPE,
-  USER_LOCK,
-  USER_LOCK_LIST,
-  USER_SIGNUP_STATUS_TYPE,
-  USER_SIGNUP_STATUS_TYPE_LIST,
-  USER_TYPE,
-  USER_TYPE_LIST,
-
+  USER_LEVEL_TYPE
 } from 'src/lib/constants';
+import {  Document } from "mongoose";
 
 export type UserDocument = User & Document;
 
@@ -28,8 +21,14 @@ export class User {
   @Prop()
   lastName: string;
 
+  @Prop()
+  username: string;
+
   @Prop({ required: true })
   email: string;
+
+  @Prop()
+  dob: string;
 
   @Prop({
     required: true,
@@ -42,6 +41,12 @@ export class User {
 
   @Prop()
   agreedToTerms: boolean
+
+  @Prop({ default: false })
+  authenticator: boolean
+
+  @Prop({ default: false })
+  notify: boolean
 
   @Prop()
   country: string
@@ -62,26 +67,16 @@ export class User {
   createdAt: Date
 
   @Prop()
-  dob: Date
-
-  @Prop()
   updatedAt: Date
 
-  @Prop({ enum: USER_LOCK_LIST })
-  lock: USER_LOCK;
+  @Prop({ default: false })
+  lock: boolean;
 
-
-  @Prop({ enum: USER_SIGNUP_STATUS_TYPE_LIST })
-  authStatus: USER_SIGNUP_STATUS_TYPE
-
-  @Prop({ enum: USER_TYPE_LIST })
-  userType: USER_TYPE
+  @Prop({ default: false })
+  isWaitList: boolean;
 
   @Prop()
   transactionPin: string
-
-  @Prop({ type: Object })
-  document: UserIDDocumentType
 
   @Prop({ enum: USER_LEVEL_LIST })
   level: USER_LEVEL_TYPE

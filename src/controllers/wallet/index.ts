@@ -3,74 +3,73 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  Logger,
   Param,
   Post,
   Query,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 
 import { WALLET_ROUTE } from "src/lib/route-constant";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
 
 import { Request, Response } from "express";
-import { CreateWalletDto } from "src/core/dtos/wallet/wallet.dto";
+import { CreateWalletDto, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class WalletController {
   constructor(
-    private walletServices: WalletServices,
+    private services: WalletServices,
   ) { }
 
   @Post(WALLET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async create(@Req() req: Request, @Body() body: CreateWalletDto, @Res() res: Response) {
     try {
       const user = req?.user!
-      const payload = { userId: user._id, fullName: user.fullName, email: user.email }
+      const userId = user._id
 
       const { coin } = body
-      const response = await this.walletServices.create(payload, coin)
+      const response = await this.services.create({ userId, coin })
 
       return res.status(response.status).json(response);
+
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
   @Get(WALLET_ROUTE.ROUTE)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async findAll(@Req() req: Request, @Res() res: Response, @Query() query) {
     try {
+
       const userId = req?.user?._id;
-      const response = await this.walletServices.findAll(query, userId);
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, reference } = query
+
+      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference }
+      const response = await this.services.findAll(payload);
+
       return res.status(response.status).json(response);
+
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
   @Get(WALLET_ROUTE.SINGLE_ROUTE)
-  @UseGuards(StrictAuthGuard)
-  async detail(@Res() res: Response, @Param() param: { id }) {
+  @isAuthenticated('strict')
+  async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;
-      const response = await this.walletServices.details(id);
+      const response = await this.services.details(id);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 

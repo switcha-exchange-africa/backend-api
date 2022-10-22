@@ -1,15 +1,17 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { env, PORT } from './configuration';
+import { env, LOGS_LEVEL, PORT } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import CustomLogger from './services/use-cases/customer-logger/custom-logger.service';
+// import CustomLogger from './services/use-cases/customer-logger/custom-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,
+    // bufferLogs: true,
+    logger: LOGS_LEVEL(),
+
   });
-  app.useLogger(app.get(CustomLogger));
+  // app.useLogger(app.get(CustomLogger));
 
 
   const options = new DocumentBuilder()
@@ -22,13 +24,19 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
 
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: 'health', method: RequestMethod.GET }],
+  });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
 
   await app.listen(PORT)
-    .then(() => Logger.log(`server running on port ${PORT}`, 'context', {
-      
-    }))
+    .then(() => Logger.log(`server running on port ${PORT}`))
 }
 bootstrap();
 

@@ -1,4 +1,4 @@
-import { CoinType } from "./wallet.entity";
+import { CoinType } from "../types/coin";
 
 
 export enum TRANSACTION_TYPE {
@@ -29,6 +29,7 @@ export enum TRANSACTION_STATUS {
   PENDING = "pending",
   COMPLETED = "completed",
   REJECTED = "rejected",
+  FAILED = 'failed'
 }
 
 export const TRANSACTION_STATUS_LIST = [
@@ -46,6 +47,7 @@ export enum CUSTOM_TRANSACTION_TYPE {
   SWAP = "swap",
   FAUCET = "faucet",
   TRANSFER = "transfer",
+  QUICK_TRADE = 'quick-trade'
 }
 
 export const CUSTOM_TRANSACTION_TYPES = [
@@ -57,6 +59,7 @@ export const CUSTOM_TRANSACTION_TYPES = [
   CUSTOM_TRANSACTION_TYPE.SWAP,
   CUSTOM_TRANSACTION_TYPE.FAUCET,
   CUSTOM_TRANSACTION_TYPE.TRANSFER,
+  CUSTOM_TRANSACTION_TYPE.QUICK_TRADE
 ];
 export interface Rates {
   pair: string,
@@ -84,5 +87,10 @@ export class Transaction {
   senderAddress: string
   reference: string
   generalTransactionReference: string
+  p2pAdId: string;
+  p2pOrderId: string;
+  feeWalletId: string
+  metadata: object
+
 }
 

@@ -8,6 +8,7 @@ export type INotificationUserType = {
   email: string
 }
 export class Notification {
+  seen?: boolean
   message?: string
   link?: string
   title?: string
@@ -20,4 +21,10 @@ export class Notification {
   createdAt?: Date
   updatedAt?: Date
   userId?: string
+}
+export type INotification = {
+  userId: string
+  title: string
+  message: string
+
 }

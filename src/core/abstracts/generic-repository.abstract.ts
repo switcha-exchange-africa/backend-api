@@ -1,4 +1,5 @@
 import { ClientSession, FilterQuery, UpdateQuery } from "mongoose";
+import * as mongoose from "mongoose";
 
 
 
@@ -8,10 +9,15 @@ export abstract class IGenericRepository<T> {
   abstract findAllWithPagination(
     options: {
       query?: Record<string, any>,
-      queryFields?: Record<string, any>
+      queryFields?: Record<string, any>,
+      misc?: {
+        populated?: any
+      }
     });
 
-  abstract findOne(key: FilterQuery<T>, session?: ClientSession);
+  abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: {
+    sort?: 'desc' | 'asc', populate?: any
+  }): Promise<mongoose.HydratedDocument<T>>;
 
   abstract create(payload: T | T[], session?: ClientSession);
 

@@ -7,11 +7,11 @@ import { InjectConnection } from "@nestjs/mongoose";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { Faucet } from "src/core/entities/faucet.entity";
-import { ResponsesType } from "src/core/types/response";
+import { ResponseState, ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
-import { CoinType } from "src/core/entities/wallet.entity";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
+import { CoinType } from "src/core/types/coin";
 
 @Injectable()
 export class FaucetServices {
@@ -61,7 +61,7 @@ export class FaucetServices {
         }
       };
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         processAtomicAction,
         this.connection
       );
@@ -69,11 +69,16 @@ export class FaucetServices {
         message: "Faucet created successfully",
         data: faucet,
         status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS
       };
     } catch (error) {
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw error;
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -111,7 +116,7 @@ export class FaucetServices {
           );
           const generalTransactionReference = generateReference('general')
 
-          const txDebitFaucetPayload:  OptionalQuery<Transaction>  = {
+          const txDebitFaucetPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: "faucet",
             currency: coin as CoinType,
@@ -128,7 +133,7 @@ export class FaucetServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.FAUCET,
           };
 
-          const txWalletCreditPayload:  OptionalQuery<Transaction>  = {
+          const txWalletCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId,
             currency: coin as CoinType,
@@ -151,15 +156,13 @@ export class FaucetServices {
           const txCreditWalletFactory = await this.txFactoryServices.create(
             txWalletCreditPayload
           );
-          await Promise.all([
-            await this.data.transactions.create(txDebitFaucetFactory, session),
-            await this.data.transactions.create(txCreditWalletFactory, session),
-          ]);
+          await this.data.transactions.create(txDebitFaucetFactory, session)
+          await this.data.transactions.create(txCreditWalletFactory, session)
         } catch (error) {
           throw new HttpException(error.message, 500);
         }
       };
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         processAtomicAction,
         this.connection
       );
@@ -167,12 +170,17 @@ export class FaucetServices {
         message: "Wallet funded successfully",
         data: {},
         status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS
       };
+
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -181,12 +189,22 @@ export class FaucetServices {
       const { data, pagination } = await this.data.faucets.findAllWithPagination({
         query, queryFields: {}
       });
-      return { status: 200, message: 'Faucets retrieved successfully', data, pagination }
+      return {
+        status: HttpStatus.OK,
+
+        message: 'Faucets retrieved successfully',
+        data,
+        pagination,
+        state: ResponseState.SUCCESS
+      }
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 
@@ -194,12 +212,20 @@ export class FaucetServices {
     try {
       const data = await this.data.faucets.findOne({ _id: id });
       if (!data) throw new DoesNotExistsException('faucet does not exist')
-      return { status: 200, message: 'Faucet retrieved successfully', data }
+      return {
+        status: HttpStatus.OK,
+        message: 'Faucet retrieved successfully',
+        data,
+        state: ResponseState.SUCCESS
+      }
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

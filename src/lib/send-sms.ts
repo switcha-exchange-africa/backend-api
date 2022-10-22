@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE } from "src/configuration";
-import { SMS_PAYLOAD_TYPE } from "src/frameworks/event-emitter/event/sms.event";
+import { SMS_PAYLOAD_TYPE } from "src/services/use-cases/event-emitter/event/sms.event";
 import twilio from "twilio";
 
 export const sendSms = async (payload: SMS_PAYLOAD_TYPE) => {

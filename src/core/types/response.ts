@@ -1,5 +1,8 @@
 import { JWT_USER_PAYLOAD_TYPE } from "src/lib/constants"
-
+export enum ResponseState {
+  SUCCESS = 'success',
+  ERROR = 'error'
+}
 export type ResponsesType<T> = {
   message: string
   token?: string
@@ -8,4 +11,5 @@ export type ResponsesType<T> = {
   verification?: string[]
   pagination?: Record<string, any>
   status: number
+  state: ResponseState
 }

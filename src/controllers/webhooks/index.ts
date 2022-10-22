@@ -26,9 +26,8 @@ export class WebhookController {
             const response = await this.services.tatum(req)
             return res.status(200).json(response)
         } catch (error) {
-            Logger.error(error)
-            if (error.name === 'TypeError') return res.status(200).json(error)
-            return res.status(200).json(error)
+            return res.status(error.status || 500).json(error);
+
         }
     }
 
@@ -50,8 +49,17 @@ export class WebhookController {
             //     return res.status(200).json({ message: "Webhook discarded" })
 
             // }
-
-            console.log("BODY", req.body)
+            if (env.isProd) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("hex");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
+            }
             const response = await this.services.incomingTransactions(req.body)
             return res.status(200).json(response)
         } catch (error) {
@@ -68,25 +76,24 @@ export class WebhookController {
     ) {
         try {
 
-            const signature = req.headers['x-payload-hash']
-            const encryptedData = crypto
-                .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
-                .update(JSON.stringify(req.body))
-                .digest("hex");
-
-            if (env.isProd && (encryptedData !== signature)) {
-                Logger.warn('Wrong signature')
-                return res.status(200).json({ message: "Webhook discarded" })
-
+            if (env.isProd) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("hex");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
             }
-            const response = await this.services.incomingPendingTransactions(req.body)
 
+            const response = await this.services.incomingPendingTransactions(req.body)
             return res.status(200).json(response)
 
         } catch (error) {
-            Logger.error(error)
-            if (error.name === 'TypeError') return res.status(200).json(error)
-            return res.status(200).json(error)
+            return res.status(error.status || 500).json(error);
+
         }
     }
 }

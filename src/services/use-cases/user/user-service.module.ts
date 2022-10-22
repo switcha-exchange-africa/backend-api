@@ -4,12 +4,31 @@ import { DiscordServicesModule } from "src/frameworks/notification-services/disc
 import { DataServicesModule } from "src/services/data-services/data-services.module";
 import { AccountServices } from "./account/account.services";
 import { AuthServices } from "./auth-services.services";
-import { UserFactoryService } from "./user-factory.service";
+import { UserFactoryService, UserFeatureManagementFactoryService } from "./user-factory.service";
 import { WalletFactoryService } from '../wallet/wallet-factory.service';
+import { UserServices } from './user-services.services';
+import { ActivityFactoryService } from '../activity/activity-factory.service';
+import { UtilsServicesModule } from '../utils/utils.module';
 
 @Module({
-  imports: [DataServicesModule, DiscordServicesModule],
-  providers: [UserFactoryService, AuthServices, AccountServices, WalletServices, WalletFactoryService],
-  exports: [UserFactoryService, AuthServices, AccountServices, WalletServices],
+  imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
+  providers: [
+    UserFactoryService,
+    AuthServices,
+    AccountServices,
+    WalletServices,
+    WalletFactoryService,
+    UserServices,
+    UserFeatureManagementFactoryService,
+    ActivityFactoryService,
+  ],
+  exports: [
+    UserFactoryService,
+    AuthServices,
+    AccountServices,
+    WalletServices,
+    UserServices,
+    UserFeatureManagementFactoryService
+  ],
 })
-export class UserServicesModule {}
+export class UserServicesModule { }

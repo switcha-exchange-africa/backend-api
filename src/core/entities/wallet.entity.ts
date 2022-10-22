@@ -1,4 +1,4 @@
-import { UserDetail } from "src/core/entities/user.entity";
+import { CoinType } from "../types/coin";
 
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
@@ -22,15 +22,6 @@ export const WALLET_STATUS_LIST = [
   WALLET_STATUS.INACTIVE,
 ];
 
-export enum CoinType {
-  BTC = "BTC",
-  ETH = "ETH",
-  USDT = "USDT",
-  USDC = "USDC",
-  USDT_TRON = "USDT_TRON",
-  NGN = "NGN",
-  USD = "USD",
-}
 
 export enum BLOCKCHAIN_CHAIN {
   SOL = "SOL",
@@ -46,16 +37,6 @@ export enum BLOCKCHAIN_CHAIN {
   TRON = "TRON",
 }
 
-export const COIN_TYPES_LIST = [
-  CoinType.BTC,
-  CoinType.ETH,
-  CoinType.USDT,
-  CoinType.USDC,
-  CoinType.NGN,
-  CoinType.USDT_TRON,
-  CoinType.USD
-
-];
 
 export enum NETWORK {
   ROPSTEN = "ropsten",
@@ -64,35 +45,42 @@ export enum NETWORK {
 }
 
 export class Wallet {
-
+  balance: number;
+  lockedBalance: number;
   address: string;
-
-  accountId: string;
-
   userId: string;
-
-  user: UserDetail;
-
+  accountId: string;
   network: BLOCKCHAIN_NETWORK;
-
-  coin?: string;
-
-  status?: WALLET_STATUS;
-
-  lastDeposit?: number;
-
-  lastWithdrawal?: number;
-
-  createdAt?: Date;
-
-  updatedAt?: Date;
-
-  isBlocked?: boolean;
-
-  destinationTag?: string;
-
-  memo?: string;
-
-  tatumMessage?: string;
-  reference?: string
+  coin: CoinType;
+  status: WALLET_STATUS;
+  lastDeposit: number;
+  lastWithdrawal: number;
+  reference: string
+  createdAt: Date;
+  updatedAt: Date;
+  isBlocked: boolean;
+  destinationTag: string;
+  memo: string;
+  tatumMessage: string;
 }
+
+export enum CryptoPairType {
+  ETH_USDT = "ETH/USD",
+  BTC_USDT = "BTC/USD",
+  BTC_NGN = "BTC/NGN",
+  ETH_NGN = "ETH/NGN",
+  NGN_USDT = "NGN/USD",
+  USDC_NGN = "USDC/NGN",
+  USDT_NGN = "USDT/NGN",
+}
+
+export const CoinPairList = [
+  CryptoPairType.ETH_USDT,
+  CryptoPairType.BTC_USDT,
+  CryptoPairType.NGN_USDT,
+  CryptoPairType.USDC_NGN,
+  CryptoPairType.USDT_NGN,
+  CryptoPairType.BTC_NGN,
+  CryptoPairType.ETH_NGN,
+
+]

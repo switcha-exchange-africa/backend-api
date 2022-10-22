@@ -1,6 +1,7 @@
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { IGenericRepository } from 'src/core/abstracts';
 import { convertDate, isEmpty } from 'src/lib/utils';
+import * as mongoose from "mongoose";
 
 export class MongoGenericRepository<T> implements IGenericRepository<T> {
   private _repository: Model<T>;
@@ -45,13 +46,19 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
-  async findOne(key: FilterQuery<T>, session?: ClientSession) {
+  async findOne(key: FilterQuery<T>, session?: ClientSession, options?: {
+    sort?: 'desc' | 'asc',
+    populate?: any
+  }): Promise<mongoose.HydratedDocument<T>> {
     try {
+      const populated = !isEmpty(options) ? options.populate || [] : this._populateOnFind
       const result = await this._repository
         .findOne(key)
-        .populate(this._populateOnFind)
+        .populate(populated)
+        .sort(options && options.sort === 'desc' ? { createdAt: -1 } : { createdAt: 1 })
         .session(session || null);
-      return Promise.resolve(result);
+
+      return Promise.resolve(result as mongoose.HydratedDocument<T>);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -59,7 +66,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
   async findAllWithPagination(options: {
     query?: Record<string, any>,
-    queryFields?: Record<string, any>
+    queryFields?: Record<string, any>,
+    misc?: {
+      populated?: any
+    }
   }) {
     try {
       const { query, queryFields } = options
@@ -96,16 +106,16 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       const searchQuery = {
         $and: andArr
       };
-
+      const populated = !isEmpty(options) ? options.misc.populated || [] : this._populateOnFind
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
+
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository
         .find(filterQuery as any)
-        .populate(this._populateOnFind)
+        .populate(populated)
         .limit(perpage)
         .skip(page * perpage - perpage)
         .sort(sortQuery);
-
       return Promise.resolve({
         data,
         pagination: {

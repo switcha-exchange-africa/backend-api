@@ -1,8 +1,8 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
-import { CoinType, COIN_TYPES_LIST } from "src/core/entities/wallet.entity";
+import { Types, now, Document } from "mongoose";
 import { WithdrawalCryptoDestination, WithdrawalPaymentMethod, WithdrawalStatus, WithdrawalSubType, WithdrawalType, WITHDRAWAL_PAYMENT_METHOD_LIST, WITHDRAWAL_STATUS_LIST, WITHDRAWAL_SUB_TYPE_LIST, WITHDRAWAL_TYPE_LIST } from "src/core/entities/Withdrawal";
+import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 
 export type WithdrawalDocument = Withdrawal & Document;
@@ -19,10 +19,20 @@ export class Withdrawal {
 
   @Prop({
     type: Types.ObjectId,
+    ref: "User",
+  })
+  processedBy: string;
+
+  @Prop({
+    type: Types.ObjectId,
     ref: "Transaction",
-    required: true
   })
   transactionId: string;
+  @Prop({
+    type: Types.ObjectId,
+    ref: "Transaction",
+  })
+  feeTransactionId: string
 
   @Prop({
     type: Types.ObjectId,
@@ -34,13 +44,12 @@ export class Withdrawal {
   @Prop({
     type: Types.ObjectId,
     ref: "Bank",
-    required: true
   })
   bankId: string
 
 
   @Prop({ type: { address: String, coin: String, tagNumber: String, memo: String } })
-  processedBy: WithdrawalCryptoDestination
+  destination: WithdrawalCryptoDestination
 
   @Prop()
   processedReason: string
@@ -73,10 +82,10 @@ export class Withdrawal {
   fee: number
 
 
-  @Prop()
+  @Prop({ default: now() })
   createdAt: Date;
 
-  @Prop()
+  @Prop({ default: now() })
   updatedAt: Date;
 }
 

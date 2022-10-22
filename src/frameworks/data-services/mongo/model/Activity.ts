@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Types, now, Document } from "mongoose";
 
 export type ActivityDocument = Activity & Document;
 
@@ -18,9 +18,6 @@ export class Activity {
   @Prop()
   description: string
 
-  @Prop()
-  accountNumber: string
-
   @Prop({
     type: Types.ObjectId,
     ref: "User",
@@ -28,12 +25,15 @@ export class Activity {
   })
   userId: string;
 
-  @Prop()
+  @Prop({ default: now() })
   createdAt: Date;
 
-  @Prop()
+  @Prop({ default: now() })
   updatedAt: Date;
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);
 
+
+
+// 4245519

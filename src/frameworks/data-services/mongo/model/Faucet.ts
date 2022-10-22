@@ -1,7 +1,7 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
-import { CoinType, COIN_TYPES_LIST } from "src/core/entities/wallet.entity";
+import { Types, Document } from "mongoose";
+import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type FaucetDocument = Faucet & Document;
 

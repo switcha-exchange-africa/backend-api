@@ -1,11 +1,12 @@
-import { UserDetail } from "src/core/entities/user.entity";
 import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from "class-validator";
-import { BLOCKCHAIN_NETWORK, CoinType } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_NETWORK } from "src/core/entities/wallet.entity";
+import { CoinType } from "src/core/types/coin";
+import { PaginationType } from "src/core/types/database";
 
 export class PhraseDto {
   @IsString()
@@ -16,7 +17,6 @@ export class PhraseDto {
 // deprecated, dont use
 export class WalletDto {
 
-  userDetail: UserDetail;
 
   @IsString()
   accountId: string;
@@ -33,4 +33,10 @@ export class CreateWalletDto {
   @IsNotEmpty()
   @IsEnum(CoinType)
   coin: CoinType
+}
+
+export type IGetWallets = PaginationType & {
+  userId: string
+  coin: string
+  reference: string
 }

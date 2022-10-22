@@ -24,6 +24,7 @@ export class DiscordService implements INotificationServices {
 
     } catch (e) {
       Logger.error('@discord', e)
+      throw new Error(e)
     }
 
   }

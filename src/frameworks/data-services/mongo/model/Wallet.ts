@@ -1,8 +1,7 @@
-
-import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
-import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, CoinType, COIN_TYPES_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
+import { Types, now, Document } from "mongoose";
+import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
+import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type WalletDocument = Wallet & Document;
 
@@ -11,7 +10,12 @@ export class Wallet {
   @Prop({
     default: 0
   })
-  balance: Number;
+  balance: number;
+
+  @Prop({
+    default: 0
+  })
+  lockedBalance: number;
 
   @Prop()
   address: string;
@@ -23,8 +27,6 @@ export class Wallet {
   })
   userId: string;
 
-  @Prop({ type: Object })
-  user: UserDetail;
 
   @Prop()
   accountId: string;
@@ -45,25 +47,22 @@ export class Wallet {
   lastWithdrawal: number;
 
   @Prop()
-  reference:string
+  reference: string
 
-  @Prop()
+  @Prop({ default: now() })
   createdAt: Date;
 
-  @Prop()
+  @Prop({ default: now() })
   updatedAt: Date;
 
   @Prop()
   isBlocked: boolean;
 
-
   @Prop()
   destinationTag: string;
 
-
   @Prop()
   memo: string;
-
 
   @Prop()
   tatumMessage: string;

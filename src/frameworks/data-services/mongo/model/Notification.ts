@@ -3,13 +3,16 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 
 
 export type NotificationDocument = Notification & Document;
 
 @Schema()
 export class Notification {
+  @Prop({ default: false })
+  seen: boolean
+
   @Prop()
   message: string;
 
@@ -33,7 +36,7 @@ export class Notification {
 
   @Prop()
   video: string
-  
+
   @Prop()
   createdAt: Date
 

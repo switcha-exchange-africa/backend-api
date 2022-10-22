@@ -15,7 +15,7 @@
 
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Types, Document } from "mongoose";
 import { CustomLoggerLevel, CustomLoggerLevelList, CustomLoggerErrorType, CustomLoggerMethod, CustomLoggerMethodList, CustomLoggerOperationType, CustomLoggerOperationTypeList, CustomLoggerType, CustomLoggerTypeList } from "src/core/entities/CustomLogger";
 
 export type CustomLoggerDocument = CustomLogger & Document;

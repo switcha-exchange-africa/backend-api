@@ -1,14 +1,28 @@
 import { MiddlewareConsumer, Module } from "@nestjs/common";
-import { JWT_USER_PAYLOAD_TYPE } from "./lib/constants";
+import { USER_SIGNUP_STATUS_TYPE } from "./lib/constants";
 import { HomeServices } from "./services/use-cases/home/home.service";
 import services from "./services";
 import controller from "./controllers";
 import LogsMiddleware from "./middleware-guards/logs.middleware";
+import { APP_GUARD } from "@nestjs/core";
+import { PermissionGuard } from "./middleware-guards/permission-guard.middleware";
+import { RoleType } from "./core/types/roles";
+import { AuthGuard, BypassGuard } from "./middleware-guards/auth-guard.middleware";
+import { FeatureManagementGuard } from "./middleware-guards/misc.middleware";
 
 declare global {
   namespace Express {
     export interface Request {
-      user?: JWT_USER_PAYLOAD_TYPE
+      user?: {
+        _id?: string;
+        fullName?: string;
+        email?: string;
+        authStatus?: USER_SIGNUP_STATUS_TYPE;
+        lock?: boolean;
+        emailVerified?: boolean;
+        phoneVerified?: boolean;
+        roles?: RoleType[]
+      }
     }
   }
 
@@ -17,7 +31,28 @@ declare global {
 @Module({
   imports: [...services],
   controllers: [...controller],
-  providers: [HomeServices],
+  providers: [
+    HomeServices,
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: BypassGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: FeatureManagementGuard,
+    },
+
+    
+
+  ],
 })
 
 export class AppModule {

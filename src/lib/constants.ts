@@ -44,13 +44,14 @@ export type JWT_USER_PAYLOAD_TYPE = {
   _id?: string;
   fullName?: string;
   email?: string;
-  authStatus?: USER_SIGNUP_STATUS_TYPE;
-  lock?: USER_LOCK;
+  lock?: boolean;
   emailVerified?: boolean;
   phoneVerified?: boolean;
 };
 export const JWT_EXPIRY_TIME: number = 5;
 export const SIGNUP_CODE_EXPIRY: number = 600;
+export const ONE_HOUR_IN_SECONDS: number = 3600
+export const THREE_MIN_IN_SECONDS: number = 60 * 3
 export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1;
 
 export enum ErrorResponseType {
@@ -110,9 +111,20 @@ export const SWAP_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/99
 export const WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/990726042031378482/zX-9vVzMwrehxFMs71mRGBHogyEsD3uo3s1r16y9kR4n5iOoXZ0b4Ur_8CzT45oFoiPC'
 export const WITHDRAWAL_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/990725119288680468/a43in4GFIDXdEA8Sf0upYmsP-yM1Hxj_WPROaTGSiT3ThCzFzmtF-MVDFwv76WQYV6fG'
 
+export const QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1002226779878084668/ODuLUSeDoU3iCFE0LCASlBqldt2ZeTOgLE3Dj6evV4UQkrg4W13E5giq_sfPES-anGSN'
+export const QUICK_TRADE_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1002226850086518844/nGVMxxCnLAB2DslSItrNdmFOYWpW827wVaKr00OlsmuqNTmS5zTXm8JZlEomp8G-AlV_'
 
+export const ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1023610121764491294/D8BMqfTSfX9xgPAlEGxVgGZK-SlKby-SRjI_L-MRjBGC9xRZcbNDM-qJrFSyTlRJZsMM'
+export const ERROR_REPORTING_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1023610072066183299/fuALGLejZV0-S4C_d-1p3ffnwW7NmBwW1O8WWxtfKLHpbOsCPUtV426mHI95OG-1QLTL'
+
+
+export const P2P_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1027354392166412331/5H5sdHBtqMq_i3aqMjXp2LKcB_rXQumsg2qGUAe3QZBcVmxYtyLI8hLg-IyagXgnd3yi'
+export const P2P_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1027354442711969792/pxed9n76jB2r0fGRsUGm8z-6sTEq8Rjq8aeQvmxc6g3bwklfMoJyorLeTmK-RgYim-2b'
+export const ERROR_REPORTER_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks/1029503115847794708/N4nKIeVSOSN8fccaC64ksAnRri6tiu5Ed7_qrH4lQ7Pm28_YdM4op5cPBAL6_V0SB15x'
+export const ERROR_REPORTER_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1029503174601613312/oY7tZF_K6IqWCmVNgTze5CgNAyqsFKU_6mUhpGCCsU5zy2CwpxS0snDSEEFQMVAUsmaf'
 
 export interface UserIDDocumentType {
   documentType: string;
   url: string;
 }
+

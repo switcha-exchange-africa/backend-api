@@ -1,9 +1,8 @@
-import { UserDetail } from "src/core/entities/user.entity";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-import { Types } from "mongoose";
+import { Types, Document } from "mongoose";
 import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_STATUS, TRANSACTION_STATUS_LIST, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
-import { COIN_TYPES_LIST, CoinType } from "src/core/entities/wallet.entity";
+import { COIN_TYPES_LIST, CoinType } from "src/core/types/coin";
 
 export type TransactionDocument = Transaction & Document;
 
@@ -12,17 +11,32 @@ export class Transaction {
   @Prop({
     type: Types.ObjectId,
     ref: "User",
-    required: true,
   })
   userId: string;
 
   @Prop({
     type: Types.ObjectId,
     ref: "Wallet",
-    required: true,
   })
   walletId: string;
 
+  @Prop({
+    type: Types.ObjectId,
+    ref: "FeeWallet",
+  })
+  feeWalletId: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: "P2pAds",
+  })
+  p2pAdId: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: "P2pOrder",
+  })
+  p2pOrderId: string;
 
   @Prop({ enum: COIN_TYPES_LIST })
   currency: CoinType;
@@ -52,8 +66,6 @@ export class Transaction {
   @Prop({ enum: TRANSACTION_SUBTYPE_LIST })
   subType: TRANSACTION_SUBTYPE;
 
-  @Prop({ type: Object })
-  user: UserDetail;
 
   @Prop({ enum: TRANSACTION_STATUS_LIST })
   status: TRANSACTION_STATUS;
@@ -63,6 +75,11 @@ export class Transaction {
 
   @Prop()
   balanceBefore: number;
+
+  @Prop({
+    default: 0
+  })
+  lockedBalance: number;
 
   @Prop({ type: Object })
   rate: Rates;
@@ -82,7 +99,8 @@ export class Transaction {
   @Prop()
   hash: string
 
-
+  @Prop({ type: Object })
+  metadata: Object
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

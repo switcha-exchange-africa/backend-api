@@ -143,15 +143,15 @@ export const generateReference = (type: string) => {
 
   switch (type) {
     case 'general':
-      ref = `SWITCH-REF-${mode}${generateRef(10)}`.toLowerCase();
+      ref = `SWITCHA-REF-${mode}${generateRef(10)}`.toLowerCase();
       break;
 
     case 'credit':
-      ref = `SWITCH-REF-${mode}CREDIT-${generateRef(10)}`.toLowerCase();
+      ref = `SWITCHA-REF-${mode}CREDIT-${generateRef(10)}`.toLowerCase();
       break;
 
     case 'debit':
-      ref = `SWITCH-REF-${mode}DEBIT-${generateRef(10)}`.toLowerCase();
+      ref = `SWITCHA-REF-${mode}DEBIT-${generateRef(10)}`.toLowerCase();
       break;
   }
   return ref;

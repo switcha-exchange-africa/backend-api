@@ -7,7 +7,6 @@ import {
   Put,
   Req,
   Res,
-  UseGuards,
 } from "@nestjs/common";
 import { ACCOUNT_ROUTE } from "src/lib/route-constant";
 import { AccountServices } from "src/services/use-cases/user/account/account.services";
@@ -19,14 +18,14 @@ import {
   UploadAvatarDto,
   UploadIdDto,
 } from "src/core/dtos/account/kyc.dto";
-import { StrictAuthGuard } from "src/middleware-guards/auth-guard.middleware";
+import { isAuthenticated } from "src/core/decorators";
 
 @Controller()
 export class AccountController {
   constructor(private accountServices: AccountServices) { }
 
   @Put(ACCOUNT_ROUTE.KYC)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async kyc(@Req() req: Request, @Res() res: Response, @Body() body: KycDto) {
     try {
       const { userType, phone, code } = body;
@@ -47,7 +46,7 @@ export class AccountController {
   }
 
   @Put(ACCOUNT_ROUTE.UPLOAD_ID_CARD)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async uploadIdCard(
     @Req() req: Request,
     @Res() res: Response,
@@ -71,7 +70,7 @@ export class AccountController {
   }
 
   @Post(ACCOUNT_ROUTE.TRANSACTION_PIN)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async createTransactionPin(
     @Req() req: Request,
     @Res() res: Response,
@@ -94,7 +93,7 @@ export class AccountController {
   }
 
   @Put(ACCOUNT_ROUTE.TRANSACTION_PIN)
-  @UseGuards(StrictAuthGuard)
+  @isAuthenticated('strict')
   async updateTransactionPin(
     @Req() req: Request,
     @Res() res: Response,
@@ -119,7 +118,7 @@ export class AccountController {
   }
 
   @Put(ACCOUNT_ROUTE.UPLOAD_AVATAR)
-  @UseGuards(StrictAuthGuard) 
+  @isAuthenticated('strict')
   async uploadAvatar(
     @Req() req: Request,
     @Res() res: Response,

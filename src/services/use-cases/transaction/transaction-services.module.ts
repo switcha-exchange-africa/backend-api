@@ -2,10 +2,11 @@ import { DataServicesModule } from 'src/services/data-services/data-services.mod
 import { Module } from "@nestjs/common";
 import { TransactionServices } from './transaction-services.services';
 import { TransactionFactoryService } from './transaction-factory.services';
+import { UtilsServicesModule } from '../utils/utils.module';
 
 
 @Module({
-    imports: [DataServicesModule],
+    imports: [DataServicesModule, UtilsServicesModule],
     providers: [TransactionServices, TransactionFactoryService],
     exports: [TransactionServices, TransactionFactoryService]
 })
