@@ -1,7 +1,7 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
@@ -18,6 +18,10 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { EmailTemplates } from 'src/core/types/email'
 import { UtilsServices } from '../utils/utils.service';
 import { IErrorReporter } from 'src/core/types/error';
+
+const SIGNUP_ATTEMPT_KEY = 'failed-signup-attempt'
+const LOGIN_ATTEMPT_KEY = 'login-signup-attempt'
+
 @Injectable()
 export class AuthServices {
   constructor(
@@ -79,12 +83,35 @@ export class AuthServices {
       const { email } = data
 
       const userExists = await this.data.users.findOne({ email })
-      if (userExists) return Promise.reject({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        state: ResponseState.ERROR,
-        message: 'User already exists',
-        error: null
-      })
+      if (userExists) {
+
+        // rate limiter
+        const { state, retries } = await this.utilsService.shouldLimitUser({
+          key: `${SIGNUP_ATTEMPT_KEY}-${email}`,
+          max: 5
+        })
+        if (state) {
+          return Promise.reject({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            state: ResponseState.ERROR,
+            message: `Can't use this email in the next 1 hr`,
+            error: null
+          })
+        }
+
+        await this.inMemoryServices.set(
+          `${SIGNUP_ATTEMPT_KEY}-${email}`,
+          retries + 1,
+          String(ONE_HOUR_IN_SECONDS)
+        )
+        // ban user
+        return Promise.reject({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          state: ResponseState.ERROR,
+          message: 'User already exists',
+          error: null
+        })
+      }
 
       const factory = await this.factory.createNewUser(data)
       const user = await this.data.users.create(factory);
@@ -527,12 +554,33 @@ export class AuthServices {
       const { email, password } = payload
       const user = await this.data.users.findOne({ email });
 
-      if (!user) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: 'User does not exists',
-        error: null
-      })
+      if (!user) {
+        const { state, retries } = await this.utilsService.shouldLimitUser({
+          key: `${LOGIN_ATTEMPT_KEY}-${email}`,
+          max: 5
+        })
+        if (state) {
+          return Promise.reject({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            state: ResponseState.ERROR,
+            message: `Too many requests`,
+            error: null
+          })
+        }
+
+        await this.inMemoryServices.set(
+          `${LOGIN_ATTEMPT_KEY}-${email}`,
+          retries + 1,
+          String(ONE_HOUR_IN_SECONDS)
+        )
+
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null
+        })
+      }
       if (user.lock) return Promise.reject({
         status: HttpStatus.FORBIDDEN,
         state: ResponseState.ERROR,
@@ -541,12 +589,33 @@ export class AuthServices {
       })
 
       const correctPassword: boolean = await compareHash(password, user?.password!);
-      if (!correctPassword) return Promise.reject({
-        status: HttpStatus.FORBIDDEN,
-        state: ResponseState.ERROR,
-        message: 'Password is incorrect',
-        error: null
-      })
+      if (!correctPassword){
+        const { state, retries } = await this.utilsService.shouldLimitUser({
+          key: `${LOGIN_ATTEMPT_KEY}-${email}`,
+          max: 5
+        })
+        if (state) {
+          return Promise.reject({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            state: ResponseState.ERROR,
+            message: `Too many requests`,
+            error: null
+          })
+        }
+
+        await this.inMemoryServices.set(
+          `${LOGIN_ATTEMPT_KEY}-${email}`,
+          retries + 1,
+          String(ONE_HOUR_IN_SECONDS)
+        )
+
+        return Promise.reject({
+          status: HttpStatus.FORBIDDEN,
+          state: ResponseState.ERROR,
+          message: 'Password is incorrect',
+          error: null
+        })
+      } 
 
       if (!user.emailVerified) {
 

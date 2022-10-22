@@ -15,6 +15,7 @@ import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION } from 'src/lib/constants';
 import { IErrorReporter } from 'src/core/types/error';
+import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 @Injectable()
@@ -24,6 +25,7 @@ export class UtilsServices {
     private http: IHttpServices,
     private readonly notificationFactory: NotificationFactoryService,
     private readonly activityFactory: ActivityFactoryService,
+    private readonly inMemoryServices: IInMemoryServices,
     private discord: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
@@ -296,6 +298,28 @@ export class UtilsServices {
       `,
         link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
       })
+
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  async shouldLimitUser(payload: { key: string, max: number }) {
+    try {
+
+      const { key, max } = payload
+      const obj = await this.inMemoryServices.get(key)
+
+      const convertToNumber = obj ? parseInt(obj, 10) : 0
+      if (convertToNumber >= max) return {
+        state: true,
+        retries: convertToNumber
+      }
+
+      return {
+        state: false,
+        retries: convertToNumber
+      }
 
     } catch (error) {
       throw new Error(error)
