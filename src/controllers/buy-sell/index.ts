@@ -11,8 +11,8 @@ import { TRADE_ROUTE } from "src/lib/route-constant";
 // import { BuySellServices } from "src/services/use-cases/trade/buy-sell/buy-sell-services.services";
 import { SwapDto } from "src/core/dtos/trade/swap.dto";
 import { SwapServices } from "src/services/use-cases/trade/swap/swap-services.services";
-import { TransferDto } from "src/core/dtos/trade/transfer.dto";
-import { TransferServices } from "src/services/use-cases/trade/transfer/transfer-services.services";
+// import { TransferDto } from "src/core/dtos/trade/transfer.dto";
+// import { TransferServices } from "src/services/use-cases/trade/transfer/transfer-services.services";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureEnum } from "src/core/dtos/activity";
 import { FeatureManagement } from "src/decorator";
@@ -22,7 +22,7 @@ export class BuySellController {
   constructor(
     // private buySellServices: BuySellServices,
     private swapServices: SwapServices,
-    private transferServices: TransferServices
+    // private transferServices: TransferServices
   ) {}
 
   // @Post(TRADE_ROUTE.BUY)
@@ -71,19 +71,19 @@ export class BuySellController {
     }
   }
 
-  @Post(TRADE_ROUTE.TRANSFER)
-  @isAuthenticated('strict')
-  async transfer(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Body() body: TransferDto
-  ) {
-    try {
-      const userId = req?.user?._id;
-      const response = await this.transferServices.transfer(body, userId);
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-    }
-  }
+  // @Post(TRADE_ROUTE.TRANSFER)
+  // @isAuthenticated('strict')
+  // async transfer(
+  //   @Req() req: Request,
+  //   @Res() res: Response,
+  //   @Body() body: TransferDto
+  // ) {
+  //   try {
+  //     const userId = req?.user?._id;
+  //     const response = await this.transferServices.transfer(body, userId);
+  //     return res.status(response.status).json(response);
+  //   } catch (error) {
+  //     return res.status(error.status || 500).json(error);
+  //   }
+  // }
 }

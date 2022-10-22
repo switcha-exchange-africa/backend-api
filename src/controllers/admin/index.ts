@@ -1,6 +1,7 @@
 import { AdminAuthenticationController } from "./authentication";
 import { AdminCoinController } from "./coins";
 import { AdminExchangeRatesController } from "./exchange-rates";
+import { AdminFeatureManagementController } from "./feature-management";
 import { AdminFeeController } from "./fee";
 import { AdminFeeWalletsController } from "./fee-wallet";
 import { AdminSeedController } from "./seed";
@@ -17,5 +18,6 @@ export default [
   AdminFeeController,
   AdminCoinController,
   AdminFeeWalletsController,
-  AdminSeedController
+  AdminSeedController,
+  AdminFeatureManagementController
 ]
