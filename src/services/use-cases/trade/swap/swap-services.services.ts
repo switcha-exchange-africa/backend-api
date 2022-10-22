@@ -66,7 +66,7 @@ export class SwapServices {
         })
       }
       email = user.email
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,

@@ -87,7 +87,7 @@ export class P2pServices {
       }
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
@@ -519,7 +519,7 @@ export class P2pServices {
     try {
       //
       const { adId, clientId, quantity, clientAccountName, clientAccountNumber, clientBankName, type, bankId } = payload
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId: clientId })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(clientId) })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
