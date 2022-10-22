@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
-import { ActivityAction } from "src/core/dtos/activity";
+import { FeatureEnum } from "src/core/dtos/activity";
 import { FeatureManagement } from "src/core/entities/Feature-Management";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 
@@ -27,62 +27,57 @@ export class FeatureManagementServices {
       const seed = [
         {
           userId,
-          feature: ActivityAction.SIGNUP,
+          feature: FeatureEnum.SIGNUP,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.SIGNIN,
+          feature: FeatureEnum.SIGNIN,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.VERIFY_EMAIL,
+          feature: FeatureEnum.VERIFY_EMAIL,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.WITHDRAWAL,
+          feature: FeatureEnum.RECOVER_PASSWORD,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.DEPOSIT,
+          feature: FeatureEnum.RESET_PASSWORD,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.SWAP,
+          feature: FeatureEnum.WITHDRAWAL,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.P2P_SELL,
+          feature: FeatureEnum.DEPOSIT,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.P2P_BUY,
+          feature: FeatureEnum.SWAP,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.QUICK_TRADE_SELL,
+          feature: FeatureEnum.P2P_AD,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.QUICK_TRADE_BUY,
+          feature: FeatureEnum.P2P_ORDER,
           active: true
         },
         {
           userId,
-          feature: ActivityAction.P2P_SELL_AD,
-          active: true
-        },
-        {
-          userId,
-          feature: ActivityAction.P2P_BUY_AD,
+          feature: FeatureEnum.QUICK_TRADE,
           active: true
         },
       ]

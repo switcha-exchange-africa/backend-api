@@ -34,5 +34,7 @@ export enum FeatureEnum {
   P2P_AD = 'p2p-ad',
   P2P_ORDER = 'p2p-order',
   WITHDRAWAL = 'withdrawal',
-  QUICK_TRADE = 'quick-trade'
+  QUICK_TRADE = 'quick-trade',
+  DEPOSIT = 'deposit',
+  SWAP = 'swap',
 }
