@@ -22,6 +22,7 @@ import { P2pAds } from '../entities/P2pAds';
 import { P2pAdBank } from '../entities/P2pAdsBank';
 import { P2pOrder } from '../entities/P2pOrder';
 import { WebPush } from '../entities/WebPush';
+import { FeatureManagement } from '../entities/Feature-Management';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -48,5 +49,5 @@ export abstract class IDataServices {
   abstract p2pAdBanks: IGenericRepository<P2pAdBank>
   abstract p2pOrders: IGenericRepository<P2pOrder>
   abstract webPush: IGenericRepository<WebPush>
-
+  abstract featureManagement: IGenericRepository<FeatureManagement>
 } 

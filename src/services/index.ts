@@ -27,6 +27,7 @@ import { WithdrawalServicesModule } from "./use-cases/withdrawal/withdrawal.modu
 import { BullServiceModule } from "./use-cases/bull/bull-services.module";
 import { SeedServicesModule } from "./use-cases/seed/seed.module";
 import { WebPushServicesModule } from "./use-cases/web-push/web-push.module";
+import { FeatureServicesModule } from "./use-cases/feature-management/feature-management.module";
 
 export default [
   AxiosServiceModule,
@@ -57,5 +58,6 @@ export default [
   P2pServicesModule,
   UtilsServicesModule,
   SeedServicesModule,
-  WebPushServicesModule
+  WebPushServicesModule,
+  FeatureServicesModule
 ]

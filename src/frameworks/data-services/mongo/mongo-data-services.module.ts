@@ -27,6 +27,7 @@ import { P2pAds, P2pAdsSchema } from "./model/P2P-Ads";
 import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
 import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
 import { WebPush, WebPushSchema } from "./model/Web-Push";
+import { FeatureManagement, FeatureManagementSchema } from "./model/Feature-Management";
 
 @Module({
   imports: [
@@ -55,9 +56,10 @@ import { WebPush, WebPushSchema } from "./model/Web-Push";
       { name: P2pAdBank.name, schema: P2pAdBankSchema },
       { name: P2pOrder.name, schema: P2pOrderSchema },
       { name: WebPush.name, schema: WebPushSchema },
+      { name: FeatureManagement.name, schema: FeatureManagementSchema },
 
 
-      
+
     ]),
     MongooseModule.forRoot(MONGO_DB_URL),
   ],

@@ -27,6 +27,7 @@ import { P2pAds, P2pAdsDocument } from './model/P2P-Ads';
 import { P2pAdBank, P2pAdBankDocument } from './model/P2P-Ad-Banks';
 import { P2pOrder, P2pOrderDocument } from './model/P2p-Order';
 import { WebPush, WebPushDocument } from "./model/Web-Push";
+import { FeatureManagement, FeatureManagementDocument } from "./model/Feature-Management";
 
 
 @Injectable()
@@ -56,6 +57,7 @@ export class MongoDataServices
   p2pAdBanks: MongoGenericRepository<P2pAdBank>
   p2pOrders: MongoGenericRepository<P2pOrder>
   webPush: MongoGenericRepository<WebPush>
+  featureManagement: MongoGenericRepository<FeatureManagement>
 
 
   constructor(
@@ -132,6 +134,10 @@ export class MongoDataServices
     @InjectModel(WebPush.name)
     private WebPushRepository: Model<WebPushDocument>,
 
+
+    @InjectModel(FeatureManagement.name)
+    private FeatureManagementRepository: Model<FeatureManagementDocument>,
+
   ) { }
 
 
@@ -160,6 +166,7 @@ export class MongoDataServices
     this.p2pAdBanks = new MongoGenericRepository<P2pAdBank>(this.P2pAdBanksRepository, ['userId'])
     this.p2pOrders = new MongoGenericRepository<P2pOrder>(this.P2pOrderRepository)
     this.webPush = new MongoGenericRepository<WebPush>(this.WebPushRepository)
+    this.featureManagement = new MongoGenericRepository<FeatureManagement>(this.FeatureManagementRepository)
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
