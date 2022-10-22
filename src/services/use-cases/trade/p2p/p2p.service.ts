@@ -22,6 +22,7 @@ import { Status } from "src/core/types/status";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { P2P_CHANNEL_LINK_DEVELOPMENT, P2P_CHANNEL_LINK_PRODUCTION, THREE_MIN_IN_SECONDS } from "src/lib/constants";
 import {
+  compareHash,
   // compareHash,
   generateReference, hash, isEmpty, randomFixedInteger
 } from "src/lib/utils";
@@ -71,7 +72,6 @@ export class P2pServices {
     }
   }
   async createAds(payload: ICreateP2pAd) {
-    let email
     try {
       const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo } = payload
       let p2pId
@@ -87,8 +87,33 @@ export class P2pServices {
       }
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
-      const user = await this.data.users.findOne({ _id: userId })
-      email = user.email
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (type === 'buy' && !userManagement.canP2PBuy) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+
+      if (type === 'sell' && !userManagement.canP2PSell) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+
       // const adExists = await this.data.p2pAds.findOne({ userId, type, coin }) // check if ad exists
       // if (adExists) {
       //   await this.editAds({ id: adExists._id, ...payload })
@@ -203,7 +228,7 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'CREATE P2P ADS',
         error,
-        email,
+        email: payload.email,
         message: error.message
       }
 
@@ -491,12 +516,35 @@ export class P2pServices {
   }
 
   async createP2pOrder(payload: ICreateP2pOrder) {
-    let email
     try {
       //
       const { adId, clientId, quantity, clientAccountName, clientAccountNumber, clientBankName, type, bankId } = payload
-      const user = await this.data.users.findOne({ _id: clientId })
-      email = user.email
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: clientId })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (type === 'buy' && !userManagement.canP2PSell) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+
+      if (type === 'sell' && !userManagement.canP2PBuy) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
       const ad = await this.data.p2pAds.findOne({ _id: adId })
       if (!ad) {
         return Promise.reject({
@@ -660,7 +708,7 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'CREATE P2P ORDER',
         error,
-        email,
+        email: payload.email,
         message: error.message
       }
 
@@ -739,27 +787,27 @@ export class P2pServices {
 
         ])
         return {
-          message: "Verification code sent to you",
+          message: "Verification code sent to your email",
           status: HttpStatus.ACCEPTED,
           data: env.isProd ? null : verificationCode,
         }
       }
       // check verification code
-      // const savedCode = await this.inMemoryServices.get(redisKey);
-      // if (isEmpty(savedCode)) return Promise.reject({
-      //   status: HttpStatus.BAD_REQUEST,
-      //   state: ResponseState.ERROR,
-      //   message: 'Code is incorrect, invalid or has expired',
-      //   error: null,
-      // })
+      const savedCode = await this.inMemoryServices.get(redisKey);
+      if (isEmpty(savedCode)) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Code is incorrect, invalid or has expired',
+        error: null,
+      })
 
-      // const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      // if (!correctCode) return Promise.reject({
-      //   status: HttpStatus.BAD_REQUEST,
-      //   state: ResponseState.ERROR,
-      //   message: 'Code is incorrect, invalid or has expired',
-      //   error: null,
-      // })
+      const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
+      if (!correctCode) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Code is incorrect, invalid or has expired',
+        error: null,
+      })
 
       if (ad.type === P2pAdsType.BUY) {
         // order client id must be the logged in user
@@ -951,7 +999,7 @@ export class P2pServices {
         }
       }
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
@@ -1154,7 +1202,7 @@ export class P2pServices {
       }
 
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )

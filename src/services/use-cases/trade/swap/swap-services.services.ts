@@ -27,7 +27,7 @@ import { IErrorReporter } from "src/core/types/error";
 @Injectable()
 export class SwapServices {
   constructor(
-    private dataServices: IDataServices,
+    private data: IDataServices,
     // private http: IHttpServices,
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
@@ -42,16 +42,16 @@ export class SwapServices {
     try {
       const { amount, sourceCoin, destinationCoin } = body;
       const [user, sourceWallet, destinationWallet, destinationFeeWallet] = await Promise.all([
-        this.dataServices.users.findOne({ _id: userId }),
-        this.dataServices.wallets.findOne({
+        this.data.users.findOne({ _id: userId }),
+        this.data.wallets.findOne({
           userId,
           coin: sourceCoin,
         }),
-        this.dataServices.wallets.findOne({
+        this.data.wallets.findOne({
           userId,
           coin: destinationCoin,
         }),
-        this.dataServices.feeWallets.findOne({
+        this.data.feeWallets.findOne({
           coin: destinationCoin,
         }),
       ]);
@@ -66,6 +66,23 @@ export class SwapServices {
         })
       }
       email = user.email
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (!userManagement.canSwap) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
 
       if (!destinationFeeWallet) {
         this.discord.inHouseNotification({
@@ -116,7 +133,7 @@ export class SwapServices {
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
-          const creditDestinationWallet = await this.dataServices.wallets.update(
+          const creditDestinationWallet = await this.data.wallets.update(
             {
               _id: destinationWallet._id,
             },
@@ -140,7 +157,7 @@ export class SwapServices {
             });
           }
 
-          const debitSourceWallet = await this.dataServices.wallets.update(
+          const debitSourceWallet = await this.data.wallets.update(
             {
               _id: sourceWallet.id,
               balance: { $gt: 0, $gte: amount },
@@ -162,7 +179,7 @@ export class SwapServices {
               error: null,
             });
           }
-          const creditedFeeWallet = await this.dataServices.feeWallets.update(
+          const creditedFeeWallet = await this.data.feeWallets.update(
             {
               _id: destinationFeeWallet._id,
             },
@@ -269,11 +286,11 @@ export class SwapServices {
 
           ])
 
-          await this.dataServices.transactions.create(txCreditFactory, session)
-          await this.dataServices.transactions.create(txDebitFactory, session)
-          await this.dataServices.activities.create(activityFactory, session)
-          await this.dataServices.transactions.create(txFeeFactory, session)
-          await this.dataServices.transactions.create(txFeeWalletFactory, session)
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.transactions.create(txDebitFactory, session)
+          await this.data.activities.create(activityFactory, session)
+          await this.data.transactions.create(txFeeFactory, session)
+          await this.data.transactions.create(txFeeWalletFactory, session)
 
         } catch (error) {
           Logger.error(error);

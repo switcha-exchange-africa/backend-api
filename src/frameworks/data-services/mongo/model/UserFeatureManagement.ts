@@ -12,13 +12,13 @@ export class UserFeatureManagement {
   })
   userId: string;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canBuy: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canSell: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canSwap: boolean;
 
   @Prop({ default: false })
@@ -27,7 +27,7 @@ export class UserFeatureManagement {
   @Prop({ default: false })
   canP2PSell: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canWithdraw: boolean;
 
   @Prop({ default: now() })

@@ -94,7 +94,7 @@ export class QuickTradeController {
 
   @isAuthenticated('strict')
   @Post('/')
-  async buy(
+  async trade(
     @Req() req: Request,
     @Res() res: Response,
     @Body() body: QuickTradeBuySellV2Dto
@@ -109,7 +109,7 @@ export class QuickTradeController {
         ...body
       }
 
-      const response = await this.quickTradeServices.buyV2(payload);
+      const response = await this.quickTradeServices.trade(payload);
       return res.status(response.status).json(response);
 
     } catch (error) {

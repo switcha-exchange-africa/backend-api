@@ -351,7 +351,7 @@ export class QuickTradeServices {
           return Promise.reject(error);
         }
       };
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
@@ -690,7 +690,7 @@ export class QuickTradeServices {
         }
       }
 
-      await databaseHelper.executeTransaction(
+      await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
         this.connection
       )
@@ -859,10 +859,38 @@ export class QuickTradeServices {
     }
   }
 
-  async buyV2(payload: IQuickTradeBuyV2) {
+  async trade(payload: IQuickTradeBuyV2) {
     try {
 
       const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type } = payload
+     
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (type === 'buy' && !userManagement.canBuy) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+
+      if (type === 'sell' && !userManagement.canSell) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+
       const ad = await this.data.p2pAds.findOne({
         type: type === 'buy' ? 'sell' : 'buy',
         cash,
@@ -879,7 +907,7 @@ export class QuickTradeServices {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
-          message:`No current ad match for ${amount}${coin}`,
+          message: `No current ad match for ${amount}${coin}`,
           error: null
         })
       }

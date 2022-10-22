@@ -126,7 +126,7 @@ export class P2pCreateOrderDto {
 export type ICreateP2pOrder = P2pCreateOrderDto & {
   merchantId?: string
   clientId: string
-
+  email: string
 }
 export class P2pAdCreateBankDto {
 
@@ -168,6 +168,7 @@ export class P2pAdCreateBankDto {
 
 export type ICreateP2pAd = P2pCreateAdDto & {
   userId: string
+  email: string
 }
 
 
