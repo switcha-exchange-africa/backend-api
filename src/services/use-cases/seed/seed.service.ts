@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { FeeWallet } from "src/core/entities/FeeWallet";
-import { Coin , CoinType as CoinEnum} from "src/core/entities/Coin";
+import { Coin, CoinType as CoinEnum } from "src/core/entities/Coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { generateReference } from "src/lib/utils";
 import * as mongoose from "mongoose";
@@ -9,17 +9,28 @@ import { IFeeAmountType } from "src/core/dtos/fee";
 import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { CoinType } from "src/core/types/coin";
+import { env } from "src/configuration";
+import { FeatureEnum } from "src/core/dtos/activity";
 
 @Injectable()
 export class SeedServices {
   constructor(
     private data: IDataServices,
     @InjectConnection() private readonly connection: mongoose.Connection
-  
+
   ) { }
 
   async seed(userId: string): Promise<ResponsesType<FeeWallet[]>> {
     try {
+      if (!env.isProd) {
+        return {
+          status: HttpStatus.OK,
+          message: "Data seeded successfully",
+          data: {},
+          state: ResponseState.SUCCESS
+        };
+      }
+
       const feeWalletSeed = [
         {
           userId,
@@ -232,12 +243,74 @@ export class SeedServices {
           userId
         },
       ]
+      const featureManagementSeed = [
+        {
+          userId,
+          feature: FeatureEnum.SIGNUP,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.SIGNIN,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.VERIFY_EMAIL,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.RECOVER_PASSWORD,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.RESET_PASSWORD,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.WITHDRAWAL,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.DEPOSIT,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.SWAP,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.P2P_AD,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.P2P_ORDER,
+          active: true
+        },
+        {
+          userId,
+          feature: FeatureEnum.QUICK_TRADE,
+          active: true
+        },
+      ]
+
+
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           await this.data.feeWallets.create(feeWalletSeed, session)
           await this.data.coins.create(coinSeed, session)
           await this.data.fees.create(feeSeed, session)
           await this.data.coinWithdrawalFee.create(withdrawalFeeSeed, session)
+          await this.data.featureManagement.create(featureManagementSeed, session)
+
         } catch (error) {
           Logger.error(error);
           throw new Error(error);
