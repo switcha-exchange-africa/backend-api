@@ -31,7 +31,7 @@ export class WalletController {
       const userId = user._id
 
       const { coin } = body
-      const response = await this.services.create({ userId, coin })
+      const response = await this.services.create({ userId, coin, email: user.email, fullName: `${user.firstName} ${user.lastName}` })
 
       return res.status(response.status).json(response);
 

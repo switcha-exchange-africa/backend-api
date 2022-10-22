@@ -23,6 +23,9 @@ export class WalletCreateListener {
   async handleWalletCreateEvent(event: WalletCreatedEvent) {
 
     const userId = event.userId
+    const fullName = event.fullName
+    const email = event.userId
+
     const user = await this.data.users.findOne({ _id: userId })
 
     if (!user) {
@@ -30,12 +33,42 @@ export class WalletCreateListener {
       return "user does not exists";
     }
     await Promise.all([
-      this.walletQueue.add({ userId, coin: CoinType.BTC }, { delay: 5000 }),
-      this.walletQueue.add({ userId, coin: CoinType.USDT }, { delay: 5000 }),
-      this.walletQueue.add({ userId, coin: CoinType.USDC }, { delay: 15000 }),
-      this.walletQueue.add({ userId, coin: CoinType.USDT_TRON }, { delay: 25000 }),
-      this.walletQueue.add({ userId, coin: CoinType.NGN }, { delay: 35000 }),
-      this.walletQueue.add({ userId, coin: CoinType.ETH }, { delay: 45000 })
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.BTC
+      }, { delay: 5000 }),
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.USDT
+      }, { delay: 5000 }),
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.USDC
+      }, { delay: 15000 }),
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.USDT_TRON
+      }, { delay: 25000 }),
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.NGN
+      }, { delay: 35000 }),
+      this.walletQueue.add({
+        userId,
+        fullName,
+        email,
+        coin: CoinType.ETH
+      }, { delay: 45000 })
     ])
 
   }

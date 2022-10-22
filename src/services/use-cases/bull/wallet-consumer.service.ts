@@ -22,8 +22,8 @@ export class CreateWalletTaskConsumer {
   @Process()
   async createWallet(job: Job) {
     try {
-      const { coin, userId } = job.data
-      await this.walletService.create({ coin, userId })
+      const { coin, userId, email, fullName } = job.data
+      await this.walletService.create({ coin, userId, email, fullName })
     } catch (e) {
       Logger.error(e)
     }

@@ -16,6 +16,8 @@ declare global {
       user?: {
         _id?: string;
         fullName?: string;
+        firstName?: string;
+        lastName?: string;
         email?: string;
         authStatus?: USER_SIGNUP_STATUS_TYPE;
         lock?: boolean;

@@ -1,7 +1,8 @@
 import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-import { IDataServices } from "src/core/abstracts";
+import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import {
+  env,
   TATUM_API_KEY,
   TATUM_BASE_URL,
   TATUM_BTC_ACCOUNT_ID,
@@ -16,6 +17,9 @@ import { Types } from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { CoinType } from "src/core/types/coin";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
+import { WALLET_CHANNEL_LINK_DEVELOPMENT, WALLET_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -71,7 +75,9 @@ export class WalletServices {
   constructor(
     private http: IHttpServices,
     private data: IDataServices,
-    private walletFactory: WalletFactoryService
+    private walletFactory: WalletFactoryService,
+    private readonly discordServices: INotificationServices,
+    private readonly utilsService: UtilsServices
   ) { }
 
   cleanQueryPayload(payload: IGetWallets) {
@@ -87,9 +93,14 @@ export class WalletServices {
     if (payload.reference) key['reference'] = payload.reference
     return key
   }
-  async create(payload: { userId: string, coin: CoinType }): Promise<ResponsesType<Wallet>> {
+  async create(payload: {
+    userId: string,
+    coin: CoinType,
+    fullName: string,
+    email: string
+  }): Promise<ResponsesType<Wallet>> {
     try {
-      const { userId, coin } = payload
+      const { userId, coin, fullName, email } = payload
 
       const walletExists = await this.data.wallets.findOne({ userId, coin });
       if (walletExists) return Promise.reject({
@@ -110,6 +121,13 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
+        await this.discordServices.inHouseNotification({
+          title: `Wallet Channel :- ${env.env} environment`,
+          message: `NGN WALLET GENERATED FOR ${fullName}:- ${email}`,
+          link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
+        })
+
+
         return {
           message: "Wallet created successfully",
           data,
@@ -129,6 +147,12 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
+        await this.discordServices.inHouseNotification({
+          title: `Wallet Channel :- ${env.env} environment`,
+          message: `USD WALLET GENERATED FOR ${fullName}:- ${email}`,
+          link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
+        })
+
         return {
           message: "Wallet created successfully",
           data,
@@ -167,6 +191,11 @@ export class WalletServices {
       });
 
       const data = await this.data.wallets.create(factory);
+      await this.discordServices.inHouseNotification({
+        title: `Wallet Channel :- ${env.env} environment`,
+        message: `${coin} WALLET GENERATED FOR ${fullName}:- ${email}`,
+        link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
+      })
       return {
         message: "Wallet created successfully",
         data, status: HttpStatus.CREATED,
@@ -176,6 +205,14 @@ export class WalletServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GENERATING WALLET',
+        error,
+        email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
