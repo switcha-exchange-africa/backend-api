@@ -16,12 +16,15 @@ import { WithdrawalServices } from "src/services/use-cases/withdrawal/withdrawal
 import { IGetWithdrawals } from "src/core/entities/Withdrawal";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
+import { FeatureEnum } from "src/core/dtos/activity";
+import { FeatureManagement } from "src/decorator";
 
 @Controller('/withdrawal')
 export class WithdrawalController {
 
   constructor(private services: WithdrawalServices) { }
 
+  @FeatureManagement(FeatureEnum.WITHDRAWAL)
   @Post('/crypto')
   @isAuthenticated('strict')
   async createCryptoWithdrawalManual(

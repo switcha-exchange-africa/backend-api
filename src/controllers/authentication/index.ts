@@ -19,11 +19,14 @@ import { ILogin, ISignup, LoginDto, SignupDto } from "src/core/dtos/authenticati
 import { generateGoogleAuthUrl } from "src/lib/utils";
 import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 import { isAuthenticated } from "src/core/decorators";
+import { FeatureManagement } from "src/decorator";
+import { FeatureEnum } from "src/core/dtos/activity";
 
 @Controller()
 export class AuthenticationController {
   constructor(private services: AuthServices) { }
 
+  @FeatureManagement(FeatureEnum.SIGNUP)
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
   async signup(@Res() res: Response, @Body() body: SignupDto) {
     try {
@@ -35,6 +38,7 @@ export class AuthenticationController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.SIGNIN)
   @Post(AUTHENTICATION_ROUTE.LOGIN)
   async login(@Res() res: Response, @Body() body: LoginDto) {
     try {
@@ -46,6 +50,7 @@ export class AuthenticationController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.VERIFY_EMAIL)
   @Get(AUTHENTICATION_ROUTE.VERIFY_USER)
   @isAuthenticated('loose')
   async issueEmailVerificationCode(@Req() req: Request, @Res() res: Response) {
@@ -57,6 +62,7 @@ export class AuthenticationController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.VERIFY_EMAIL)
   @Post(AUTHENTICATION_ROUTE.VERIFY_USER)
   @isAuthenticated('loose')
   async verifyUser(
@@ -72,6 +78,7 @@ export class AuthenticationController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.RECOVER_PASSWORD)
   @Post(AUTHENTICATION_ROUTE.RECOVER_PASSWORD)
   async recoverPassword(
     @Res() res: Response,
@@ -86,6 +93,7 @@ export class AuthenticationController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.RESET_PASSWORD)
   @Post(AUTHENTICATION_ROUTE.RESET_PASSWORD)
   async resetPassword(
     @Res() res: Response,

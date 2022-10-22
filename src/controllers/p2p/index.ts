@@ -4,6 +4,8 @@ import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2p
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
+import { FeatureManagement } from "src/decorator";
+import { FeatureEnum } from "src/core/dtos/activity";
 
 @Controller()
 export class P2pController {
@@ -11,6 +13,7 @@ export class P2pController {
     private services: P2pServices,
   ) { }
 
+  @FeatureManagement(FeatureEnum.P2P_AD)
   @Post('/p2p/ads')
   @isAuthenticated('strict')
   async createAds(
@@ -20,7 +23,7 @@ export class P2pController {
   ) {
     try {
       const userId = req?.user?._id;
-      const payload: ICreateP2pAd = { ...body, userId }
+      const payload: ICreateP2pAd = { ...body, userId, email: req?.user?.email }
 
       const response = await this.services.createAds(payload);
       return res.status(response.status).json(response);
@@ -176,6 +179,7 @@ export class P2pController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.P2P_AD)
   @Put('/p2p/ads/:id')
   @isAuthenticated('strict')
   async editAds(
@@ -196,7 +200,7 @@ export class P2pController {
     }
   }
 
-
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order')
   @isAuthenticated('strict')
   async createP2pOrder(
@@ -207,7 +211,7 @@ export class P2pController {
     try {
       const clientId = req?.user?._id;
 
-      const payload: ICreateP2pOrder = { ...body, clientId }
+      const payload: ICreateP2pOrder = { ...body, clientId, email: req?.user?.email }
 
       const response = await this.services.createP2pOrder(payload);
       return res.status(response.status).json(response);
@@ -218,6 +222,7 @@ export class P2pController {
   }
 
 
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order/:id')
   @isAuthenticated('strict')
   async confirmP2pOrder(
