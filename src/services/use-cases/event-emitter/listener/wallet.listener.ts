@@ -24,7 +24,7 @@ export class WalletCreateListener {
 
     const userId = event.userId
     const fullName = event.fullName
-    const email = event.userId
+    const email = event.email
 
     const user = await this.data.users.findOne({ _id: userId })
 

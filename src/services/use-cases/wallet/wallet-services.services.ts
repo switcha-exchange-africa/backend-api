@@ -123,7 +123,7 @@ export class WalletServices {
         const data = await this.data.wallets.create(factory);
         await this.discordServices.inHouseNotification({
           title: `Wallet Channel :- ${env.env} environment`,
-          message: `NGN WALLET GENERATED FOR ${fullName}:- ${email}`,
+          message: `NGN wallet generated for ${fullName}:- ${email}`,
           link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
         })
 
@@ -149,7 +149,7 @@ export class WalletServices {
         const data = await this.data.wallets.create(factory);
         await this.discordServices.inHouseNotification({
           title: `Wallet Channel :- ${env.env} environment`,
-          message: `USD WALLET GENERATED FOR ${fullName}:- ${email}`,
+          message: `USD wallet generated for ${fullName}:- ${email}`,
           link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
         })
 
@@ -193,7 +193,11 @@ export class WalletServices {
       const data = await this.data.wallets.create(factory);
       await this.discordServices.inHouseNotification({
         title: `Wallet Channel :- ${env.env} environment`,
-        message: `${coin} WALLET GENERATED FOR ${fullName}:- ${email}`,
+        message: `
+        ${coin} wallet generated for ${fullName}:- ${email}
+        
+        ADDRESS:-${address}
+        `,
         link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
       })
       return {
