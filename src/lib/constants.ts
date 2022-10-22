@@ -43,6 +43,8 @@ export const USER_SIGNUP_STATUS_TYPE_LIST = [
 export type JWT_USER_PAYLOAD_TYPE = {
   _id?: string;
   fullName?: string;
+  firstName?: string;
+  lastName?: string
   email?: string;
   lock?: boolean;
   emailVerified?: boolean;

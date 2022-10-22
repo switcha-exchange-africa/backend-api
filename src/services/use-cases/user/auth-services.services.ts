@@ -80,9 +80,13 @@ export class AuthServices {
   async signup(data: ISignup): Promise<ResponsesType<User>> {
     try {
 
-      const { email } = data
+      const { email, username } = data
 
-      const userExists = await this.data.users.findOne({ email })
+      const [userExists, usernameExists] = await Promise.all([
+        this.data.users.findOne({ email }),
+        this.data.users.findOne({ username }),
+
+      ])
       if (userExists) {
 
         // rate limiter
@@ -113,6 +117,35 @@ export class AuthServices {
         })
       }
 
+      if (usernameExists) {
+
+        // rate limiter
+        const { state, retries } = await this.utilsService.shouldLimitUser({
+          key: `${SIGNUP_ATTEMPT_KEY}-${username}`,
+          max: 5
+        })
+        if (state) {
+          return Promise.reject({
+            status: HttpStatus.TOO_MANY_REQUESTS,
+            state: ResponseState.ERROR,
+            message: `Can't use this email in the next 1 hr`,
+            error: null
+          })
+        }
+
+        await this.inMemoryServices.set(
+          `${SIGNUP_ATTEMPT_KEY}-${username}`,
+          retries + 1,
+          String(ONE_HOUR_IN_SECONDS)
+        )
+        // ban user
+        return Promise.reject({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          state: ResponseState.ERROR,
+          message: 'User already exists',
+          error: null
+        })
+      }
       const factory = await this.factory.createNewUser(data)
       const user = await this.data.users.create(factory);
       const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`

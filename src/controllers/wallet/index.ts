@@ -49,7 +49,7 @@ export class WalletController {
       const userId = req?.user?._id;
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, reference } = query
 
-      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference }
+      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference, email:req?.user?.email, fullName:`${req?.user?.firstName} ${req?.user?.lastName}` }
       const response = await this.services.findAll(payload);
 
       return res.status(response.status).json(response);

@@ -20,6 +20,7 @@ import { CoinType } from "src/core/types/coin";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { WALLET_CHANNEL_LINK_DEVELOPMENT, WALLET_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -77,7 +78,9 @@ export class WalletServices {
     private data: IDataServices,
     private walletFactory: WalletFactoryService,
     private readonly discordServices: INotificationServices,
-    private readonly utilsService: UtilsServices
+    private readonly utilsService: UtilsServices,
+    private readonly emitter: EventEmitter2,
+
   ) { }
 
   cleanQueryPayload(payload: IGetWallets) {
@@ -349,6 +352,11 @@ export class WalletServices {
   async findAll(payload: IGetWallets): Promise<ResponsesType<Wallet>> {
     try {
       const cleanedPayload = this.cleanQueryPayload(payload)
+      await this.emitter.emit("create.wallet", {
+        userId: payload,
+        email: payload.email,
+        fullName: payload.fullName
+      })
       const { data, pagination } = await this.data.wallets.findAllWithPagination({
         query: cleanedPayload,
         queryFields: {},
