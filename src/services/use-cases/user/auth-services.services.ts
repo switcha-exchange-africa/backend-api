@@ -110,7 +110,7 @@ export class AuthServices {
         )
         // ban user
         return Promise.reject({
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          status: HttpStatus.CONFLICT,
           state: ResponseState.ERROR,
           message: 'User already exists',
           error: null
@@ -140,7 +140,7 @@ export class AuthServices {
         )
         // ban user
         return Promise.reject({
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          status: HttpStatus.CONFLICT,
           state: ResponseState.ERROR,
           message: 'User already exists',
           error: null
