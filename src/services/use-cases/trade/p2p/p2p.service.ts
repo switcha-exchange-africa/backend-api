@@ -49,7 +49,7 @@ export class P2pServices {
     private readonly notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection,
-    @InjectQueue('order.expiry') private orderQueue: Queue,
+    @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
 
   ) { }
 

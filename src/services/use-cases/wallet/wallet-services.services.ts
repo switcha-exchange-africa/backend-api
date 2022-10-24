@@ -105,13 +105,25 @@ export class WalletServices {
     try {
       const { userId, coin, fullName, email } = payload
 
-      const walletExists = await this.data.wallets.findOne({ userId, coin });
+      const [walletExists, userExists] = await Promise.all([
+        this.data.wallets.findOne({ userId, coin }),
+        this.data.users.findOne({ _id: userId }),
+
+      ]);
       if (walletExists) return Promise.reject({
         status: HttpStatus.CONFLICT,
         state: ResponseState.ERROR,
         message: 'Wallet already exists',
         error: null,
       })
+      if (!userExists) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null,
+        })
+      }
 
       if (coin === CoinType.NGN) {
         const walletPayload = {

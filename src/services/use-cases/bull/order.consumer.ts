@@ -9,10 +9,11 @@ import { NotificationFactoryService } from 'src/services/use-cases/notification/
 import { InjectConnection } from '@nestjs/mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { P2pAdsType } from 'src/core/entities/P2pAds';
+import { env } from 'src/configuration';
 
 
 
-@Processor('order.expiry')
+@Processor(`${env.env}.order.expiry`)
 export class OrderExpiryTaskConsumer {
   constructor(
     private readonly data: IDataServices,

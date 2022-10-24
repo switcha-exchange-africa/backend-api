@@ -1,6 +1,7 @@
 
 import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
+import { env } from "src/configuration";
 import { RedisServiceModule } from "src/frameworks/in-memory-database/redis/redis-service.module";
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { DataServicesModule } from "src/services/data-services/data-services.module";
@@ -20,7 +21,7 @@ import { QuickTradeServices } from "./quick-trade-services.services";
         UtilsServicesModule,
         RedisServiceModule,
         BullModule.registerQueue(
-          { name: 'order.expiry' },
+          { name: `${env.env}.order.expiry` },
         ),
     ],
     providers: [

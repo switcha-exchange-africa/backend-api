@@ -41,7 +41,7 @@ export class QuickTradeServices {
     private notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly orderFactory: P2pOrderFactoryService,
-    @InjectQueue('order.expiry') private orderQueue: Queue,
+    @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }

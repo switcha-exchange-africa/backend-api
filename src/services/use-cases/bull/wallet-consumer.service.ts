@@ -1,11 +1,12 @@
 import { Processor, OnQueueActive, Process, OnGlobalQueueCompleted, OnQueueFailed } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
+import { env } from 'src/configuration';
 import { WalletServices } from 'src/services/use-cases/wallet/wallet-services.services';
 
 
 
-@Processor('wallet')
+@Processor(`${env.env}.wallet`)
 export class CreateWalletTaskConsumer {
   constructor(
     private walletService: WalletServices,

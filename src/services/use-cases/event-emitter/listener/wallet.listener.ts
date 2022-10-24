@@ -5,6 +5,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { IDataServices } from "src/core/abstracts";
 import { CoinType } from "src/core/types/coin";
+import { env } from "src/configuration";
 
 
 
@@ -14,8 +15,8 @@ import { CoinType } from "src/core/types/coin";
 export class WalletCreateListener {
   constructor(
     private data: IDataServices,
-    @InjectQueue('wallet') private walletQueue: Queue,
-    @InjectQueue('wallet.webhook.subscription') private walletWebhookQueue: Queue,
+    @InjectQueue(`${env.env}.wallet`) private walletQueue: Queue,
+    @InjectQueue(`${env.env}.wallet.webhook.subscription`) private walletWebhookQueue: Queue,
 
   ) { }
 
