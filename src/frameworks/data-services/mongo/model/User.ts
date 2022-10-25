@@ -75,6 +75,9 @@ export class User {
   @Prop({ default: false })
   isWaitList: boolean;
 
+  @Prop({ default: false })
+  isSwitchaMerchant: boolean;
+
   @Prop()
   transactionPin: string
 
@@ -83,6 +86,7 @@ export class User {
 
   @Prop()
   avatar: string
+
 
 }
 

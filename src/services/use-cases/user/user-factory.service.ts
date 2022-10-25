@@ -11,7 +11,6 @@ export class UserFactoryService {
     if (data.firstName) user.firstName = data.firstName;
     if (data.lastName) user.lastName = data.lastName;
     if (data.username) user.username = data.username;
-
     if (data.email) user.email = data.email;
     if (data.device) user.device = data.device;
     if (data.password) user.password = await hash(data.password);
@@ -22,6 +21,7 @@ export class UserFactoryService {
     if (data.level) user.level = data.level;
     if (data.avatar) user.avatar = data.avatar;
     if (data.isWaitList) user.isWaitList = data.isWaitList;
+    if (data.isSwitchaMerchant) user.isSwitchaMerchant = data.isSwitchaMerchant;
 
     
     user.emailVerified = false;

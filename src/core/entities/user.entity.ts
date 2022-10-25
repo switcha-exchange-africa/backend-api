@@ -21,6 +21,7 @@ export class User {
   level: USER_LEVEL_TYPE
   dob: string
   isWaitList: boolean
+  isSwitchaMerchant: boolean;
 }
 
 
