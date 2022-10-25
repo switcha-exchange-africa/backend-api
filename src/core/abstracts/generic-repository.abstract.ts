@@ -1,5 +1,6 @@
 import { ClientSession, FilterQuery, UpdateQuery } from "mongoose";
 import * as mongoose from "mongoose";
+import { PaginationType } from "../types/database";
 
 
 
@@ -22,4 +23,7 @@ export abstract class IGenericRepository<T> {
   abstract create(payload: T | T[], session?: ClientSession);
 
   abstract update(key: FilterQuery<T>, payload: UpdateQuery<T>, session?: ClientSession);
+
+  abstract aggregation(pipeline: any[]): Promise<any>
+  abstract search(options: { query: PaginationType, populate?: string | string[] }) 
 }

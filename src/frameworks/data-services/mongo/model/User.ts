@@ -9,7 +9,7 @@ import {
   USER_LEVEL_LIST,
   USER_LEVEL_TYPE
 } from 'src/lib/constants';
-import {  Document } from "mongoose";
+import { Document } from "mongoose";
 
 export type UserDocument = User & Document;
 
@@ -21,10 +21,10 @@ export class User {
   @Prop()
   lastName: string;
 
-  @Prop()
+  @Prop({ unique: true })
   username: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @Prop()
@@ -89,6 +89,28 @@ export class User {
 
 
 }
+const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.index({
+  username: 'text',
+  _id: 'text',
+  email: 'text',
+  id: 'text',
+  firstName: 'text',
+  lastName: 'text',
+  phone: 'text',
+},
+{
+  weights: {
+    username: 5,
+    _id: 5,
+    email: 5,
+    firstName: 5,
+    lastName: 5,
+    phone: 5,
+    id: 5,
+  },
+},);
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export { UserSchema }
 
+// https://medium.com/@phatdev/build-a-full-text-search-with-nestjs-mongodb-elasticsearch-and-docker-final-part-3ff13b93f447

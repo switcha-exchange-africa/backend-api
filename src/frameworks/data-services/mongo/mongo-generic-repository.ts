@@ -2,6 +2,7 @@ import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { IGenericRepository } from 'src/core/abstracts';
 import { convertDate, isEmpty } from 'src/lib/utils';
 import * as mongoose from "mongoose";
+import { PaginationType } from 'src/core/types/database';
 
 export class MongoGenericRepository<T> implements IGenericRepository<T> {
   private _repository: Model<T>;
@@ -64,6 +65,14 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
+  async aggregation(pipeline: any[]): Promise<any> {
+    try {
+      const result = await this._repository.aggregate(pipeline)
+      return Promise.resolve(result);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
   async findAllWithPagination(options: {
     query?: Record<string, any>,
     queryFields?: Record<string, any>,
@@ -106,9 +115,9 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       const searchQuery = {
         $and: andArr
       };
-      const populated = !isEmpty(options) ? options.misc.populated || [] : this._populateOnFind
+      const populated = !isEmpty(options) && options.misc ? options.misc.populated || [] : this._populateOnFind || []
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
-
+      console.log("POPULATED", populated)
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository
         .find(filterQuery as any)
@@ -116,6 +125,44 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         .limit(perpage)
         .skip(page * perpage - perpage)
         .sort(sortQuery);
+      return Promise.resolve({
+        data,
+        pagination: {
+          hasPrevious: page > 1,
+          prevPage: page - 1,
+          hasNext: page < Math.ceil(total / perpage),
+          next: page + 1,
+          currentPage: Number(page),
+          total: total,
+          pageSize: perpage,
+          lastPage: Math.ceil(total / perpage)
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+  async search(options: { query: PaginationType, populate?: string | string[] }) {
+    try {
+      const { q } = options?.query
+      console.log("search value", q)
+      const perpage = Number(options?.query.perpage) || 10;
+      const page = Number(options?.query.page) || 1;
+
+      const searchRecord = {
+        $text: {
+          $search: q,
+          $language: 'en',
+          $caseSensitive: false
+        }
+      } as FilterQuery<T>;
+      const total = await this._repository.countDocuments(searchRecord);
+      const data = await this._repository
+        .find(searchRecord, { score: { $meta: 'textScore' } })
+        .populate(options?.populate)
+        .limit(perpage)
+        .skip(page * perpage - perpage)
+        .sort({ score: { $meta: 'textScore' } });
       return Promise.resolve({
         data,
         pagination: {
