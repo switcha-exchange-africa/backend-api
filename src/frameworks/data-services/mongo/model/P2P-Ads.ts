@@ -6,7 +6,11 @@ import { Status, STATUS_LIST } from "src/core/types/status";
 
 export type P2pAdsDocument = P2pAds & Document;
 
-@Schema()
+@Schema({
+  toJSON: {
+    virtuals: true,
+  },
+})
 export class P2pAds {
   @Prop()
   coin: string
@@ -74,8 +78,27 @@ export class P2pAds {
   updatedAt: Date;
 }
 
-export const P2pAdsSchema = SchemaFactory.createForClass(P2pAds);
+const P2pAdsSchema = SchemaFactory.createForClass(P2pAds);
+P2pAdsSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: '_id',
+});
+P2pAdsSchema.virtual('bank', {
+  ref: 'P2pAdBank',
+  localField: 'banks',
+  foreignField: '_id'
+});
 
+P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
+  this.populate({
+      path: 'user',
+      options: { select: 'username noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+  })
+
+  next();
+});
+export {P2pAdsSchema}
 
 
 // 4245519

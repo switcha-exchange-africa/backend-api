@@ -317,7 +317,7 @@ export class P2pServices {
         query: cleanedPayload,
         queryFields: {},
         misc: {
-          populated: ['userId', 'banks']
+          populated: ['user', 'bank']
         }
       });
 
@@ -1143,10 +1143,6 @@ export class P2pServices {
               lockedBalance: -order.quantity
             }
           }, session)
-          console.log(generalTransactionReference)
-          console.log(creditedBuyerWallet)
-          console.log(creditedFeeWallet)
-          console.log(deductAdTotalAmount)
 
 
           const merchantTransactionPayload = {
@@ -1234,16 +1230,16 @@ export class P2pServices {
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
 
-            await this.data.users.update({ _id: buyerTransactionPayload.userId }, {
-              $inc: {
-                noOfP2pOrderCompleted: 1,
-              }
-            }, session)
-            await this.data.users.update({ _id: merchantTransactionPayload.userId }, {
-              $inc: {
-                noOfP2pOrderCompleted: 1,
-              }
-            }, session)
+          await this.data.users.update({ _id: buyerTransactionPayload.userId }, {
+            $inc: {
+              noOfP2pOrderCompleted: 1,
+            }
+          }, session)
+          await this.data.users.update({ _id: merchantTransactionPayload.userId }, {
+            $inc: {
+              noOfP2pOrderCompleted: 1,
+            }
+          }, session)
 
         } catch (error) {
           Logger.error(error)
