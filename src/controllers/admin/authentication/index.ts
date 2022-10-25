@@ -11,8 +11,7 @@ export class AdminAuthenticationController {
 
   constructor(private services: AdminServices) { }
 
-  @Post(ADMIN_ROUTE.SIGNUP_ROUTE)
-  @isAuthenticated('strict')
+  @Post('/signup')
   async signup(
     @Body() body: AdminDto,
     @Res() res: Response
@@ -30,8 +29,7 @@ export class AdminAuthenticationController {
     }
   }
 
-  @Post(ADMIN_ROUTE.LOGIN_ROUTE)
-  @isAuthenticated('strict')
+  @Post('/login')
   async login(
     @Body() body: AdminLoginDto,
     @Res() res: Response

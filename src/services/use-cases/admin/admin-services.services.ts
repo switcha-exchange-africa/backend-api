@@ -6,7 +6,7 @@ import { compareHash, hash } from 'src/lib/utils';
 import { Types } from 'mongoose';
 import { Admin } from "src/core/entities/Admin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
-import { JWT_USER_PAYLOAD_TYPE } from "src/lib/constants";
+import { INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
@@ -35,12 +35,20 @@ export class AdminServices {
 
       const factory = await this.factory.create(adminPayload)
       const data = await this.data.admins.create(factory);
+      const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+        _id: data._id,
+        fullName: `${data.firstName} ${data?.lastName}`,
+        email: data.email,
+        lock: data.lock
+      }
+      const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
 
       return {
-        message: "Admin created successfully",
         status: HttpStatus.CREATED,
+        message: "Admin signed up successfully",
+        token: `Bearer ${token}`,
+        data: jwtPayload,
         state: ResponseState.SUCCESS,
-        data,
       };
 
     } catch (error) {
