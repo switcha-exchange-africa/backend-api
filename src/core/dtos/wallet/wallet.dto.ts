@@ -41,4 +41,5 @@ export type IGetWallets = PaginationType & {
   fullName?: string
   coin: string
   reference: string
+  isAdmin?: boolean
 }

@@ -1,6 +1,8 @@
+import { ObjectId } from "mongoose";
 import { SwitchaDeviceType, USER_LEVEL_TYPE } from "src/lib/constants";
 
 export class User {
+  _id: ObjectId;
   firstName: string;
   lastName: string;
   username: string;

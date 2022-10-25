@@ -72,4 +72,18 @@ export class Wallet {
 
 }
 
-export const WalletSchema = SchemaFactory.createForClass(Wallet);
+
+const WalletSchema = SchemaFactory.createForClass(Wallet);
+WalletSchema.index({
+  reference: 'text',
+  _id: 'text'
+
+},
+  {
+    weights: {
+      reference: 5,
+      _id: 5,
+    },
+  },);
+
+export { WalletSchema }

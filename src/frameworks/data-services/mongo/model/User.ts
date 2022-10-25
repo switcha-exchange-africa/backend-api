@@ -9,7 +9,8 @@ import {
   USER_LEVEL_LIST,
   USER_LEVEL_TYPE
 } from 'src/lib/constants';
-import { Document } from "mongoose";
+import { Document, ObjectId } from "mongoose";
+import { Transform } from 'class-transformer';
 
 export type UserDocument = User & Document;
 
@@ -19,6 +20,9 @@ export type UserDocument = User & Document;
   },
 })
 export class User {
+  @Transform(({ value }) => value.toString())
+  _id: ObjectId;
+  
   @Prop()
   firstName: string;
 

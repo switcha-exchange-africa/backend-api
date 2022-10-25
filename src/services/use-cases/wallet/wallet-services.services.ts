@@ -363,12 +363,37 @@ export class WalletServices {
 
   async findAll(payload: IGetWallets): Promise<ResponsesType<Wallet>> {
     try {
+      const { isAdmin, q, perpage, page, dateFrom, dateTo, sortBy, orderBy, } = payload
+      if (q) {
+        const { data, pagination } = await this.data.wallets.search({
+          query: {
+            q,
+            perpage,
+            page,
+            dateFrom,
+            dateTo,
+            sortBy,
+            orderBy,
+          }
+        })
+        return {
+          status: HttpStatus.OK,
+          message: "Wallet retrieved successfully",
+          data,
+          state: ResponseState.SUCCESS,
+          pagination,
+        };
+      }
+      
       const cleanedPayload = this.cleanQueryPayload(payload)
-      await this.emitter.emit("create.wallet", {
-        userId: payload,
-        email: payload.email,
-        fullName: payload.fullName
-      })
+      if (!isAdmin) {
+        await this.emitter.emit("create.wallet", {
+          userId: payload,
+          email: payload.email,
+          fullName: payload.fullName
+        })
+      }
+
       const { data, pagination } = await this.data.wallets.findAllWithPagination({
         query: cleanedPayload,
         queryFields: {},

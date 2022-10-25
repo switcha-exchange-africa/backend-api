@@ -1,9 +1,8 @@
-import {  HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
 import { IGetUsers } from "src/core/dtos/users";
 import { ResponseState } from "src/core/types/response";
-import { DoesNotExistsException } from "./exceptions";
 
 @Injectable()
 export class UserServices {
@@ -40,7 +39,7 @@ export class UserServices {
   }
   async getAllUsers(payload: IGetUsers) {
     try {
-      const { q,perpage,page,dateFrom,dateTo,sortBy,orderBy } = payload
+      const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
       if (q) {
         const { data, pagination } = await this.data.users.search({
           query: {
@@ -53,12 +52,12 @@ export class UserServices {
             orderBy,
           }
         })
-      return {
-        status: 200,
-        message: "User retrieved successfully",
-        data,
-        pagination,
-      };
+        return {
+          status: 200,
+          message: "User retrieved successfully",
+          data,
+          pagination,
+        };
       }
 
       const cleanedPayload = this.cleanUserQueryPayload(payload)
@@ -70,6 +69,7 @@ export class UserServices {
 
       return {
         status: 200,
+        state: ResponseState.SUCCESS,
         message: "Users retrieved successfully",
         data,
         pagination,
@@ -87,9 +87,22 @@ export class UserServices {
 
   async getUser(id: Types.ObjectId) {
     try {
-      const wallet = await this.data.users.findOne({ _id: id });
-      if (!wallet) throw new DoesNotExistsException("User does not exist");
-      return { status: 200, message: "User retrieved successfully", wallet };
+      const data = await this.data.users.findOne({ _id: id });
+      if (!data) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exist',
+          error: null
+        })
+      };
+      return {
+        status: 200,
+        message: "User retrieved successfully",
+        data,
+        state: ResponseState.SUCCESS,
+
+      };
     } catch (error) {
       Logger.error(error)
       return Promise.reject({
