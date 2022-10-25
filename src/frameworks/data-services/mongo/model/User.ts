@@ -13,7 +13,11 @@ import { Document } from "mongoose";
 
 export type UserDocument = User & Document;
 
-@Schema()
+@Schema({
+  toJSON: {
+    virtuals: true,
+  },
+})
 export class User {
   @Prop()
   firstName: string;
@@ -87,7 +91,22 @@ export class User {
   @Prop()
   avatar: string
 
+  @Prop({
+    default: 0
+  })
+  noOfP2pAdsCreated: number;
 
+
+  @Prop({
+    default: 0
+  })
+  noOfP2pOrderCreated: number;
+
+  @Prop({
+    default: 0
+  })
+  noOfP2pOrderCompleted: number;
+  
 }
 const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({
@@ -99,17 +118,20 @@ UserSchema.index({
   lastName: 'text',
   phone: 'text',
 },
-{
-  weights: {
-    username: 5,
-    _id: 5,
-    email: 5,
-    firstName: 5,
-    lastName: 5,
-    phone: 5,
-    id: 5,
-  },
-},);
+  {
+    weights: {
+      username: 5,
+      _id: 5,
+      email: 5,
+      firstName: 5,
+      lastName: 5,
+      phone: 5,
+      id: 5,
+    },
+  },);
+
+// static methods
+
 
 export { UserSchema }
 

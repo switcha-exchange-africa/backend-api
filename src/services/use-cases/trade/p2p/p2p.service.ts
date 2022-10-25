@@ -137,8 +137,26 @@ export class P2pServices {
 
       if (type === P2pAdsType.BUY) {
         const factory = await this.p2pAdsFactory.create({ ...payload, counterPartConditions })
-        const ad = await this.data.p2pAds.create(factory)
-        p2pId = ad._id
+
+        const atomicTransaction = async (session: mongoose.ClientSession) => {
+          try {
+            const ad = await this.data.p2pAds.create(factory, session)
+            p2pId = ad._id
+            await this.data.users.update({ _id: userId }, {
+              $inc: {
+                noOfP2pAdsCreated: 1,
+              }
+            }, session)
+
+          } catch (error) {
+            Logger.error(error);
+            throw new Error(error);
+          }
+        }
+        await databaseHelper.executeTransactionWithStartTransaction(
+          atomicTransaction,
+          this.connection
+        )
         await Promise.all([
           this.discord.inHouseNotification({
             title: `Created P2P ${type}  :- ${env.env} environment`,
@@ -187,6 +205,12 @@ export class P2pServices {
             },
             session
           )
+          await this.data.users.update({ _id: userId }, {
+            $inc: {
+              noOfP2pAdsCreated: 1,
+            }
+          }, session)
+
           const ad = await this.data.p2pAds.create(factory, session)
 
           p2pId = ad._id
@@ -198,12 +222,12 @@ export class P2pServices {
 
       }
 
-
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
       await Promise.all([
-        databaseHelper.executeTransactionWithStartTransaction(
-          atomicTransaction,
-          this.connection
-        ),
+
         this.discord.inHouseNotification({
           title: `Created P2P ${type}  :- ${env.env} environment`,
           message: `
@@ -660,6 +684,11 @@ export class P2pServices {
 
           }
 
+          await this.data.users.update({ _id: clientId }, {
+            $inc: {
+              noOfP2pOrderCreated: 1,
+            }
+          }, session)
 
 
         }
@@ -988,6 +1017,17 @@ export class P2pServices {
           await this.data.transactions.create(feeTransactionFactory, session)
           await this.data.notifications.create(clientNotificationFactory, session)
           await this.data.notifications.create(merchantNotificationFactory, session)
+
+          await this.data.users.update({ _id: clientTransactionPayload.userId }, {
+            $inc: {
+              noOfP2pOrderCompleted: 1,
+            }
+          }, session)
+          await this.data.users.update({ _id: merchantTransactionPayload.userId }, {
+            $inc: {
+              noOfP2pOrderCompleted: 1,
+            }
+          }, session)
           await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session),
             deductAdTotalAmount.balance === 0 ?
               await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
@@ -1194,6 +1234,16 @@ export class P2pServices {
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
 
+            await this.data.users.update({ _id: buyerTransactionPayload.userId }, {
+              $inc: {
+                noOfP2pOrderCompleted: 1,
+              }
+            }, session)
+            await this.data.users.update({ _id: merchantTransactionPayload.userId }, {
+              $inc: {
+                noOfP2pOrderCompleted: 1,
+              }
+            }, session)
 
         } catch (error) {
           Logger.error(error)

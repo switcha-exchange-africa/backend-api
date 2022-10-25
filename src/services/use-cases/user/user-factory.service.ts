@@ -22,6 +22,9 @@ export class UserFactoryService {
     if (data.avatar) user.avatar = data.avatar;
     if (data.isWaitList) user.isWaitList = data.isWaitList;
     if (data.isSwitchaMerchant) user.isSwitchaMerchant = data.isSwitchaMerchant;
+    if (data.noOfP2pOrderCompleted) user.noOfP2pOrderCompleted = data.noOfP2pOrderCompleted;
+    if (data.noOfP2pAdsCreated) user.noOfP2pAdsCreated = data.noOfP2pAdsCreated;
+    if (data.noOfP2pOrderCreated) user.noOfP2pOrderCreated = data.noOfP2pOrderCreated;
 
     
     user.emailVerified = false;

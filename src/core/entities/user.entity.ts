@@ -22,6 +22,10 @@ export class User {
   dob: string
   isWaitList: boolean
   isSwitchaMerchant: boolean;
+  noOfP2pOrderCompleted: number;
+  noOfP2pAdsCreated: number;
+  noOfP2pOrderCreated: number;
+
 }
 
 
