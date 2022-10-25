@@ -3,7 +3,6 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IAddAdminImage, IAddAdminRoles, IAdmin, IAdminLogin, IChangeAdminPassword } from "src/core/dtos/admin";
 import { AdminFactoryService } from "./admin-factory.service";
 import { compareHash, hash } from 'src/lib/utils';
-import { Types } from 'mongoose';
 import { Admin } from "src/core/entities/Admin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE } from "src/lib/constants";
@@ -115,6 +114,7 @@ export class AdminServices {
       const errorPayload: IErrorReporter = {
         action: 'ADMIN ADD IMAGE',
         error,
+        email: payload.email,
         message: error.message
       }
 
@@ -128,7 +128,7 @@ export class AdminServices {
     }
   }
 
-  async removeImage(id: Types.ObjectId) {
+  async removeImage(id: string) {
     try {
 
       const data = await this.data.admins.update({ _id: id }, { image: '' })
@@ -156,7 +156,7 @@ export class AdminServices {
     }
   }
 
-  async enableTwoFa(id: Types.ObjectId) {
+  async enableTwoFa(id: string) {
     try {
 
       const data = await this.data.admins.update({ _id: id }, { twoFa: true })
@@ -184,7 +184,7 @@ export class AdminServices {
     }
   }
 
-  async disableTwoFa(id: Types.ObjectId) {
+  async disableTwoFa(id: string) {
     try {
 
       const data = await this.data.admins.update({ _id: id }, { twoFa: false })
@@ -215,8 +215,9 @@ export class AdminServices {
     try {
 
       const { id, password, oldPassword } = payload
+      const admin = await this.data.admins.findOne({ _id: id })
 
-      const correctPassword: boolean = await compareHash(password, oldPassword);
+      const correctPassword: boolean = await compareHash(oldPassword, admin?.password);
       if (!correctPassword) return Promise.reject({
         status: HttpStatus.BAD_REQUEST,
         state: ResponseState.ERROR,

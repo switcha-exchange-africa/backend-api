@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
 
-      const user = await this.data.users.findOne({ id: Number(decoded._id) })
+      const user = await this.data.users.findOne({ id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
       request.user = decoded;
 
@@ -42,6 +42,45 @@ export class AuthGuard implements CanActivate {
     }
   }
 }
+
+
+@Injectable()
+export class AdminAuthGuard implements CanActivate {
+  constructor(
+    private readonly data: IDataServices,
+    private readonly reflector: Reflector
+  ) { }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+
+    try {
+      const request: any = context.switchToHttp().getRequest();
+      const decorator = this.reflector.get<string>('is-admin-authenticated', context.getHandler());
+      if (isEmpty(decorator)) return true
+
+      let token = request.headers.authorization;
+      if (!token) throw new UnAuthorizedException("Unauthorized")
+      token = token.replace('Bearer ', '');
+
+      const decoded = await jwtLib.jwtVerify(token);
+      if (!decoded) throw new UnAuthorizedException("Unauthorized")
+
+      const user = await this.data.admins.findOne({ id: decoded._id })
+      if (!user) throw new DoesNotExistsException('User does not exists')
+      request.user = decoded;
+
+      // if (decorator !== 'strict') return true
+      // if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
+
+      return true;
+
+    } catch (error) {
+      Logger.error(error)
+      throw new UnAuthorizedException(error)
+    }
+  }
+}
+
 
 
 @Injectable()

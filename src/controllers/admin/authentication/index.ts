@@ -1,10 +1,8 @@
-import { Body, Controller, Delete, HttpException, Logger, Param, Patch, Post, Put, Res } from "@nestjs/common";
-import { ADMIN_ROUTE } from "src/lib/route-constant";
-import { Response } from 'express';
+import { Body, Controller, Delete, Patch, Post, Put, Req, Res } from "@nestjs/common";
+import { Response, Request } from 'express';
 import { AdminServices } from "src/services/use-cases/admin/admin-services.services";
 import { AddAdminImageDto, AddAdminRoleDto, AdminDto, AdminLoginDto, ChangeAdminPasswordDto, IAddAdminImage, IAddAdminRoles, IChangeAdminPassword } from "src/core/dtos/admin";
-import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 
 @Controller('admin')
 export class AdminAuthenticationController {
@@ -22,10 +20,8 @@ export class AdminAuthenticationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
@@ -40,27 +36,26 @@ export class AdminAuthenticationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
 
 
 
-  @Put(ADMIN_ROUTE.IMAGE_ROUTE)
-  @isAuthenticated('strict')
+  @Post('/image')
+  @isAdminAuthenticated('strict')
   async addImages(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Body() body: AddAdminImageDto,
     @Res() res: Response
   ) {
     try {
-      const { id } = params
+      const user = req?.user
       const payload: IAddAdminImage = {
-        id,
+        id: user._id,
+        email: user.email,
         ...body
       }
 
@@ -68,83 +63,74 @@ export class AdminAuthenticationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
-  @Put(ADMIN_ROUTE.TWO_FA_ROUTE)
-  @isAuthenticated('strict')
+  @Put('/two-fa')
+  @isAdminAuthenticated('strict')
   async enableTwoFa(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Res() res: Response
   ) {
     try {
-
-      const { id } = params
-      const response = await this.services.enableTwoFa(id);
+      const user = req?.user
+      const response = await this.services.enableTwoFa(user._id);
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
-  @Patch(ADMIN_ROUTE.TWO_FA_ROUTE)
-  @isAuthenticated('strict')
+  @Patch('/two-fa')
+  @isAdminAuthenticated('strict')
   async disableTwoFa(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Res() res: Response
   ) {
     try {
 
-      const { id } = params
-      const response = await this.services.disableTwoFa(id);
+      const user = req?.user
+      const response = await this.services.disableTwoFa(user._id);
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
-  @Delete(ADMIN_ROUTE.IMAGE_ROUTE)
-  @isAuthenticated('strict')
+  @Delete('/image')
+  @isAdminAuthenticated('strict')
   async removeImage(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Res() res: Response
   ) {
     try {
 
-      const { id } = params
-      const response = await this.services.removeImage(id);
+      const user = req?.user
+      const response = await this.services.removeImage(user._id);
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
-  @Put(ADMIN_ROUTE.ROLES_ROUTE)
-  @isAuthenticated('strict')
+  @Put("/roles")
+  @isAdminAuthenticated('strict')
   async addRoles(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Body() body: AddAdminRoleDto,
     @Res() res: Response
   ) {
     try {
-      const { id } = params
+      const user = req?.user
       const payload: IAddAdminRoles = {
-        id,
+        id: String(user._id),
         ...body
       }
 
@@ -152,24 +138,22 @@ export class AdminAuthenticationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
-  @Put(ADMIN_ROUTE.PASSWORD_ROUTE)
-  @isAuthenticated('strict')
+  @Put('/password')
+  @isAdminAuthenticated('strict')
   async changePassword(
-    @Param() params: FindByIdDto,
+    @Req() req: Request,
     @Body() body: ChangeAdminPasswordDto,
     @Res() res: Response
   ) {
     try {
-      const { id } = params
+      const user = req?.user
       const payload: IChangeAdminPassword = {
-        id,
+        id: String(user._id),
         ...body
       }
 
@@ -177,10 +161,8 @@ export class AdminAuthenticationController {
       return res.status(response.status).json(response);
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 

@@ -18,6 +18,7 @@ export class Admin {
   @Prop({ required: true })
   email: string;
 
+
   @Prop()
   password: string
 
@@ -33,6 +34,9 @@ export class Admin {
   @Prop({ default: false })
   twoFa: boolean
 
+  @Prop({ default: false })
+  emailVerified: boolean
+  
   @Prop()
   updatedAt: Date
 

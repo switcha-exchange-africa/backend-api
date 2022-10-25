@@ -13,6 +13,7 @@ export class AdminFactoryService {
     if (data.lock) admin.lock = data.lock;
     if (data.roles) admin.roles = data.roles;
     if (data.image) admin.image = data.image
+    if (data.emailVerified) admin.emailVerified = data.emailVerified
     admin.createdAt = new Date();
     admin.updatedAt = new Date();
     admin.lastLoginDate = new Date()

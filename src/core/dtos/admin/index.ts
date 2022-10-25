@@ -1,5 +1,4 @@
 import { IsArray, IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { Types } from 'mongoose';
 import { LoginDto } from "../authentication/login.dto";
 
 export class AdminDto {
@@ -21,6 +20,7 @@ export class AdminDto {
 }
 
 export class AddAdminRoleDto {
+  @IsNotEmpty()
   @IsArray()
   public roles: string[]
 }
@@ -45,17 +45,17 @@ export class ChangeAdminPasswordDto {
 
 export type IAdmin = AdminDto & {}
 export type IAddAdminRoles = AddAdminRoleDto & {
-  id: Types.ObjectId;
+  id: string
 }
 
 
 export type IAddAdminImage = AddAdminImageDto & {
-  id: Types.ObjectId;
+  id: string
+  email: string
 }
 
 export type IChangeAdminPassword = ChangeAdminPasswordDto & {
-  id: Types.ObjectId;
-
+  id: string
 }
 
 export class AdminLoginDto extends LoginDto { }

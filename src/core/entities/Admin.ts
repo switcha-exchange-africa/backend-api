@@ -10,4 +10,5 @@ export class Admin {
   image: string;
   roles: string[]
   twoFa: boolean
+  emailVerified: boolean
 }
