@@ -5,7 +5,7 @@ import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetWithdrawals } from "src/core/entities/Withdrawal";
 import { WithdrawalServices } from "src/services/use-cases/withdrawal/withdrawal.service";
 
-@Controller('admin/withdrawal')
+@Controller('admin/withdrawals')
 export class AdminWithdrawalController {
 
   constructor(private services: WithdrawalServices) { }

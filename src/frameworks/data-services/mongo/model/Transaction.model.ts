@@ -103,4 +103,20 @@ export class Transaction {
   metadata: Object
 }
 
-export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+const TransactionSchema = SchemaFactory.createForClass(Transaction);
+
+TransactionSchema.index({
+  reference: 'text',
+  _id: 'text',
+  id: 'text',
+
+},
+  {
+    weights: {
+      reference: 5,
+      _id: 5,
+      id: 5
+    },
+  },);
+
+export { TransactionSchema }

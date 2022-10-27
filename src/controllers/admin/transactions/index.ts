@@ -15,10 +15,48 @@ export class AdminTransactionsController {
   async findAll(@Query() query: any, @Res() res: Response) {
     try {
 
-      const { userId, perpage, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type } = query
+      const {
+        userId,
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        hash,
+        customTransactionType,
+        subType,
+        status,
+        walletId,
+        currency,
+        tatumTransactionId,
+        reference,
+        generalTransactionReference,
+        senderAddress,
+        type,
+        q
+      } = query
 
       const payload: IGetTransactions = {
-        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type
+        perpage,
+        userId,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        hash,
+        customTransactionType,
+        subType,
+        status,
+        walletId,
+        currency,
+        tatumTransactionId,
+        reference,
+        generalTransactionReference,
+        senderAddress,
+        type,
+        q
       }
       const response = await this.services.getAllTransactions(payload);
       return res.status(response.status).json(response);

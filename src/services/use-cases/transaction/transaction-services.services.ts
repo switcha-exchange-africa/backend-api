@@ -28,10 +28,31 @@ export class TransactionServices {
     if (payload.customTransactionType) key['customTransactionType'] = payload.customTransactionType
     if (payload.hash) key['hash'] = payload.hash
 
+
     return key
   }
   async getAllTransactions(payload: IGetTransactions) {
     try {
+      const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
+      if (q) {
+        const { data, pagination } = await this.data.transactions.search({
+          query: {
+            q,
+            perpage,
+            page,
+            dateFrom,
+            dateTo,
+            sortBy,
+            orderBy,
+          }
+        })
+        return {
+          status: 200,
+          message: "Transaction retrieved successfully",
+          data,
+          pagination,
+        };
+      }
       const cleanedPayload = this.cleanQueryPayload(payload)
       const { data, pagination } = await this.data.transactions.findAllWithPagination({
         query: cleanedPayload,
