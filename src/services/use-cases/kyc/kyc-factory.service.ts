@@ -11,10 +11,8 @@ export class KycFactoryService {
     if (data.image) kyc.image = data.image;
     if (data.selfie) kyc.selfie = data.selfie;
     if (data.userId) kyc.userId = data.userId;
-    if (data.userId) kyc.userId = data.userId;
+    if (data.level) kyc.level = data.level;
     kyc.status = Status.PENDING
-    kyc.createdAt = new Date();
-    kyc.updatedAt = new Date();
     return kyc;
   }
 }

@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module } from "@nestjs/common";
-import { USER_SIGNUP_STATUS_TYPE } from "./lib/constants";
 import { HomeServices } from "./services/use-cases/home/home.service";
 import services from "./services";
 import controller from "./controllers";
@@ -15,12 +14,13 @@ declare global {
     export interface Request {
       user?: {
         _id?: string;
-        fullName?: string;
         firstName?: string;
         lastName?: string;
         email?: string;
-        authStatus?: USER_SIGNUP_STATUS_TYPE;
         lock?: boolean;
+        isBlacklisted: boolean;
+        level?: string;
+        username?: string
         emailVerified?: boolean;
         phoneVerified?: boolean;
         roles?: RoleType[]

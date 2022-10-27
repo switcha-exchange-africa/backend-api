@@ -36,7 +36,8 @@ export class AdminServices {
       const data = await this.data.admins.create(factory);
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: data._id,
-        fullName: `${data.firstName} ${data?.lastName}`,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         lock: data.lock
       }
@@ -279,7 +280,8 @@ export class AdminServices {
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: String(admin?._id),
-        fullName: `${admin?.firstName} ${admin?.lastName}`,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
         email: admin?.email,
         lock: admin?.lock,
       }

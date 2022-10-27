@@ -37,6 +37,7 @@ export class UserServices {
 
     return key
   }
+  
   async getAllUsers(payload: IGetUsers) {
     try {
       const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload

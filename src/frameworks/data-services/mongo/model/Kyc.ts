@@ -3,8 +3,9 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { Types, Document } from 'mongoose';
+import { Types, Document, now } from 'mongoose';
 import { Status, STATUS_LIST } from 'src/core/types/status';
+import { USER_LEVEL_LIST, USER_LEVEL_TYPE } from 'src/lib/constants';
 
 
 export type KycDocument = Kyc & Document;
@@ -17,12 +18,6 @@ export class Kyc {
   @Prop()
   selfie: string;
 
-  @Prop()
-  createdAt: Date
-
-  @Prop()
-  updatedAt: Date
-
   @Prop({
     type: Types.ObjectId,
     ref: "User",
@@ -30,10 +25,17 @@ export class Kyc {
   })
   userId: string;
 
-  @Prop({ enum: STATUS_LIST })
+  @Prop({ enum: STATUS_LIST, default: Status.PENDING })
   status: Status
 
+  @Prop({ enum: USER_LEVEL_LIST })
+  level: USER_LEVEL_TYPE
 
+  @Prop({ default: now() })
+  createdAt: Date;
+
+  @Prop({ default: now() })
+  updatedAt: Date;
 }
 
 export const KycSchema = SchemaFactory.createForClass(Kyc);

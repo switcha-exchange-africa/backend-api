@@ -27,6 +27,7 @@ export class User {
   noOfP2pOrderCompleted: number;
   noOfP2pAdsCreated: number;
   noOfP2pOrderCreated: number;
+  isBlacklisted: boolean;
 
 }
 

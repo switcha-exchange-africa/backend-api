@@ -8,6 +8,7 @@ import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
 import { FeeController } from "./fee";
 import { HomeController } from "./home";
+import { KycController } from "./kyc";
 import { MiscController } from "./misc";
 import { NotificationController } from "./notification";
 import { P2pController } from "./p2p";
@@ -41,5 +42,6 @@ export default [
   FeeController,
   WaitListController, 
   WebPushController,
+  KycController,
   ...admin
 ]

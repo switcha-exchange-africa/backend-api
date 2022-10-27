@@ -1,3 +1,4 @@
+import { USER_LEVEL_TYPE } from "src/lib/constants";
 import { Status } from "../types/status";
 
 export class Kyc {
@@ -7,6 +8,6 @@ export class Kyc {
   updatedAt: Date
   userId: string;
   status: Status
-
+  level: USER_LEVEL_TYPE
 }
 

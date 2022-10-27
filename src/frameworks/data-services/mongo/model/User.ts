@@ -29,7 +29,7 @@ export class User {
   @Prop()
   lastName: string;
 
-  @Prop({unique:true})
+  @Prop({ unique: true })
   username: string;
 
   @Prop({ required: true, unique: true })
@@ -86,6 +86,9 @@ export class User {
   @Prop({ default: false })
   isSwitchaMerchant: boolean;
 
+  @Prop({ default: false })
+  isBlacklisted: boolean;
+
   @Prop()
   transactionPin: string
 
@@ -99,7 +102,6 @@ export class User {
     default: 0
   })
   noOfP2pAdsCreated: number;
-
 
   @Prop({
     default: 0

@@ -1,7 +1,7 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LEVEL_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
@@ -48,7 +48,7 @@ export class AuthServices {
 
       const factory = await this.factory.createNewUser({
         ...payload,
-        username:`${email}-${randomFixedInteger(5)}`,
+        username: `${email}-${randomFixedInteger(5)}`,
         isWaitList: true,
       })
       await this.data.users.create(factory);
@@ -153,9 +153,13 @@ export class AuthServices {
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: user._id,
-        fullName: `${user.firstName} ${user?.lastName}`,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
         email: user.email,
         lock: user.lock,
+        username: user.username,
+        isBlacklisted: user.isBlacklisted,
+        level: user.level,
         emailVerified: user.emailVerified,
       }
       const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
@@ -172,7 +176,7 @@ export class AuthServices {
       await Promise.all([
         this.discordServices.inHouseNotification({
           title: `Email Verification code :- ${env.env} environment`,
-          message: `Verification code for ${jwtPayload?.fullName}-${jwtPayload?.email} is ${code}`,
+          message: `Verification code for ${jwtPayload?.firstName} ${jwtPayload.lastName}:- ${jwtPayload?.email} is ${code}`,
           link: DISCORD_VERIFICATION_CHANNEL_LINK,
         }),
         this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY)),
@@ -253,15 +257,20 @@ export class AuthServices {
         $set: {
           emailVerified: true,
           lastLoginDate: new Date(),
+          level: USER_LEVEL_TYPE.ONE
         }
       })
       // Remove phone code for this user
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: updatedUser?._id,
-        fullName: updatedUser?.fullName,
-        email: updatedUser?.email,
-        lock: updatedUser?.lock,
-        emailVerified: updatedUser.emailVerified,
+        _id: updatedUser._id,
+        firstName: updatedUser?.firstName,
+        lastName: updatedUser?.lastName,
+        email: updatedUser.email,
+        lock: updatedUser.lock,
+        username: updatedUser.username,
+        isBlacklisted: updatedUser.isBlacklisted,
+        level: updatedUser.level,
+        emailVerified: updatedUser.emailVerified
       }
       const [token, , , userManagementFactory, activityFactory] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
@@ -664,11 +673,15 @@ export class AuthServices {
       if (!user.emailVerified) {
 
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-          _id: String(user?._id),
-          fullName: `${user?.firstName} ${user?.lastName}`,
-          email: user?.email,
-          lock: user?.lock,
-          emailVerified: user.emailVerified,
+          _id: String(user._id),
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          email: user.email,
+          lock: user.lock,
+          username: user.username,
+          isBlacklisted: user.isBlacklisted,
+          level: user.level,
+          emailVerified: user.emailVerified
         }
 
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
@@ -681,20 +694,25 @@ export class AuthServices {
         }
       }
 
-      const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: String(user?._id),
-        fullName: `${user?.firstName} ${user?.lastName}`,
-        email: user?.email,
-        lock: user?.lock,
-        emailVerified: user.emailVerified,
-      }
-      const token = await jwtLib.jwtSign(jwtPayload);
 
-      await this.data.users.update({ _id: user._id }, {
+     const updatedUser =  await this.data.users.update({ _id: user._id }, {
         $set: {
           lastLoginDate: new Date()
         }
       })
+
+      const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+        _id: String(updatedUser._id),
+        firstName: updatedUser?.firstName,
+        lastName: updatedUser?.lastName,
+        email: updatedUser.email,
+        lock: updatedUser.lock,
+        username: updatedUser.username,
+        isBlacklisted: updatedUser.isBlacklisted,
+        level: updatedUser.level,
+        emailVerified: updatedUser.emailVerified
+      }
+      const token = await jwtLib.jwtSign(jwtPayload);
 
       return {
         status: HttpStatus.OK,

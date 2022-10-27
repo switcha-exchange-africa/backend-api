@@ -4,6 +4,7 @@ import { AdminExchangeRatesController } from "./exchange-rates";
 import { AdminFeatureManagementController } from "./feature-management";
 import { AdminFeeController } from "./fee";
 import { AdminFeeWalletsController } from "./fee-wallet";
+import { AdminKycController } from "./kyc";
 import { AdminSeedController } from "./seed";
 import { AdminTransactionsController } from "./transactions";
 import { AdminUsersController } from "./users";
@@ -19,5 +20,6 @@ export default [
   AdminCoinController,
   AdminFeeWalletsController,
   AdminSeedController,
-  AdminFeatureManagementController
+  AdminFeatureManagementController,
+  AdminKycController
 ]
