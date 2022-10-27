@@ -6,7 +6,11 @@ import { Status, STATUS_LIST } from "src/core/types/status";
 
 export type P2pOrderDocument = P2pOrder & Document;
 
-@Schema()
+@Schema({
+  toJSON: {
+    virtuals: true,
+  },
+})
 export class P2pOrder {
 
   @Prop({
