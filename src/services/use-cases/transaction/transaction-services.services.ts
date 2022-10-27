@@ -35,6 +35,7 @@ export class TransactionServices {
     try {
       const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
       if (q) {
+        console.log("q", q)
         const { data, pagination } = await this.data.transactions.search({
           query: {
             q,
