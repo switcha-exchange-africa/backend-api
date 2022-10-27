@@ -114,6 +114,7 @@ export class User {
   noOfP2pOrderCompleted: number;
 
 }
+
 const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({
   username: 'text',

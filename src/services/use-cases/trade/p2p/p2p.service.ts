@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -306,6 +306,27 @@ export class P2pServices {
     if (payload.isWillingToPayTo) key['isWillingToPayTo'] = payload.isWillingToPayTo
     if (payload.type) key['type'] = payload.type
 
+
+
+    return key
+  }
+  cleanP2pOrderQueryPayload(payload: IGetP2pOrders) {
+    let key = {}
+    if (payload.perpage) key['perpage'] = payload.perpage
+    if (payload.page) key['page'] = payload.page
+    if (payload.dateFrom) key['dateFrom'] = payload.dateFrom
+    if (payload.dateTo) key['dateTo'] = payload.dateTo
+    if (payload.sortBy) key['sortBy'] = payload.sortBy
+    if (payload.orderBy) key['orderBy'] = payload.orderBy
+    if (payload.clientId) key['clientId'] = payload.clientId
+    if (payload.type) key['type'] = payload.type
+    if (payload.merchantId) key['merchantId'] = payload.merchantId
+    if (payload.adId) key['adId'] = payload.adId
+    if (payload.clientWalletId) key['clientWalletId'] = payload.clientWalletId
+    if (payload.status) key['status'] = payload.status
+    if (payload.orderId) key['orderId'] = payload.orderId
+    if (payload.bankId) key['bankId'] = payload.bankId
+    if (payload.method) key['method'] = payload.method
 
 
     return key
@@ -1304,6 +1325,93 @@ export class P2pServices {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'GET SINGLE P2P ORDER',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+  async getSingleP2pOrderByOrderId(orderId: string) {
+    try {
+      const data = await this.data.p2pOrders.findOne({ orderId })
+      if (!data) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Order does not exists',
+          error: null
+        })
+      }
+      return Promise.resolve({
+        message: "Order retrieved  succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE P2P ORDER',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+  async getP2pOrders(payload: IGetP2pOrders) {
+    try {
+      const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
+      if (q) {
+        const { data, pagination } = await this.data.p2pOrders.search({
+          query: {
+            q,
+            perpage,
+            page,
+            dateFrom,
+            dateTo,
+            sortBy,
+            orderBy,
+          }
+        })
+        return {
+          status: 200,
+          message: "Orders retrieved successfully",
+          data,
+          pagination,
+        };
+      }
+      const cleanedPayload = this.cleanP2pOrderQueryPayload(payload)
+      const { data, pagination } = await this.data.p2pOrders.findAllWithPagination({
+        query: cleanedPayload,
+        queryFields: {},
+        misc: {
+          populated: ['client', 'merchant', 'bank', 'ad']
+        }
+      });
+
+      return Promise.resolve({
+        message: "Orders retrieved successfully",
+        status: 200,
+        data,
+        pagination,
+      });
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET P2P ORDERS',
         error,
         message: error.message
       }

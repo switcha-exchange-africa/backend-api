@@ -82,9 +82,64 @@ export class P2pOrder {
   @Prop({ default: now() })
   updatedAt: Date;
 }
-
-export const P2pOrderSchema = SchemaFactory.createForClass(P2pOrder);
-
+const P2pOrderSchema = SchemaFactory.createForClass(P2pOrder);
 
 
-// 4245519
+P2pOrderSchema.virtual('client', {
+  ref: 'User',
+  localField: 'clientId',
+  foreignField: '_id',
+});
+P2pOrderSchema.virtual('wallet', {
+  ref: 'Wallet',
+  localField: 'clientWalletId',
+  foreignField: '_id',
+});
+P2pOrderSchema.virtual('merchant', {
+  ref: 'User',
+  localField: 'merchantId',
+  foreignField: '_id'
+});
+
+P2pOrderSchema.virtual('bank', {
+  ref: 'P2pAdBank',
+  localField: 'bankId',
+  foreignField: '_id'
+});
+
+P2pOrderSchema.virtual('ad', {
+  ref: 'P2pAds',
+  localField: 'adId',
+  foreignField: '_id'
+});
+P2pOrderSchema.pre<P2pOrderDocument>(/^find/, function (next) {
+  this.populate({
+    path: 'client',
+    options: { select: 'email firstName lastName level lock isBlacklisted username isSwitchaMerchant avatar noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+  })
+
+  next();
+});
+P2pOrderSchema.pre<P2pOrderDocument>(/^find/, function (next) {
+  this.populate({
+    path: 'merchant',
+    options: { select: 'email firstName lastName level lock isBlacklisted username isSwitchaMerchant avatar noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+  })
+
+  next();
+});
+
+P2pOrderSchema.index({
+  orderId: 'text',
+  _id: 'text',
+
+},
+  {
+    weights: {
+      orderId: 5,
+      _id: 5,
+
+    },
+  },);
+export { P2pOrderSchema }
+
