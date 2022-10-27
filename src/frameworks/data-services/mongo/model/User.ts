@@ -22,14 +22,14 @@ export type UserDocument = User & Document;
 export class User {
   @Transform(({ value }) => value.toString())
   _id: ObjectId;
-  
+
   @Prop()
   firstName: string;
 
   @Prop()
   lastName: string;
 
-  @Prop({ unique: true })
+  @Prop()
   username: string;
 
   @Prop({ required: true, unique: true })
@@ -110,7 +110,7 @@ export class User {
     default: 0
   })
   noOfP2pOrderCompleted: number;
-  
+
 }
 const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({
