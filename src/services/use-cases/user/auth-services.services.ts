@@ -48,6 +48,7 @@ export class AuthServices {
 
       const factory = await this.factory.createNewUser({
         ...payload,
+        username:`${email}-${randomFixedInteger(5)}`,
         isWaitList: true,
       })
       await this.data.users.create(factory);
