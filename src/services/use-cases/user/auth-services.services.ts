@@ -695,7 +695,7 @@ export class AuthServices {
       }
 
 
-     const updatedUser =  await this.data.users.update({ _id: user._id }, {
+      const updatedUser = await this.data.users.update({ _id: user._id }, {
         $set: {
           lastLoginDate: new Date()
         }
@@ -741,8 +741,15 @@ export class AuthServices {
     }
   }
 
-  async getUser(data: JWT_USER_PAYLOAD_TYPE) {
+  async getUser(id: string) {
+    let email
     try {
+      const data = await this.data.users.findOne(
+        { _id: id },
+        null, {
+        select: ['-password']
+      })
+      email = data.email
       return {
         status: HttpStatus.OK,
         state: ResponseState.SUCCESS,
@@ -754,7 +761,7 @@ export class AuthServices {
       const errorPayload: IErrorReporter = {
         action: 'GET AUTH USER',
         error,
-        email: data.email,
+        email,
         message: error.message
       }
 

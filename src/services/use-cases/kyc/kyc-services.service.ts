@@ -20,18 +20,16 @@ export class KycServices {
 
   async levelTwo(payload: IKycLevelTwo) {
     const { userId, email } = payload
-
+    console.log(payload)
     try {
       const kyc = await this.data.kyc.findOne({
         userId,
         level: USER_LEVEL_TYPE.TWO,
-        status: {
-          $eq: [
-            Status.APPROVED,
-            Status.PENDING,
+          $or: [
+            { status: Status.APPROVED },
+            { status: Status.PENDING },
 
           ]
-        },
 
       })
       if (kyc) {
@@ -79,13 +77,11 @@ export class KycServices {
       const kyc = await this.data.kyc.findOne({
         userId,
         level: USER_LEVEL_TYPE.THREE,
-        status: {
-          $eq: [
-            Status.APPROVED,
-            Status.PENDING,
+        $or: [
+          { status: Status.APPROVED },
+          { status: Status.PENDING },
 
-          ]
-        },
+        ]
 
       })
       if (kyc) {

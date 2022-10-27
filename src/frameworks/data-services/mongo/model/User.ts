@@ -92,7 +92,7 @@ export class User {
   @Prop()
   transactionPin: string
 
-  @Prop({ enum: USER_LEVEL_LIST })
+  @Prop({ enum: USER_LEVEL_LIST, default: USER_LEVEL_TYPE.ONE })
   level: USER_LEVEL_TYPE
 
   @Prop()

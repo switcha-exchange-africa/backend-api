@@ -1,13 +1,16 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   Req,
   Res,
 } from "@nestjs/common";
 
 import { Response, Request } from "express";
-import { AddKycLevelThreeDto, AddKycLevelTwoDto, IKycLevelThree, IKycLevelTwo } from "src/core/dtos/kyc";
+import { isAuthenticated } from "src/core/decorators";
+import { AddKycLevelThreeDto, AddKycLevelTwoDto, IGetKyc, IKycLevelThree, IKycLevelTwo } from "src/core/dtos/kyc";
 import { KycServices } from "src/services/use-cases/kyc/kyc-services.service";
 
 @Controller('/kyc')
@@ -18,6 +21,7 @@ export class KycController {
   ) { }
 
   @Post('/level-two')
+  @isAuthenticated('strict')
   async levelTwo(
     @Req() req: Request,
     @Body() body: AddKycLevelTwoDto,
@@ -38,6 +42,7 @@ export class KycController {
   }
 
   @Post('/level-three')
+  @isAuthenticated('strict')
   async levelThree(
     @Req() req: Request,
     @Body() body: AddKycLevelThreeDto,
@@ -56,4 +61,42 @@ export class KycController {
 
     }
   }
+
+  @Get('/')
+  @isAuthenticated('strict')
+  async getAllKyc(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query,
+  ) {
+    try {
+      const user = req?.user
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        status,
+        level,
+      } = query
+      const payload: IGetKyc = {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        userId: user._id,
+        status,
+        level,
+      }
+      const response = await this.services.getAllKyc(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
 }

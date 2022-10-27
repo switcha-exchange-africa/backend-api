@@ -128,7 +128,7 @@ export class AuthenticationController {
   ) {
     try {
 
-      const response = await this.services.getUser(req?.user);
+      const response = await this.services.getUser(req?.user._id);
       return res.status(200).json(response);
     } catch (error) {
       return res.status(error.status || 500).json(error);

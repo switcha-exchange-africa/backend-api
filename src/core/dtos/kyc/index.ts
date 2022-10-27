@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
 import { PaginationType } from "src/core/types/database";
 import { Status } from "src/core/types/status";
@@ -29,6 +29,10 @@ export class ProcessKycDtoDto {
   @IsNotEmpty()
   @IsEnum(Status)
   public readonly status: Status
+
+  @IsOptional()
+  @IsString()
+  public readonly reason: Status
 
 }
 export type IProcessKyc = ProcessKycDtoDto & {

@@ -17,7 +17,10 @@ export abstract class IGenericRepository<T> {
     });
 
   abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: {
-    sort?: 'desc' | 'asc', populate?: any
+    sort?: 'desc' | 'asc',
+    populate?: any,
+    select?: string | string[]
+
   }): Promise<mongoose.HydratedDocument<T>>;
 
   abstract create(payload: T | T[], session?: ClientSession);

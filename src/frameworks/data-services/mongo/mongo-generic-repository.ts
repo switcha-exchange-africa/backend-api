@@ -50,6 +50,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   async findOne(key: FilterQuery<T>, session?: ClientSession, options?: {
     sort?: 'desc' | 'asc',
     populate?: any
+    select?: string | string[]
   }): Promise<mongoose.HydratedDocument<T>> {
     try {
       const populated = !isEmpty(options) ? options.populate || [] : this._populateOnFind
@@ -57,6 +58,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         .findOne(key)
         .populate(populated)
         .sort(options && options.sort === 'desc' ? { createdAt: -1 } : { createdAt: 1 })
+        .select(options && options?.select ? options?.select : [])
         .session(session || null);
 
       return Promise.resolve(result as mongoose.HydratedDocument<T>);

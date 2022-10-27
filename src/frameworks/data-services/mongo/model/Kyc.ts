@@ -38,4 +38,20 @@ export class Kyc {
   updatedAt: Date;
 }
 
-export const KycSchema = SchemaFactory.createForClass(Kyc);
+const KycSchema = SchemaFactory.createForClass(Kyc);
+KycSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: '_id',
+});
+
+KycSchema.pre<KycDocument>(/^find/, function (next) {
+  this.populate({
+    path: 'user',
+    options: { select: 'username email level firstName lastName' } // <-- wrap `select` in `options` here...
+  })
+
+  next();
+});
+
+export { KycSchema }
