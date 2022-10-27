@@ -9,6 +9,7 @@ import { AdminSeedController } from "./seed";
 import { AdminTransactionsController } from "./transactions";
 import { AdminUsersController } from "./users";
 import { AdminWalletsController } from "./wallets";
+import { AdminWithdrawalController } from "./withdrawals";
 
 export default [
   AdminAuthenticationController,
@@ -21,5 +22,6 @@ export default [
   AdminFeeWalletsController,
   AdminSeedController,
   AdminFeatureManagementController,
-  AdminKycController
+  AdminKycController,
+  AdminWithdrawalController
 ]

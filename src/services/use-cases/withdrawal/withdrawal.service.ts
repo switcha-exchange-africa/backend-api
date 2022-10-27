@@ -269,6 +269,26 @@ export class WithdrawalServices {
 
   async getWithdrawals(payload: IGetWithdrawals) {
     try {
+      const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
+      if (q) {
+        const { data, pagination } = await this.data.withdrawals.search({
+          query: {
+            q,
+            perpage,
+            page,
+            dateFrom,
+            dateTo,
+            sortBy,
+            orderBy,
+          }
+        })
+        return {
+          status: 200,
+          message: "Withdrawals retrieved successfully",
+          data,
+          pagination,
+        };
+      }
       const cleanedPayload = this.cleanQueryPayload(payload)
       const { data, pagination } = await this.data.withdrawals.findAllWithPagination({
         query: cleanedPayload,
@@ -299,9 +319,9 @@ export class WithdrawalServices {
     }
   }
 
-  async getSingleWithdrawal(payload: { userId: string, id: mongoose.Types.ObjectId }) {
+  async getSingleWithdrawal(id: mongoose.Types.ObjectId) {
     try {
-      const data = await this.data.withdrawals.findOne(payload);
+      const data = await this.data.withdrawals.findOne({ _id: id });
 
       return Promise.resolve({
         message: "Withdrawal retrieved successfully",

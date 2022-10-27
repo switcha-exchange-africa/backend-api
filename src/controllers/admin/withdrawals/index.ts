@@ -1,43 +1,78 @@
-import { Controller, Get, HttpException, Logger, Param, Query, Res } from "@nestjs/common";
+import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { Response } from "express"
 import { isAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
+import { IGetWithdrawals } from "src/core/entities/Withdrawal";
+import { WithdrawalServices } from "src/services/use-cases/withdrawal/withdrawal.service";
 
-@Controller('admin/wallets')
-export class AdminWalletsController {
+@Controller('admin/withdrawal')
+export class AdminWithdrawalController {
 
-  constructor(private services: WalletServices) { }
+  constructor(private services: WithdrawalServices) { }
 
 
   @Get('/')
   @isAuthenticated('strict')
-  async findAll(@Res() res: Response, @Query() query) {
+  async getAllWithdrawals(@Res() res: Response, @Query() query) {
     try {
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference } = query
-
-      const response = await this.services.findAll({ perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference });
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        userId,
+        transactionId,
+        walletId,
+        bankId,
+        processedBy,
+        currency,
+        reference,
+        type,
+        subType,
+        paymentMethod,
+        status,
+        q
+      } = query
+      const payload: IGetWithdrawals = {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        userId,
+        transactionId,
+        walletId,
+        bankId,
+        processedBy,
+        currency,
+        reference,
+        type,
+        subType,
+        paymentMethod,
+        status,
+        q
+      }
+      const response = await this.services.getWithdrawals(payload);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 
   @Get('/:id')
   @isAuthenticated('strict')
-  async detail(@Res() res: Response, @Param() param: FindByIdDto) {
+  async getSingleWithdrawal(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;
-      const response = await this.services.details(id);
+      const response = await this.services.getSingleWithdrawal(id);
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new HttpException(error.message, 500);
+      return res.status(error.status || 500).json(error);
+
     }
   }
 

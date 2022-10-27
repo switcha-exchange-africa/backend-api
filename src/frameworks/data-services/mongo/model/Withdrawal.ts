@@ -89,7 +89,23 @@ export class Withdrawal {
   updatedAt: Date;
 }
 
-export const WithdrawalSchema = SchemaFactory.createForClass(Withdrawal);
 
 
+const WithdrawalSchema = SchemaFactory.createForClass(Withdrawal);
+WithdrawalSchema.index({
+  userId: 'text',
+  _id: 'text',
+  reference: 'text',
+  id: 'text',
+
+},
+  {
+    weights: {
+      reference: 5,
+      _id: 5,
+      id: 5
+    },
+  },);
+
+export { WithdrawalSchema }
 

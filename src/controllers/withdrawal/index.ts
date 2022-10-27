@@ -72,15 +72,14 @@ export class WithdrawalController {
   @Get('/:id')
   @isAuthenticated('strict')
   async getSingleWithdrawal(
-    @Req() req: Request,
+    // @Req() req: Request,
     @Param() params: FindByIdDto,
     @Res() res: Response) {
     try {
-      const userId = req?.user?._id
+      // const userId = req?.user?._id
       const { id } = params
-      const payload = { userId, id }
 
-      const response = await this.services.getSingleWithdrawal(payload)
+      const response = await this.services.getSingleWithdrawal(id)
       return res.status(response.status).json(response);
 
     } catch (error) {
