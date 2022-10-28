@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
@@ -221,6 +221,113 @@ export class P2pController {
     }
   }
 
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
+  @Get('/p2p/order/merchant')
+  @isAuthenticated('strict')
+  async getP2pOrdersMerchant(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query) {
+    try {
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        clientId,
+        adId,
+        clientWalletId,
+        type,
+        status,
+        orderId,
+        bankId,
+        method,
+        q
+      } = query
+      const merchantId = req?.user?._id;
+
+      const payload: IGetP2pOrders = {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        merchantId,
+        clientId,
+        adId,
+        clientWalletId,
+        type,
+        status,
+        orderId,
+        bankId,
+        method,
+        q
+      }
+      const response = await this.services.getP2pOrders(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
+  @Get('/p2p/order/client')
+  @isAuthenticated('strict')
+  async getP2pOrdersClient(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query
+  ) {
+    try {
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        merchantId,
+        adId,
+        clientWalletId,
+        type,
+        status,
+        orderId,
+        bankId,
+        method,
+        q
+      } = query
+      const clientId = req?.user?._id;
+
+      const payload: IGetP2pOrders = {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        merchantId,
+        clientId,
+        adId,
+        clientWalletId,
+        type,
+        status,
+        orderId,
+        bankId,
+        method,
+        q
+      }
+      const response = await this.services.getP2pOrders(payload);
+      return res.status(response.status).json(response);
+
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
 
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order/:id')
