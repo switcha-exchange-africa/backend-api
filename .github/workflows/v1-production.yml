@@ -27,7 +27,7 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       id: downloadfile  # Remember to give an ID if you need the output
       with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1666464927/switcha-production-env/env-production_xds0vg.txt"
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1667160139/switcha-production-env/env-production_jayduv.txt"
         target: ./
 
     - name: Install doctl
