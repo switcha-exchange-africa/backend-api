@@ -76,7 +76,10 @@ export class P2pServices {
       const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo } = payload
       let p2pId
 
-      const wallet = await this.data.wallets.findOne({ coin, userId })
+      const [wallet, user] = await Promise.all([
+        this.data.wallets.findOne({ coin, userId }),
+        this.data.users.findOne({ _id: userId })
+      ]) 
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -85,7 +88,6 @@ export class P2pServices {
           error: null
         })
       }
-      const user = await this.data.users.findOne({ _id: userId })
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
       const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
