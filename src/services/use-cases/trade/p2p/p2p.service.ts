@@ -85,6 +85,7 @@ export class P2pServices {
           error: null
         })
       }
+      const user = await this.data.users.findOne({ _id: userId })
       const balance = Math.abs(Number(wallet.balance))
       const counterPartConditions = { kyc, moreThanDot1Btc, registeredZeroDaysAgo }
       const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
@@ -136,7 +137,11 @@ export class P2pServices {
       }
 
       if (type === P2pAdsType.BUY) {
-        const factory = await this.p2pAdsFactory.create({ ...payload, counterPartConditions })
+        const factory = await this.p2pAdsFactory.create({
+          ...payload,
+          counterPartConditions,
+          isSwitchaMerchant: user.isSwitchaMerchant
+        })
 
         const atomicTransaction = async (session: mongoose.ClientSession) => {
           try {
@@ -191,7 +196,11 @@ export class P2pServices {
       // deduct from wallet
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
-          const factory = await this.p2pAdsFactory.create({ ...payload, counterPartConditions })
+          const factory = await this.p2pAdsFactory.create({
+            ...payload,
+            counterPartConditions,
+            isSwitchaMerchant: user.isSwitchaMerchant
+          })
           await this.data.wallets.update(
             {
               _id: wallet._id,
