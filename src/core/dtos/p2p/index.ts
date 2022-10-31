@@ -228,3 +228,12 @@ export type IGetP2pOrders = PaginationType & {
   method: string
 
 }
+
+
+
+export class FindByOrderIdDto {
+  @IsNotEmpty()
+  @IsString()
+  public orderId: string;
+
+}
