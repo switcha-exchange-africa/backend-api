@@ -1345,7 +1345,7 @@ export class P2pServices {
 
     try {
       const data = await this.data.p2pOrders.findOne({ orderId }, null, {
-        populated: ['client', 'merchant', 'bank', 'ad']
+        populate: ['client', 'merchant', 'bank', 'ad']
       })
       if (!data) {
         return Promise.reject({
@@ -1355,9 +1355,6 @@ export class P2pServices {
           error: null
         })
       }
-      console.log("CLIENT", data.clientId)
-      console.log("MERCHANT", data.merchantId)
-      console.log("USERID", userId)
 
       if (String(userId) === data.clientId || String(userId) === data.merchantId) {
         return Promise.resolve({
