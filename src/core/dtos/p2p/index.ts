@@ -237,3 +237,9 @@ export class FindByOrderIdDto {
   public orderId: string;
 
 }
+
+export type IGetOrderByOrderId = {
+  orderId: string
+  email: string
+  userId: string
+}

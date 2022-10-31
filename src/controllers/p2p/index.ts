@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
@@ -375,19 +375,22 @@ export class P2pController {
     }
   }
 
-  @Get('/p2p/order-id/:id')
+  @Get('/p2p/order-id/:orderId')
   @isAuthenticated('strict')
   async getSingleP2pOrderByOrderId(
     @Res() res: Response,
-    @Param() params: FindByOrderIdDto
-
+    @Param() params: FindByOrderIdDto,
+    @Req() req: Request
   ) {
     try {
-
+      const user = req?.user
       const { orderId } = params
-
-
-      const response = await this.services.getSingleP2pOrderByOrderId(orderId);
+      const payload: IGetOrderByOrderId = {
+        email: user.email,
+        userId: user._id,
+        orderId
+      }
+      const response = await this.services.getSingleP2pOrderByOrderId(payload);
       return res.status(response.status).json(response);
 
     } catch (error) {

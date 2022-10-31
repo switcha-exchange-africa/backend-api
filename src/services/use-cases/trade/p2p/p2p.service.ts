@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -1338,11 +1338,15 @@ export class P2pServices {
       })
     }
   }
- 
-  
-  async getSingleP2pOrderByOrderId(orderId: string) {
+
+
+  async getSingleP2pOrderByOrderId(payload: IGetOrderByOrderId) {
+    const { orderId, userId, email } = payload
+
     try {
-      const data = await this.data.p2pOrders.findOne({ orderId })
+      const data = await this.data.p2pOrders.findOne({ orderId }, null, {
+        populated: ['client', 'merchant', 'bank', 'ad']
+      })
       if (!data) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -1351,16 +1355,31 @@ export class P2pServices {
           error: null
         })
       }
-      return Promise.resolve({
-        message: "Order retrieved  succesfully",
-        status: HttpStatus.OK,
-        data,
-      });
+      console.log("CLIENT", data.clientId)
+      console.log("MERCHANT", data.merchantId)
+      console.log("USERID", userId)
+
+      if (String(userId) === data.clientId || String(userId) === data.merchantId) {
+        return Promise.resolve({
+          message: "Order retrieved  succesfully",
+          status: HttpStatus.OK,
+          data,
+          state: ResponseState.SUCCESS,
+        });
+
+      }
+      return Promise.reject({
+        status: HttpStatus.FORBIDDEN,
+        state: ResponseState.ERROR,
+        message: `Can't perform this action`,
+        error: null
+      })
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'GET SINGLE P2P ORDER',
         error,
+        email,
         message: error.message
       }
 
