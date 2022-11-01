@@ -1486,7 +1486,7 @@ export class P2pServices {
 `,
         link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
       })
-
+      await this.data.p2pOrders.update({ id: order.id }, { status: Status.PROCESSING })
       return Promise.resolve({
         message: 'Merchant notified successfully',
         status: HttpStatus.OK,
