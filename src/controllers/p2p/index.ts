@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
@@ -348,6 +348,35 @@ export class P2pController {
       }
 
       const response = await this.services.confirmP2pOrder(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
+  @Post('/p2p/order/:id/notify-merchant')
+  @isAuthenticated('strict')
+  async notifyMerchantP2pOrder(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() params: FindByIdDto
+
+  ) {
+    try {
+      const user = req?.user
+      const userId = user._id;
+      const email = user.email
+      const { id } = params
+      const payload: IP2pNotifyMerchant = {
+        userId,
+        orderId: id,
+        email,
+        fullName: `${user.firstName} ${user.lastName}`
+      }
+
+      const response = await this.services.notifyMerchantP2pOrder(payload);
       return res.status(response.status).json(response);
 
     } catch (error) {

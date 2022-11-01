@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -79,7 +79,7 @@ export class P2pServices {
       const [wallet, user] = await Promise.all([
         this.data.wallets.findOne({ coin, userId }),
         this.data.users.findOne({ _id: userId })
-      ]) 
+      ])
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -1442,6 +1442,63 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'GET P2P ORDERS',
         error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async notifyMerchantP2pOrder(payload: IP2pNotifyMerchant) {
+    try {
+      const { orderId, email, fullName } = payload
+      const order = await this.data.p2pOrders.findOne({
+        _id: orderId,
+        status: { $ne: Status.EXPIRED }
+      })
+
+      if (!order) {
+        return Promise.reject({
+          message: "Order does not exists or has expired",
+          state: ResponseState.ERROR,
+          error: null,
+          status: HttpStatus.BAD_REQUEST
+        })
+      }
+
+      const merchant = await this.data.users.findOne({ _id: order.merchantId })
+
+      // send push notification 
+      // send email
+      // send sms
+
+      await this.discord.inHouseNotification({
+        title: `Notify Merchant:- ${env.env} environment`,
+        message: `
+      ${fullName} :- ${email} has completed payment and has notified ${merchant.firstName} ${merchant.lastName} :- ${merchant.email}
+      
+`,
+        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+      })
+
+      return Promise.resolve({
+        message: 'Merchant notified successfully',
+        status: HttpStatus.OK,
+        data: {},
+        state: ResponseState.SUCCESS
+      });
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'NOTIFY MERCHANT',
+        error,
+        email: payload.email,
         message: error.message
       }
 

@@ -243,3 +243,10 @@ export type IGetOrderByOrderId = {
   email: string
   userId: string
 }
+
+export type IP2pNotifyMerchant = {
+  orderId:Types.ObjectId 
+  userId: string
+  email: string
+  fullName: string
+}
