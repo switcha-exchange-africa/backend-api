@@ -10,7 +10,10 @@ import { WebPushKey } from 'src/core/entities/WebPush';
 export type WebPushDocument = WebPush & Document;
 
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class WebPush {
 
 

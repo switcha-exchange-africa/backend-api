@@ -4,7 +4,10 @@ import { P2pAdsList, P2pAdsType } from "src/core/entities/P2pAds";
 
 export type P2pAdBankDocument = P2pAdBank & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class P2pAdBank {
   @Prop()
   name: string

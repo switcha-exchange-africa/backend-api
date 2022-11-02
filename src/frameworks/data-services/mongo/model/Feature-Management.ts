@@ -3,7 +3,10 @@ import { Types, now, Document } from "mongoose";
 
 export type FeatureManagementDocument = FeatureManagement & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class FeatureManagement {
 
   @Prop()

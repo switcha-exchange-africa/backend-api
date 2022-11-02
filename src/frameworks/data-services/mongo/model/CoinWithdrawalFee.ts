@@ -5,7 +5,10 @@ import { Types, now, Document } from "mongoose";
 export type CoinWithdrawalFeeDocument = CoinWithdrawalFee & Document;
 
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class CoinWithdrawalFee {
   @Prop()
   coin: string

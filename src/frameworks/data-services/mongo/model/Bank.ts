@@ -3,7 +3,10 @@ import { Types, Document  } from "mongoose";
 
 export type BankDocument = Bank & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Bank {
   @Prop()
   name: string

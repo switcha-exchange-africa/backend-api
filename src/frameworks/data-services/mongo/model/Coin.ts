@@ -5,7 +5,10 @@ import { CoinType, CoinTypeList } from "src/core/entities/Coin";
 
 export type CoinDocument = Coin & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Coin {
   @Prop()
   coin: string

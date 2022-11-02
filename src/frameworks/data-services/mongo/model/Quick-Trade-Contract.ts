@@ -10,7 +10,10 @@ export type QuickTradeContractDocument = QuickTradeContract & Document;
 
 
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class QuickTradeContract {
 
   @Prop({

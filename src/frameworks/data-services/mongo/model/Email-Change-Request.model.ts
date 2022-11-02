@@ -4,7 +4,10 @@ import { EmailChangeRequestStatus, EmailChangeRequestStatusList } from "src/core
 
 export type EmailChangeRequestDocument = EmailChangeRequest & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class EmailChangeRequest {
   @Prop()
   email: string

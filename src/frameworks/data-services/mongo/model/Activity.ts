@@ -4,7 +4,10 @@ import { Types, now, Document } from "mongoose";
 
 export type ActivityDocument = Activity & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Activity {
   @Prop()
   action: string

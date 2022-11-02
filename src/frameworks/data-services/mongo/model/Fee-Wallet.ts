@@ -5,7 +5,10 @@ import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type FeeWalletDocument = FeeWallet & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class FeeWallet {
   @Prop({
     default: 0

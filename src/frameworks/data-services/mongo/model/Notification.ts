@@ -8,7 +8,10 @@ import { Types, Document } from 'mongoose';
 
 export type NotificationDocument = Notification & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Notification {
   @Prop({ default: false })
   seen: boolean

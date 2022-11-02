@@ -20,7 +20,10 @@ import { CustomLoggerLevel, CustomLoggerLevelList, CustomLoggerErrorType, Custom
 
 export type CustomLoggerDocument = CustomLogger & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class CustomLogger {
   @Prop()
   endpoint: string

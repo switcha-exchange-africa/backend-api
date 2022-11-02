@@ -6,8 +6,11 @@ export type ExchangeRateDocument = ExchangeRate & Document;
 /**
  * Currency to usd
  */
-@Schema()
-export class ExchangeRate {
+ @Schema({
+  timestamps: true
+
+ })
+ export class ExchangeRate {
 
   @Prop()
   coin: string;

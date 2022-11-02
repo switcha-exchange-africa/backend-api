@@ -5,7 +5,10 @@ import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type FaucetDocument = Faucet & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Faucet {
   @Prop()
   amount: number;

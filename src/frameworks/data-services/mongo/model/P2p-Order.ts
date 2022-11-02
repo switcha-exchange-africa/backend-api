@@ -10,6 +10,7 @@ export type P2pOrderDocument = P2pOrder & Document;
   toJSON: {
     virtuals: true,
   },
+  timestamps:true
 })
 export class P2pOrder {
 

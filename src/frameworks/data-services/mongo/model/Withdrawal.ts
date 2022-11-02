@@ -7,7 +7,10 @@ import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type WithdrawalDocument = Withdrawal & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Withdrawal {
 
   @Prop({

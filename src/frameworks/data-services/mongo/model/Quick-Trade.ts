@@ -16,7 +16,10 @@ import { QUICK_TRADE_TYPE_LIST, QuickTradeType, QuickTradeStatus, QUICK_TRADE_ST
 export type QuickTradeDocument = QuickTrade & Document;
 
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class QuickTrade {
 
   @Prop({

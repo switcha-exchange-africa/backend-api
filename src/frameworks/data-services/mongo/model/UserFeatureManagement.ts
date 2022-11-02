@@ -3,7 +3,10 @@ import { Types, now, Document } from "mongoose";
 
 export type UserFeatureManagementDocument = UserFeatureManagement & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class UserFeatureManagement {
   @Prop({
     type: Types.ObjectId,

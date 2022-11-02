@@ -6,7 +6,10 @@ import { COIN_TYPES_LIST, CoinType } from "src/core/types/coin";
 
 export type TransactionDocument = Transaction & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Transaction {
   @Prop({
     type: Types.ObjectId,

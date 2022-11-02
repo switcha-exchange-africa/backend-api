@@ -10,7 +10,10 @@ import { USER_LEVEL_LIST, USER_LEVEL_TYPE } from 'src/lib/constants';
 
 export type KycDocument = Kyc & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Kyc {
   @Prop()
   image: string;

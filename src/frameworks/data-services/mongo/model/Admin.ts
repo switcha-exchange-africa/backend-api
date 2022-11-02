@@ -7,7 +7,10 @@ import {  Document } from "mongoose";
 
 export type AdminDocument = Admin & Document;
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Admin {
   @Prop()
   firstName: string;

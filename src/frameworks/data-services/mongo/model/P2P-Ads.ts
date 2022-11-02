@@ -10,6 +10,7 @@ export type P2pAdsDocument = P2pAds & Document;
   toJSON: {
     virtuals: true,
   },
+  timestamps: true
 })
 export class P2pAds {
   @Prop()
@@ -92,13 +93,13 @@ P2pAdsSchema.virtual('bank', {
 
 P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
   this.populate({
-      path: 'user',
-      options: { select: 'username noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+    path: 'user',
+    options: { select: 'username noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
   })
 
   next();
 });
-export {P2pAdsSchema}
+export { P2pAdsSchema }
 
 
 // 4245519

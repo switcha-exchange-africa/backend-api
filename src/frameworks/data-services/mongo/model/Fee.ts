@@ -6,7 +6,10 @@ import { IFeeAmountType, IAmountTypeEnumList } from "src/core/dtos/fee";
 export type FeeDocument = Fee & Document;
 
 
-@Schema()
+@Schema({
+  timestamps: true
+
+})
 export class Fee {
   @Prop()
   feature: string
