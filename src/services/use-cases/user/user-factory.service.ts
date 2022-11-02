@@ -33,8 +33,7 @@ export class UserFactoryService {
     user.notify = false
 
     user.lastLoginDate = new Date();
-    user.createdAt = new Date()
-    user.updatedAt = new Date()
+  
     return user;
   }
 
