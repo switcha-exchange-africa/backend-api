@@ -28,7 +28,8 @@ export class User {
   noOfP2pAdsCreated: number;
   noOfP2pOrderCreated: number;
   isBlacklisted: boolean;
-
+  createdAt: Date
+  updatedAt: Date
 }
 
 

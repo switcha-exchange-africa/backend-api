@@ -9,7 +9,7 @@ import {
   USER_LEVEL_LIST,
   USER_LEVEL_TYPE
 } from 'src/lib/constants';
-import { Document, ObjectId } from "mongoose";
+import { Document, ObjectId ,now} from "mongoose";
 import { Transform } from 'class-transformer';
 
 export type UserDocument = User & Document;
@@ -71,11 +71,7 @@ export class User {
   @Prop()
   lastLoginDate: Date
 
-  @Prop()
-  createdAt: Date
 
-  @Prop()
-  updatedAt: Date
 
   @Prop({ default: false })
   lock: boolean;
@@ -113,6 +109,11 @@ export class User {
   })
   noOfP2pOrderCompleted: number;
 
+  @Prop({ default: now() })
+  createdAt: Date;
+
+  @Prop({ default: now() })
+  updatedAt: Date;
 }
 
 const UserSchema = SchemaFactory.createForClass(User);

@@ -26,13 +26,15 @@ export class UserFactoryService {
     if (data.noOfP2pAdsCreated) user.noOfP2pAdsCreated = data.noOfP2pAdsCreated;
     if (data.noOfP2pOrderCreated) user.noOfP2pOrderCreated = data.noOfP2pOrderCreated;
 
-    
+
     user.emailVerified = false;
     user.lock = false;
-    user.authenticator=false
-    user.notify=false
-   
+    user.authenticator = false
+    user.notify = false
+
     user.lastLoginDate = new Date();
+    user.createdAt = new Date()
+    user.updatedAt = new Date()
     return user;
   }
 
