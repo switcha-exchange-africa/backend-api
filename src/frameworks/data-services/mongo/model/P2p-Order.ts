@@ -128,7 +128,7 @@ P2pOrderSchema.pre<P2pOrderDocument>(/^find/, function (next) {
 P2pOrderSchema.pre<P2pOrderDocument>(/^find/, function (next) {
   this.populate({
     path: 'merchant',
-    options: { select: 'email firstName lastName level lock isBlacklisted username isSwitchaMerchant avatar noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+    options: { select: 'email firstName lastName level noOfP2pAdsCreated lock isBlacklisted username isSwitchaMerchant avatar noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
   })
 
   next();
