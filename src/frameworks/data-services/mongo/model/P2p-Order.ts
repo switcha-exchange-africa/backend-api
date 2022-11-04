@@ -120,7 +120,7 @@ P2pOrderSchema.virtual('ad', {
 P2pOrderSchema.pre<P2pOrderDocument>(/^find/, function (next) {
   this.populate({
     path: 'client',
-    options: { select: 'email firstName lastName level lock isBlacklisted username isSwitchaMerchant avatar noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+    options: { select: 'email firstName lastName level lock isBlacklisted username isSwitchaMerchant avatar noOfP2pAdsCreated noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
   })
 
   next();
