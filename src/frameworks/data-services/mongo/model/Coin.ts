@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { CoinType, CoinTypeList } from "src/core/entities/Coin";
 
 export type CoinDocument = Coin & Document;
@@ -44,10 +44,10 @@ export class Coin {
   })
   userId: string;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

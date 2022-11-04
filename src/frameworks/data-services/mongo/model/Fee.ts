@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { IFeeAmountType, IAmountTypeEnumList } from "src/core/dtos/fee";
 
 export type FeeDocument = Fee & Document;
@@ -30,10 +30,10 @@ export class Fee {
   })
   userId: string;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

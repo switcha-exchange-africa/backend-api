@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { BLOCKCHAIN_NETWORK, BLOCKCHAIN_NETWORK_LIST, WALLET_STATUS, WALLET_STATUS_LIST } from "src/core/entities/wallet.entity";
 import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
@@ -52,10 +52,10 @@ export class Wallet {
   @Prop()
   reference: string
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 
   @Prop()

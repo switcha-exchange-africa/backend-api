@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory, } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { P2pAdsList, P2pAdsType } from "src/core/entities/P2pAds";
 
 export type P2pAdBankDocument = P2pAdBank & Document;
@@ -40,10 +40,10 @@ export class P2pAdBank {
   })
   userId: string;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 
 export type UserFeatureManagementDocument = UserFeatureManagement & Document;
 
@@ -33,10 +33,10 @@ export class UserFeatureManagement {
   @Prop({ default: false })
   canWithdraw: boolean;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 
 

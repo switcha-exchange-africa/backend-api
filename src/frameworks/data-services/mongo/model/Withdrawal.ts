@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { WithdrawalCryptoDestination, WithdrawalPaymentMethod, WithdrawalStatus, WithdrawalSubType, WithdrawalType, WITHDRAWAL_PAYMENT_METHOD_LIST, WITHDRAWAL_STATUS_LIST, WITHDRAWAL_SUB_TYPE_LIST, WITHDRAWAL_TYPE_LIST } from "src/core/entities/Withdrawal";
 import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
@@ -85,10 +85,10 @@ export class Withdrawal {
   fee: number
 
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

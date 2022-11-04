@@ -9,7 +9,7 @@ import {
   USER_LEVEL_LIST,
   USER_LEVEL_TYPE
 } from 'src/lib/constants';
-import { Document, ObjectId, now } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 import { Transform } from 'class-transformer';
 
 export type UserDocument = User & Document;
@@ -110,10 +110,10 @@ export class User {
   })
   noOfP2pOrderCompleted: number;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

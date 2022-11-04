@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 import { P2pOrderType, P2pOrderTypeList } from "src/core/dtos/p2p";
 import { Status, STATUS_LIST } from "src/core/types/status";
 
@@ -81,10 +81,10 @@ export class P2pOrder {
   @Prop()
   completionTime: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 const P2pOrderSchema = SchemaFactory.createForClass(P2pOrder);

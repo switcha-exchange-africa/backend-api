@@ -3,7 +3,7 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { Types, Document, now } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { Status, STATUS_LIST } from 'src/core/types/status';
 import { USER_LEVEL_LIST, USER_LEVEL_TYPE } from 'src/lib/constants';
 
@@ -34,10 +34,10 @@ export class Kyc {
   @Prop({ enum: USER_LEVEL_LIST })
   level: USER_LEVEL_TYPE
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 

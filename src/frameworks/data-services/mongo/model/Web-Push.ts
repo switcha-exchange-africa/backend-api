@@ -3,7 +3,7 @@ import {
   Schema,
   SchemaFactory
 } from '@nestjs/mongoose';
-import { Types, now, Document } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { WebPushKey } from 'src/core/entities/WebPush';
 
 
@@ -33,10 +33,10 @@ export class WebPush {
   @Prop()
   expirationTime: number
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 
 }

@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types, now, Document } from "mongoose";
+import { Types, Document } from "mongoose";
 
 export type CoinWithdrawalFeeDocument = CoinWithdrawalFee & Document;
 
@@ -23,10 +23,10 @@ export class CoinWithdrawalFee {
   })
   userId: string;
 
-  @Prop({ default: now() })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ default: now() })
+  @Prop()
   updatedAt: Date;
 }
 
