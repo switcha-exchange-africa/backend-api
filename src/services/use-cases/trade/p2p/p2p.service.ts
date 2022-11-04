@@ -796,7 +796,7 @@ export class P2pServices {
           error: null
         })
       }
-      if (order.status !== Status.PENDING) {
+      if (order.status === Status.EXPIRED || order.status === Status.COMPLETED) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
