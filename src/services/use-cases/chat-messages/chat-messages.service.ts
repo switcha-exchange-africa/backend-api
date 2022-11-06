@@ -34,8 +34,7 @@ export class ChatMessagesServices {
   }
   async sendMessage(payload: ICreateChatMessage) {
     try {
-      const { message, tradeDisputeId, userId } = payload
-      const factory = this.factory.create({ userId, message, tradeDisputeId })
+      const factory = this.factory.create(payload)
       const data = await this.data.chatMessages.create(factory)
       return { data, room: payload.room }
     } catch (error) {
