@@ -99,6 +99,15 @@ P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
 
   next();
 });
+P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
+  this.populate({
+    path: 'bank',
+    options: { select: 'name code accountName accountNumber isActive isWillingToPayTo isAcceptingToPaymentTo type' } // <-- wrap `select` in `options` here...
+  })
+
+  next();
+});
+
 export { P2pAdsSchema }
 
 

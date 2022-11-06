@@ -3,7 +3,7 @@ import { Response, Request } from "express"
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { FeeServices } from "src/services/use-cases/fees/fee.service";
 import { IGetFee } from "src/core/dtos/fee";
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { ByPass } from "src/decorator";
 
 @Controller('admin/fees')
@@ -14,7 +14,7 @@ export class AdminFeeController {
 
 
   @Post('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   @ByPass('pass')
   async seedFeed(
     @Req() req: Request,
@@ -34,7 +34,7 @@ export class AdminFeeController {
   }
 
   @Post('/withdrawals-fees')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async seedWithdrawalFees(
     @Req() req: Request,
     @Res() res: Response,
@@ -53,7 +53,7 @@ export class AdminFeeController {
   }
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllFees(
     @Res() res: Response,
     @Query() query: any
@@ -77,7 +77,7 @@ export class AdminFeeController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleFee(
     @Res() res: Response,
     @Param() params: FindByIdDto

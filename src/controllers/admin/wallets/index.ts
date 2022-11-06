@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { Response } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
@@ -12,7 +12,7 @@ export class AdminWalletsController {
 
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async findAll(@Res() res: Response, @Query() query) {
     try {
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference } = query
@@ -37,7 +37,7 @@ export class AdminWalletsController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

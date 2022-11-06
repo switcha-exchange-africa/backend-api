@@ -3,7 +3,7 @@ import { TransactionServices } from "src/services/use-cases/transaction/transact
 import { Response } from "express"
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetTransactions } from "src/core/dtos/transactions";
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 
 @Controller('admin/transactions')
 export class AdminTransactionsController {
@@ -11,7 +11,7 @@ export class AdminTransactionsController {
   constructor(private services: TransactionServices) { }
 
   @Get("/")
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async findAll(@Query() query: any, @Res() res: Response) {
     try {
 
@@ -69,7 +69,7 @@ export class AdminTransactionsController {
 
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleTransaction(
     @Res() res: Response,
     @Param() param: FindByIdDto

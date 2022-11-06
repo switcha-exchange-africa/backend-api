@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { UserServices } from "src/services/use-cases/user/user-services.services";
 import { Response } from 'express'
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { IGetUsers } from "src/core/dtos/users";
 
 @Controller('admin/users')
@@ -11,7 +11,7 @@ export class AdminUsersController {
   constructor(private services: UserServices) { }
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllUsers(@Res() res: Response, @Query() query) {
     try {
       const {
@@ -73,7 +73,7 @@ export class AdminUsersController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

@@ -1,6 +1,6 @@
 import { Controller, Post, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { ByPass } from "src/decorator";
 import { FeatureManagementServices } from "src/services/use-cases/feature-management/feature-management.service";
 
@@ -11,7 +11,7 @@ export class AdminFeatureManagementController {
 
 
   @Post('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   @ByPass('pass')
   async seed(
     @Req() req: Request,

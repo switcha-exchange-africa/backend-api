@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { ByPass } from "src/decorator";
 import { FeeWalletServices } from "src/services/use-cases/fee-wallet/fee-wallet.service";
@@ -12,7 +12,7 @@ export class AdminFeeWalletsController {
 
 
   @Post('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   @ByPass('pass')
   async seedWallets(@Req() req: Request, @Res() res: Response) {
     try {
@@ -28,7 +28,7 @@ export class AdminFeeWalletsController {
     }
   }
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllWallets(@Res() res: Response, @Query() query) {
     try {
 
@@ -44,7 +44,7 @@ export class AdminFeeWalletsController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleWallet(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
 

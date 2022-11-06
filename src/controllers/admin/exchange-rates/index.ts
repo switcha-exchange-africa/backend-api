@@ -3,7 +3,7 @@ import { Response, Request } from "express"
 import { CreateExchangeRateDto, FindByCoinDto, ICreateExchangeRate, IGetExchangeRates } from "src/core/dtos/rates/rates.dto";
 import { ExchangeRateServices } from "src/services/use-cases/exchange-rates/exchange-rates.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { ByPass } from "src/decorator";
 
 @Controller('admin/exchange-rates')
@@ -14,7 +14,7 @@ export class AdminExchangeRatesController {
 
 
   @Post('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   @ByPass('pass')
   async createExchangeRate(
     @Req() req: Request,
@@ -36,7 +36,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllExchangeRates(
     @Res() res: Response,
     @Query() query: any
@@ -59,7 +59,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleExchangeRate(
     @Res() res: Response,
     @Param() params: FindByIdDto
@@ -77,7 +77,7 @@ export class AdminExchangeRatesController {
   }
 
   @Get('/rate/coin')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleExchangeRateByCoin(
     @Res() res: Response,
     @Query() query: FindByCoinDto

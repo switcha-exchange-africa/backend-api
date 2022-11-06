@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { Response } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetP2pOrders } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
@@ -12,7 +12,7 @@ export class AdminTradesController {
 
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllTrades(@Res() res: Response, @Query() query) {
     try {
       const {
@@ -60,7 +60,7 @@ export class AdminTradesController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleTrade(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

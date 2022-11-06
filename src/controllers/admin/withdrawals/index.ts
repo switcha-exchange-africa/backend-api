@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res } from "@nestjs/common";
 import { Response } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetWithdrawals } from "src/core/entities/Withdrawal";
 import { WithdrawalServices } from "src/services/use-cases/withdrawal/withdrawal.service";
@@ -12,7 +12,7 @@ export class AdminWithdrawalController {
 
 
   @Get('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getAllWithdrawals(@Res() res: Response, @Query() query) {
     try {
       const {
@@ -64,7 +64,7 @@ export class AdminWithdrawalController {
   }
 
   @Get('/:id')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   async getSingleWithdrawal(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;
