@@ -698,7 +698,17 @@ export class P2pServices {
 
           const factory = await this.orderFactory.create(orderPayload)
           order = await this.data.p2pOrders.create(factory, session)
-
+          await this.data.users.update({ _id: String(orderPayload.merchantId) }, {
+            $inc: {
+              noOfP2pOrderCreated: 1
+            }
+          }, session)
+          await this.data.users.update({ _id: String(orderPayload.clientId) }, {
+            $inc: {
+              noOfP2pOrderCreated: 1
+            }
+          }, session)
+          
           await this.data.p2pAds.update({ _id: ad._id }, {
             $inc: {
               totalAmount: -quantity
