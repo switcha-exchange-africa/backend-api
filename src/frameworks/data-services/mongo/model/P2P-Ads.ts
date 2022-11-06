@@ -94,7 +94,7 @@ P2pAdsSchema.virtual('bank', {
 P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
   this.populate({
     path: 'user',
-    options: { select: 'username noOfP2pOrderCompleted noOfP2pOrderCreated' } // <-- wrap `select` in `options` here...
+    options: { select: 'username noOfP2pOrderCompleted noOfP2pOrderCreated noOfP2pAdsCreated' } // <-- wrap `select` in `options` here...
   })
 
   next();
