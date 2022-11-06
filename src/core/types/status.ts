@@ -8,7 +8,8 @@ export enum Status {
   EXPIRED = 'expired',
   COMPLETED = 'completed',
   PARTIAL = 'partial',
-  FILLED = 'filled'
+  FILLED = 'filled',
+  RESOLVED = 'resolved'
 }
 export const STATUS_LIST = [
   Status.PENDING,
@@ -20,4 +21,6 @@ export const STATUS_LIST = [
   Status.COMPLETED,
   Status.PARTIAL,
   Status.FILLED,
+  Status.RESOLVED,
+
 ]

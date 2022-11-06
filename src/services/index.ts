@@ -28,6 +28,9 @@ import { BullServiceModule } from "./use-cases/bull/bull-services.module";
 import { SeedServicesModule } from "./use-cases/seed/seed.module";
 import { WebPushServicesModule } from "./use-cases/web-push/web-push.module";
 import { FeatureServicesModule } from "./use-cases/feature-management/feature-management.module";
+import { TradeDisputeServicesModule } from "./use-cases/trade-disputes/trade-dispute.module";
+import { WebsocketServiceModule } from "./use-cases/web-sockets/websocket.module";
+import { ChatMessageServicesModule } from "./use-cases/chat-messages/chat-messages.module";
 
 export default [
   AxiosServiceModule,
@@ -59,5 +62,8 @@ export default [
   UtilsServicesModule,
   SeedServicesModule,
   WebPushServicesModule,
-  FeatureServicesModule
+  FeatureServicesModule,
+  TradeDisputeServicesModule,
+  ChatMessageServicesModule,
+  WebsocketServiceModule
 ]

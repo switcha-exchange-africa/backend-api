@@ -8,7 +8,8 @@ import { PermissionGuard } from "./middleware-guards/permission-guard.middleware
 import { RoleType } from "./core/types/roles";
 import { AdminAuthGuard, AuthGuard, BypassGuard } from "./middleware-guards/auth-guard.middleware";
 import { FeatureManagementGuard } from "./middleware-guards/misc.middleware";
-
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from 'path'
 declare global {
   namespace Express {
     export interface Request {
@@ -31,7 +32,12 @@ declare global {
   var io: any;
 }
 @Module({
-  imports: [...services],
+  imports: [
+    ...services,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'socket-io-client'),
+    }),
+  ],
   controllers: [...controller],
   providers: [
     HomeServices,
@@ -55,7 +61,7 @@ declare global {
       provide: APP_GUARD,
       useClass: AdminAuthGuard,
     },
-    
+
 
   ],
 })

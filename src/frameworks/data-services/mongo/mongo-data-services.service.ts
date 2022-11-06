@@ -28,6 +28,9 @@ import { P2pAdBank, P2pAdBankDocument } from './model/P2P-Ad-Banks';
 import { P2pOrder, P2pOrderDocument } from './model/P2p-Order';
 import { WebPush, WebPushDocument } from "./model/Web-Push";
 import { FeatureManagement, FeatureManagementDocument } from "./model/Feature-Management";
+import { TradeDispute, TradeDisputeDocument } from "./model/Trade-Dispute";
+import { ChatMessage, ChatMessageDocument } from "./model/Chat-Messages";
+
 
 
 @Injectable()
@@ -58,6 +61,8 @@ export class MongoDataServices
   p2pOrders: MongoGenericRepository<P2pOrder>
   webPush: MongoGenericRepository<WebPush>
   featureManagement: MongoGenericRepository<FeatureManagement>
+  tradeDisputes: MongoGenericRepository<TradeDispute>
+  chatMessages: MongoGenericRepository<ChatMessage>
 
 
   constructor(
@@ -138,6 +143,11 @@ export class MongoDataServices
     @InjectModel(FeatureManagement.name)
     private FeatureManagementRepository: Model<FeatureManagementDocument>,
 
+    @InjectModel(TradeDispute.name)
+    private TradeDisputesRepository: Model<TradeDisputeDocument>,
+
+    @InjectModel(ChatMessage.name)
+    private ChatMessagesRepository: Model<ChatMessageDocument>,
   ) { }
 
 
@@ -167,6 +177,8 @@ export class MongoDataServices
     this.p2pOrders = new MongoGenericRepository<P2pOrder>(this.P2pOrderRepository)
     this.webPush = new MongoGenericRepository<WebPush>(this.WebPushRepository)
     this.featureManagement = new MongoGenericRepository<FeatureManagement>(this.FeatureManagementRepository)
+    this.tradeDisputes = new MongoGenericRepository<TradeDispute>(this.TradeDisputesRepository)
+    this.chatMessages = new MongoGenericRepository<ChatMessage>(this.ChatMessagesRepository)
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

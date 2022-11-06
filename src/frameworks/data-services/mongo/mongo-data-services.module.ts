@@ -28,6 +28,8 @@ import { P2pAdBank, P2pAdBankSchema } from "./model/P2P-Ad-Banks";
 import { P2pOrder, P2pOrderSchema } from "./model/P2p-Order";
 import { WebPush, WebPushSchema } from "./model/Web-Push";
 import { FeatureManagement, FeatureManagementSchema } from "./model/Feature-Management";
+import { ChatMessage, ChatMessageSchema } from "./model/Chat-Messages";
+import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { FeatureManagement, FeatureManagementSchema } from "./model/Feature-Mana
       { name: P2pOrder.name, schema: P2pOrderSchema },
       { name: WebPush.name, schema: WebPushSchema },
       { name: FeatureManagement.name, schema: FeatureManagementSchema },
+      { name: ChatMessage.name, schema: ChatMessageSchema },
+      { name: TradeDispute.name, schema: TradeDisputeSchema },
 
 
 

@@ -3,6 +3,7 @@ import admin from "./admin";
 import { AuthenticationController } from "./authentication";
 import { BankController } from "./bank";
 import { BuySellController } from "./buy-sell";
+import { ChatMessageController } from "./chat-messages";
 import { CoinController } from "./coins";
 import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
@@ -14,6 +15,7 @@ import { NotificationController } from "./notification";
 import { P2pController } from "./p2p";
 import { QuickTradeController } from "./quick-trade";
 import { RatesController } from "./rates";
+import { TradeDisputeController } from "./trade-disputes";
 import { TransactionController } from "./transaction";
 import { WaitListController } from "./waitlist";
 import { WalletController } from "./wallet";
@@ -40,8 +42,10 @@ export default [
   P2pController,
   MiscController,
   FeeController,
-  WaitListController, 
+  WaitListController,
   WebPushController,
   KycController,
+  ChatMessageController,
+  TradeDisputeController,
   ...admin
 ]
