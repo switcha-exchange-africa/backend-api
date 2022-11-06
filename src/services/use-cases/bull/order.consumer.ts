@@ -47,6 +47,11 @@ export class OrderExpiryTaskConsumer {
         Logger.warn(`@task-queue`, 'P2p Order not pending')
         return
       }
+      // if (order.status === Status.DISPUTE) {
+      //   Logger.warn(`@task-queue`, 'P2p Order being disputed')
+      //   return
+      // }
+
       if (!ad) {
         Logger.warn(`@task-queue`, 'P2p Ad does not exists')
         return

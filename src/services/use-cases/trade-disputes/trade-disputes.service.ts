@@ -57,7 +57,7 @@ export class TradeDisputeServices {
       }
       const factory = await this.factory.create(disputePayload)
       const data = await this.data.tradeDisputes.create(factory)
-
+      await this.data.p2pOrders.update({ _id: tradeId }, { status: Status.DISPUTE })
       return {
         message: "Trade dispute created successfully",
         status: HttpStatus.OK,

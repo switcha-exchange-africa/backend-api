@@ -62,11 +62,15 @@ export class WebsocketServiceGateway implements OnGatewayInit, OnGatewayConnecti
   @SubscribeMessage('sendDisputeMessage')
   public async sendDisputeMessage(client: Socket, payload: ICreateChatMessage): Promise<WsResponse<any>> {
     try {
-      const { isAuthenticated } = await this.chatMessageService.authenticate(client.handshake?.headers?.authorization)
+      const { isAuthenticated, user } = await this.chatMessageService.authenticate(client.handshake?.headers?.authorization)
       if (!isAuthenticated) {
         client.disconnect()
       }
-      const message = await this.chatMessageService.sendMessage(payload)
+      const message = await this.chatMessageService.sendMessage({
+        ...payload,
+        userId: user.id
+      })
+      console.log("OutPut Message", message)
       return this.server.to(payload.room).emit('msgToClient', message);
     } catch (error) {
       throw new WsException(error);

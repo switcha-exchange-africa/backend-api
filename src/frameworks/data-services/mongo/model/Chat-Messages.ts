@@ -25,7 +25,6 @@ export class ChatMessage {
   @Prop({
     type: Types.ObjectId,
     ref: "Admin",
-    required: true
   })
   adminId: string;
 
