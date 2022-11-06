@@ -972,6 +972,16 @@ export class QuickTradeServices {
               totalAmount: -amount
             }
           }, session) // deduct quantity from ad
+          await this.data.users.update({ _id: String(orderPayload.merchantId) }, {
+            $inc: {
+              noOfP2pOrderCreated: 1
+            }
+          }, session)
+          await this.data.users.update({ _id: String(orderPayload.clientId) }, {
+            $inc: {
+              noOfP2pOrderCreated: 1
+            }
+          }, session)
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
             await this.data.wallets.update(
