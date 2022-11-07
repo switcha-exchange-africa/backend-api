@@ -62,6 +62,10 @@ export class P2pCreateAdDto {
 
   @IsOptional()
   @IsBoolean()
+  isOnline: boolean
+
+  @IsOptional()
+  @IsBoolean()
   isSwitchaMerchant: boolean
 
   @IsOptional()
@@ -245,7 +249,7 @@ export type IGetOrderByOrderId = {
 }
 
 export type IP2pNotifyMerchant = {
-  orderId:Types.ObjectId 
+  orderId: Types.ObjectId
   userId: string
   email: string
   fullName: string

@@ -38,6 +38,7 @@ export class P2pAds {
   counterPartConditions: CounterpartConditionsType
   banks: string[];
   isPublished: boolean
+  isOnline: boolean
   isSwitchaMerchant: boolean
   status: Status
 }

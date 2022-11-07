@@ -71,6 +71,8 @@ export class P2pAds {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'P2pAdBank' }] })
   banks: string[];
 
+  @Prop({ default: true })
+  isOnline: boolean
 
   @Prop()
   createdAt: Date;
