@@ -60,7 +60,8 @@
     "socket.io": "^4.5.3",
     "swagger-ui-express": "^4.3.0",
     "twilio": "^3.75.1",
-    "web-push": "^3.5.0"
+    "web-push": "^3.5.0",
+    "ws": "^8.11.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
