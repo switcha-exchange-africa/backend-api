@@ -77,4 +77,41 @@ export class WebsocketServiceGateway implements OnGatewayInit, OnGatewayConnecti
     }
   }
 
+
+
+  @SubscribeMessage('sendDashboardExchangeRate')
+  public async sendDashboardExchangeRate(client: Socket, room: string): Promise<WsResponse<any>> {
+    try {
+      const { isAuthenticated } = await this.chatMessageService.authenticate(client.handshake?.headers?.authorization)
+      if (!isAuthenticated) {
+        client.disconnect()
+      }
+      const symbols = Object.values({
+        btcusdt: 'btcusdt',
+        ethusdt: 'ethusdt',
+        celousdt: 'celousdt',
+        xrpusdt: 'xrpusdt',
+        xlmusdt: 'xlmusdt',
+      });
+      let binanceStreams = {} as Record<string, any>;
+      let output = {} as Record<string, any>;
+      symbols.forEach((_symbol: string) => {
+        console.log(_symbol);
+        if (binanceStreams[_symbol]) binanceStreams[_symbol].close();
+        binanceStreams[_symbol] = new WebSocket(`wss://stream.binance.com:9443/ws/${_symbol}@trade`);
+        binanceStreams[_symbol].onmessage = (event: any) => {
+          const data = JSON.parse(event.data);
+          const { e, s, p, E } = data;
+          output[_symbol] = { eventType: e, symbol: s, price: p, time: E };
+
+          // if (ws) ws.send(`${JSON.stringify(output)}`);
+        };
+      });
+      // const streams = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@ticker`)
+      return this.server.to(room).emit('sendDashboardExchangeRateRoom', output);
+    } catch (error) {
+      throw new WsException(error);
+    }
+  }
+
 }

@@ -13,3 +13,4 @@ env.txt
 .env.production
 env-production.txt
 socket-io-client
+test.html
