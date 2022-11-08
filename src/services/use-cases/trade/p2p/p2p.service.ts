@@ -439,15 +439,15 @@ export class P2pServices {
   async createAdsBank(payload: ICreateP2pAdBank) {
     try {
       const { accountNumber, userId } = payload
-      const bankExists = await this.data.p2pAdBanks.findOne({ userId, accountNumber })
-      if (bankExists) {
-        return Promise.reject({
-          status: HttpStatus.CONFLICT,
-          state: ResponseState.ERROR,
-          message: 'Bank already exists',
-          error: null
-        })
-      }
+      // const bankExists = await this.data.p2pAdBanks.findOne({ userId, accountNumber })
+      // if (bankExists) {
+      //   return Promise.reject({
+      //     status: HttpStatus.CONFLICT,
+      //     state: ResponseState.ERROR,
+      //     message: 'Bank already exists',
+      //     error: null
+      //   })
+      // }
       const factory = await this.p2pAdsBankFactory.create(payload)
       const data = await this.data.p2pAdBanks.create(factory)
 
