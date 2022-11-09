@@ -79,13 +79,15 @@ export class Wallet {
 const WalletSchema = SchemaFactory.createForClass(Wallet);
 WalletSchema.index({
   reference: 'text',
-  _id: 'text'
+  _id: 'text',
+  id: 'text'
 
 },
   {
     weights: {
       reference: 5,
       _id: 5,
+      id: 5
     },
   },);
 

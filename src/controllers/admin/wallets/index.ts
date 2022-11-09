@@ -11,14 +11,15 @@ export class AdminWalletsController {
   constructor(private services: WalletServices) { }
 
 
-  @Get('/')
   @isAdminAuthenticated('strict')
+  @Get('/')
   async findAll(@Res() res: Response, @Query() query) {
     try {
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference } = query
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference, q } = query
       const payload: IGetWallets = {
         perpage,
         page,
+        q,
         dateFrom,
         dateTo,
         sortBy,
@@ -36,8 +37,8 @@ export class AdminWalletsController {
     }
   }
 
-  @Get('/:id')
   @isAdminAuthenticated('strict')
+  @Get('/:id')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;

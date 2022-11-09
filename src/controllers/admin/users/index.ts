@@ -10,8 +10,8 @@ export class AdminUsersController {
 
   constructor(private services: UserServices) { }
 
-  @Get('/')
   @isAdminAuthenticated('strict')
+  @Get('/')
   async getAllUsers(@Res() res: Response, @Query() query) {
     try {
       const {
@@ -72,8 +72,8 @@ export class AdminUsersController {
     }
   }
 
-  @Get('/:id')
   @isAdminAuthenticated('strict')
+  @Get('/:id')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
     try {
       const { id } = param;
