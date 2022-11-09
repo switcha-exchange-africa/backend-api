@@ -146,7 +146,6 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   async search(options: { query: PaginationType, populate?: string | string[] }) {
     try {
       const { q } = options?.query
-      console.log("search value", q)
       const perpage = Number(options?.query.perpage) || 10;
       const page = Number(options?.query.page) || 1;
 

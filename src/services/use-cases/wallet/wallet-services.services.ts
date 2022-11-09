@@ -365,7 +365,6 @@ export class WalletServices {
     try {
       const { isAdmin, q, perpage, page, dateFrom, dateTo, sortBy, orderBy, } = payload
       if (q) {
-        console.log("Q", q)
         const { data, pagination } = await this.data.wallets.search({
           query: {
             q,
