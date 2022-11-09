@@ -7,6 +7,7 @@ import { ChatMessageController } from "./chat-messages";
 import { CoinController } from "./coins";
 import { ExchangeRatesController } from "./exchange-rate";
 import { FaucetController } from "./faucet";
+import { FeatureManagementController } from "./feature-managment";
 import { FeeController } from "./fee";
 import { HomeController } from "./home";
 import { KycController } from "./kyc";
@@ -47,5 +48,6 @@ export default [
   KycController,
   ChatMessageController,
   TradeDisputeController,
+  FeatureManagementController,
   ...admin
 ]

@@ -2,11 +2,17 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { FeatureEnum } from "src/core/dtos/activity";
 import { FeatureManagement } from "src/core/entities/Feature-Management";
+import { IErrorReporter } from "src/core/types/error";
 import { ResponseState, ResponsesType } from "src/core/types/response";
+import { UtilsServices } from "../utils/utils.service";
 
 @Injectable()
 export class FeatureManagementServices {
-  constructor(private data: IDataServices) { }
+  constructor(
+    private data: IDataServices,
+    private readonly utilsService: UtilsServices,
+
+  ) { }
   // cleanQueryPayload(payload: IGetWallets) {
   //   let key = {}
   //   if (payload.userId) key['userId'] = payload.userId
@@ -103,5 +109,32 @@ export class FeatureManagementServices {
     }
   }
 
+  async features() {
+    try {
 
+      const data = await this.data.featureManagement.find({})
+
+      return {
+        status: HttpStatus.OK,
+        message: "Features retrieved successfully",
+        data,
+        state: ResponseState.SUCCESS
+      };
+     } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET FEATURES',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+  }
+}
 }
