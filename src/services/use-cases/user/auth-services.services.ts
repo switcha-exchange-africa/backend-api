@@ -457,8 +457,8 @@ export class AuthServices {
         })
       return {
         status: HttpStatus.OK,
-        data: 'password updated successfully',
-        message: 'password updated successfully',
+        data: 'Password updated successfully',
+        message: 'Password updated successfully',
         state: ResponseState.SUCCESS,
       }
 
