@@ -1,5 +1,5 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LEVEL_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
@@ -420,21 +420,25 @@ export class AuthServices {
         message: 'Invalid or expired reset token',
         error: null
       })
-      if (!user) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: 'User does not exists',
-        error: null
-      })
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null
+        })
+      } 
 
       // If reset link is valid and not expired
       const validReset = await compareHash(String(token), userRequestReset);
-      if (!validReset) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Invalid or expired reset token',
-        error: null
-      })
+      if (!validReset) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Invalid or expired reset token',
+          error: null
+        })
+      } 
 
       // Store update users password
       const twenty4H = 1 * 60 * 60 * 24;
@@ -497,12 +501,14 @@ export class AuthServices {
       }
 
       const user = await this.data.users.findOne({ email });
-      if (!user) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: `code is invalid or has expired`,
-        error: null
-      })
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Code is invalid or has expired`,
+          error: null
+        })
+      }
 
       // for mobile users only
       const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);
@@ -520,68 +526,80 @@ export class AuthServices {
           }
         }
 
-        try {
-          const phoneCode = randomFixedInteger(6)
-          const hashedPhoneCode = await hash(String(phoneCode));
-          await this.inMemoryServices.set(
+        const phoneCode = randomFixedInteger(6)
+        const hashedPhoneCode = await hash(String(phoneCode));
+
+        await Promise.all([
+          this.emitter.emit("send.email.mailjet", {
+            fromEmail: 'support@switcha.africa',
+            fromName: "Support",
+            toEmail: user.email,
+            toName: `${user.firstName} ${user.lastName}`,
+            templateId: EmailTemplates.RECOVER_PASSWORD,
+            subject: 'Recover Password',
+            variables: {
+              code: phoneCode
+            }
+          }),
+          this.inMemoryServices.set(
             resetCodeRedisKey,
             hashedPhoneCode,
-            String(RESET_PASSWORD_EXPIRY)
-          );
-          return {
-            status: HttpStatus.ACCEPTED,
-            message: 'Provide the code sent to your mobile number',
-            data: env.isProd ? null : String(phoneCode),
-            state: ResponseState.SUCCESS,
-          };
-        } catch (error) {
-          if (error.name === 'TypeError') {
-            throw new HttpException(error.message, 500)
-          }
-          Logger.error(error)
-          throw error;
-        }
-      } else {
-
-        const phoneVerifyDocument = codeSent as string;
-        if (isEmpty(phoneVerifyDocument)) return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: `code is invalid or has expired`,
-          error: null
-        })
-
-        const correctCode = await compareHash(String(code).trim(), (phoneVerifyDocument || '').trim());
-        if (!correctCode) return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: `code is invalid or has expired`,
-          error: null
-        })
-
-        // Generate Reset token
-        const resetToken = randomBytes(32).toString('hex');
-        const hashedResetToken = await hash(resetToken);
-
-        // Remove all reset token for this user if it exists
-        await Promise.all([
-          this.inMemoryServices.del(resetCodeRedisKey),
-          this.inMemoryServices.del(resetPasswordRedisKey),
-          this.inMemoryServices.set(
-            resetPasswordRedisKey,
-            hashedResetToken,
             String(RESET_PASSWORD_EXPIRY)
           )
         ])
 
         return {
-          status: HttpStatus.OK,
-          message: 'You will receive an email with a link to reset your password if you have an account with this email.',
-          data: env.isProd ? null : resetToken,
+          status: HttpStatus.ACCEPTED,
+          message: 'Provide the code sent to your email',
+          data: env.isProd ? null : String(phoneCode),
           state: ResponseState.SUCCESS,
-        }
+        };
 
       }
+
+      const phoneVerifyDocument = codeSent as string;
+      if (isEmpty(phoneVerifyDocument)) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Code is invalid or has expired`,
+          error: null
+        })
+      }
+
+      const correctCode = await compareHash(String(code).trim(), (phoneVerifyDocument || '').trim());
+      if (!correctCode) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Code is invalid or has expired`,
+          error: null
+        })
+      }
+
+      // Generate Reset token
+      const resetToken = randomBytes(32).toString('hex');
+      const hashedResetToken = await hash(resetToken);
+
+      // Remove all reset token for this user if it exists
+      await Promise.all([
+        this.inMemoryServices.del(resetCodeRedisKey),
+        this.inMemoryServices.del(resetPasswordRedisKey),
+        this.inMemoryServices.set(
+          resetPasswordRedisKey,
+          hashedResetToken,
+          String(RESET_PASSWORD_EXPIRY)
+        )
+      ])
+
+      return {
+        status: HttpStatus.OK,
+        message: 'You will receive an email with a link to reset your password if you have an account with this email.',
+        data: env.isProd ? null : resetToken,
+        state: ResponseState.SUCCESS,
+      }
+
+
     } catch (error: Error | any | unknown) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
