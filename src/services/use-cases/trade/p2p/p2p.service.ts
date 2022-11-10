@@ -1114,24 +1114,54 @@ export class P2pServices {
         atomicTransaction,
         this.connection
       )
-      await this.discord.inHouseNotification({
-        title: `Order Confirmed  :- ${env.env} environment`,
-        message: `
-
-          Order ID:- ${order._id}
-
-          Confirmed By:- ${client.username ? client.username : client.email}  -${client.email}
-
-          Amount Sold:- ${order.quantity} ${ad.coin}
-
-          Amount Transferred To Merchant:- ${buyerAmount} ${ad.coin}
-
-          Buyer :- ${buyer.username ? buyer.username : buyer.email}
-
-          Fee :- ${fee} ${feeWallet.coin}
-    `,
-        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-      })
+      await Promise.all([
+        this.discord.inHouseNotification({
+          title: `Order Confirmed  :- ${env.env} environment`,
+          message: `
+  
+            Order ID:- ${order._id}
+  
+            Confirmed By:- ${client.username ? client.username : client.email}  -${client.email}
+  
+            Amount Sold:- ${order.quantity} ${ad.coin}
+  
+            Amount Transferred To Merchant:- ${buyerAmount} ${ad.coin}
+  
+            Buyer :- ${buyer.username ? buyer.username : buyer.email}
+  
+            Fee :- ${fee} ${feeWallet.coin}
+      `,
+          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+        }),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: buyer.email,
+          toName: `${buyer.firstName} ${buyer.lastName}`,
+          templateId: EmailTemplates.PROCESS_CLIENT_P2P_ORDER_BUYER,
+          subject: `Payment made to your wallet. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount: buyerAmount,
+            coin: ad.coin,
+            clientUsername: client.username
+          }
+        }),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: client.email,
+          toName: `${client.firstName} ${client.lastName}`,
+          templateId: EmailTemplates.PROCESS_CLIENT_P2P_ORDER_SELLER,
+          subject: `Wallet debited. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount: order.quantity,
+            coin: ad.coin,
+            buyerUsername: buyer.username
+          }
+        })
+      ])
       return {
         message: "Order confirmed succesfully",
         status: HttpStatus.OK,
@@ -1324,25 +1354,55 @@ export class P2pServices {
         this.connection
       )
 
-      await this.discord.inHouseNotification({
-        title: `Order Confirmed  :- ${env.env} environment`,
-        message: `
-
-            Order ID:- ${order._id}
-
-            Confirmed By:- ${merchant.username ? merchant.username : merchant.email}
-
-            Amount Sold:- ${order.quantity} ${coin}
-
-            Amount Transferred To Buyer:- ${buyerAmount} ${coin}
-
-            Buyer :- ${buyer.username ? buyer.username : buyer.email}
-
-            Fee :- ${fee} ${feeWallet.coin}
-      `,
-        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-      })
-      await this.inMemoryServices.del(redisKey)
+      await Promise.all([
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: buyer.email,
+          toName: `${buyer.firstName} ${buyer.lastName}`,
+          templateId: EmailTemplates.PROCESS_CLIENT_P2P_ORDER_BUYER,
+          subject: `Payment made to your wallet. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount: buyerAmount,
+            coin: ad.coin,
+            clientUsername: merchant.username
+          }
+        }),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: merchant.email,
+          toName: `${merchant.firstName} ${merchant.lastName}`,
+          templateId: EmailTemplates.PROCESS_CLIENT_P2P_ORDER_SELLER,
+          subject: `Wallet debited. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount: order.quantity,
+            coin: ad.coin,
+            buyerUsername: buyer.username
+          }
+        }),
+        this.discord.inHouseNotification({
+          title: `Order Confirmed  :- ${env.env} environment`,
+          message: `
+  
+              Order ID:- ${order._id}
+  
+              Confirmed By:- ${merchant.username ? merchant.username : merchant.email}
+  
+              Amount Sold:- ${order.quantity} ${coin}
+  
+              Amount Transferred To Buyer:- ${buyerAmount} ${coin}
+  
+              Buyer :- ${buyer.username ? buyer.username : buyer.email}
+  
+              Fee :- ${fee} ${feeWallet.coin}
+        `,
+          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+        }),
+        this.inMemoryServices.del(redisKey)
+      ]) 
 
       return {
         message: "Order confirmed succesfully",
