@@ -66,10 +66,6 @@ export class P2pCreateAdDto {
 
   @IsOptional()
   @IsBoolean()
-  isSwitchaMerchant: boolean
-
-  @IsOptional()
-  @IsBoolean()
   registeredZeroDaysAgo: boolean
 
 
