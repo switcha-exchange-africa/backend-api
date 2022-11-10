@@ -1,6 +1,7 @@
 import { AdminAuthenticationController } from "./authentication";
 import { AdminChatMessageController } from "./chat-messages";
 import { AdminCoinController } from "./coins";
+import { AdminDashboardController } from "./dashboard";
 import { AdminExchangeRatesController } from "./exchange-rates";
 import { AdminFeatureManagementController } from "./feature-management";
 import { AdminFeeController } from "./fee";
@@ -27,5 +28,6 @@ export default [
   AdminKycController,
   AdminWithdrawalController,
   AdminTradesController,
-  AdminChatMessageController
+  AdminChatMessageController,
+  AdminDashboardController
 ]

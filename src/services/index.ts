@@ -31,6 +31,7 @@ import { FeatureServicesModule } from "./use-cases/feature-management/feature-ma
 import { TradeDisputeServicesModule } from "./use-cases/trade-disputes/trade-dispute.module";
 import { WebsocketServiceModule } from "./use-cases/web-sockets/websocket.module";
 import { ChatMessageServicesModule } from "./use-cases/chat-messages/chat-messages.module";
+import { DashboardServicesModule } from "./use-cases/dashboard/dashboard.module";
 
 export default [
   AxiosServiceModule,
@@ -65,5 +66,6 @@ export default [
   FeatureServicesModule,
   TradeDisputeServicesModule,
   ChatMessageServicesModule,
-  WebsocketServiceModule
+  WebsocketServiceModule,
+  DashboardServicesModule
 ]
