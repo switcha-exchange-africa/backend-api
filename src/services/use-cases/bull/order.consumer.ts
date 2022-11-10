@@ -1,7 +1,7 @@
 import { Processor, OnQueueActive, Process, OnGlobalQueueCompleted, OnQueueFailed } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { IDataServices } from 'src/core/abstracts';
+import { IDataServices, INotificationServices } from 'src/core/abstracts';
 import { INotification } from 'src/core/entities/notification.entity';
 import { Status } from 'src/core/types/status';
 import * as mongoose from "mongoose";
@@ -10,6 +10,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { P2pAdsType } from 'src/core/entities/P2pAds';
 import { env } from 'src/configuration';
+import { P2P_CHANNEL_LINK_DEVELOPMENT, P2P_CHANNEL_LINK_PRODUCTION } from 'src/lib/constants';
 
 
 
@@ -18,6 +19,7 @@ export class OrderExpiryTaskConsumer {
   constructor(
     private readonly data: IDataServices,
     private readonly notificationFactory: NotificationFactoryService,
+    private readonly discordServices: INotificationServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
 
@@ -34,7 +36,6 @@ export class OrderExpiryTaskConsumer {
   async orderExpiry(job: Job) {
     try {
       const { id } = job.data
-      console.log("ORDER ID", id)
       const order = await this.data.p2pOrders.findOne({ _id: id })
       if (!order) {
         Logger.warn(`@task-queue`, 'P2p Order does not exists')
@@ -115,7 +116,19 @@ export class OrderExpiryTaskConsumer {
       )
       Logger.log('Task Queue completed')
 
+      this.discordServices.inHouseNotification({
+        title: `Order has expired :- ${env.env} environment`,
+        message: `
+          ORDER ID:- ${order.orderId}
 
+          MERCHANT ID:- ${order.merchantId}
+
+          CLIENT ID:- ${order.clientId}
+
+          ORDER HAS EXPIRED
+        `,
+        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+      })
 
     } catch (e) {
       Logger.error(e)

@@ -6,6 +6,7 @@ import { CreateWalletTaskConsumer } from './wallet-consumer.service';
 import { WalletServicesModule } from 'src/services/use-cases/wallet/wallet-services.module';
 import { OrderExpiryTaskConsumer } from './order.consumer';
 import { NotificationFactoryService } from '../notification/notification-factory.service';
+import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
 
 @Global()
 @Module({
@@ -15,6 +16,8 @@ import { NotificationFactoryService } from '../notification/notification-factory
     }),
     DataServicesModule,
     WalletServicesModule,
+    DiscordServicesModule,
+
   ],
   providers: [
     CreateWalletTaskConsumer,
