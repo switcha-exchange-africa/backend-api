@@ -211,7 +211,13 @@ export class P2pController {
     try {
       const clientId = req?.user?._id;
 
-      const payload: ICreateP2pOrder = { ...body, clientId, email: req?.user?.email }
+      const payload: ICreateP2pOrder = {
+        ...body,
+        clientId,
+        email: req?.user?.email,
+        firstName: req?.user?.firstName,
+        lastName: req?.user?.lastName
+      }
 
       const response = await this.services.createP2pOrder(payload);
       return res.status(response.status).json(response);

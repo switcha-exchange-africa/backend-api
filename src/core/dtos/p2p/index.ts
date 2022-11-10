@@ -131,6 +131,8 @@ export type ICreateP2pOrder = P2pCreateOrderDto & {
   merchantId?: string
   clientId: string
   email: string
+  firstName: string
+  lastName: string
 }
 export class P2pAdCreateBankDto {
 
