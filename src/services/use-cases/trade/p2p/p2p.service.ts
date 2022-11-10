@@ -1496,7 +1496,7 @@ export class P2pServices {
 
   async notifyMerchantP2pOrder(payload: IP2pNotifyMerchant) {
     try {
-      const { orderId, email, fullName } = payload
+      const { orderId, email, fullName, username } = payload
       const order = await this.data.p2pOrders.findOne({
         _id: orderId,
         status: { $ne: Status.EXPIRED }
@@ -1516,16 +1516,30 @@ export class P2pServices {
       // send push notification 
       // send email
       // send sms
-
-      await this.discord.inHouseNotification({
-        title: `Notify Merchant:- ${env.env} environment`,
-        message: `
-      ${fullName} :- ${email} has completed payment and has notified ${merchant.firstName} ${merchant.lastName} :- ${merchant.email}
-      
-`,
-        link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-      })
       await this.data.p2pOrders.update({ _id: order._id }, { status: Status.PROCESSING })
+
+      await Promise.all([
+        this.discord.inHouseNotification({
+          title: `Notify Merchant:- ${env.env} environment`,
+          message: `
+        ${fullName} :- ${email} has completed payment and has notified ${merchant.firstName} ${merchant.lastName} :- ${merchant.email}
+        
+  `,
+          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+        }),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: merchant.email,
+          toName: `${merchant.firstName} ${merchant.lastName}`,
+          templateId: EmailTemplates.NOTIFY_MERCHANT,
+          subject: `Payment has been made. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            username
+          }
+        })
+      ])
       return Promise.resolve({
         message: 'Merchant notified successfully',
         status: HttpStatus.OK,

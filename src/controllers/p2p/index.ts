@@ -379,7 +379,8 @@ export class P2pController {
         userId,
         orderId: id,
         email,
-        fullName: `${user.firstName} ${user.lastName}`
+        fullName: `${user.firstName} ${user.lastName}`,
+        username: user.username
       }
 
       const response = await this.services.notifyMerchantP2pOrder(payload);

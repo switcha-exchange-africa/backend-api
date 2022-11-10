@@ -255,4 +255,5 @@ export type IP2pNotifyMerchant = {
   userId: string
   email: string
   fullName: string
+  username: string
 }
