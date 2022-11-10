@@ -14,3 +14,6 @@ env.txt
 env-production.txt
 socket-io-client
 test.html
+email-template.html
+order-client.html
+order-merchant.html

@@ -28,6 +28,8 @@ import { ActivityAction } from "src/core/dtos/activity";
 import { INotification } from "src/core/entities/notification.entity";
 import { Queue } from "bull";
 import { InjectQueue } from "@nestjs/bull";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { EmailTemplates } from "src/core/types/email";
 
 @Injectable()
 export class QuickTradeServices {
@@ -41,6 +43,7 @@ export class QuickTradeServices {
     private notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly orderFactory: P2pOrderFactoryService,
+    private readonly emitter: EventEmitter2,
     @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
     @InjectConnection() private readonly connection: mongoose.Connection
 
@@ -862,8 +865,8 @@ export class QuickTradeServices {
   async trade(payload: IQuickTradeBuyV2) {
     try {
 
-      const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type } = payload
-     
+      const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type, email, firstName, lastName } = payload
+
       const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
       if (!userManagement) {
         return Promise.reject({
@@ -1024,7 +1027,32 @@ export class QuickTradeServices {
       await this.orderQueue.add({ id: order._id }, {
         delay: Math.abs(Number(ad.paymentTimeLimit)) * 60000
       })
-
+      await Promise.all([
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: merchant.email,
+          toName: `${merchant.firstName} ${merchant.lastName}`,
+          templateId: EmailTemplates.ORDER_CREATED_MERCHANT,
+          subject: `An order has been created for your Ad. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount, cash, coin,
+          }
+        }),
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: email,
+          toName: `${firstName} ${lastName}`,
+          templateId: EmailTemplates.ORDER_CREATED_CLIENT,
+          subject: `An order has been created for your Ad. #${order.orderId}`,
+          variables: {
+            id: order.orderId,
+            amount, cash, coin,
+          }
+        })
+      ])
 
 
       return Promise.resolve({

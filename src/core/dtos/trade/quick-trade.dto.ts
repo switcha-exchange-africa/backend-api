@@ -79,6 +79,8 @@ export class QuickTradeBuySellV2Dto {
 export type IQuickTradeBuyV2 = QuickTradeBuySellV2Dto & {
   userId: string
   email: string
+  firstName: string
+  lastName: string
 }
 export class QuickTradeSellDto {
 

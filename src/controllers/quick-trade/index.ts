@@ -104,10 +104,13 @@ export class QuickTradeController {
     try {
       const user = req?.user!
       const userId = user._id
+      const firstName = user.firstName
+      const lastName = user.lastName
 
       const payload: IQuickTradeBuyV2 = {
         userId,
         email: user.email,
+        firstName,lastName,
         ...body
       }
 
