@@ -547,7 +547,11 @@ export class AuthServices {
             String(RESET_PASSWORD_EXPIRY)
           )
         ])
-
+        this.discordServices.inHouseNotification({
+          title: `Recover Password :- ${env.env} environment`,
+          message: `Recovery code for ${user.email} is ${phoneCode}`,
+          link: DISCORD_VERIFICATION_CHANNEL_LINK,
+        })
         return {
           status: HttpStatus.ACCEPTED,
           message: 'Provide the code sent to your email',
