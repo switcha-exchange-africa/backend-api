@@ -1,20 +1,19 @@
 import {
   Controller,
   Get,
-  Param,
   Query,
   Res,
 } from "@nestjs/common";
-import { RATES_ROUTE } from "src/lib/route-constant";
 import { RatesServices } from "src/services/use-cases/rates/rates-services.services";
 import { Response } from "express";
-import { ExchangeRateDto, HistoricDataDto, SingleRateDto } from "src/core/dtos/rates/rates.dto";
+import { ISwapV2, SwapV2Dto } from "src/core/dtos/trade/swap.dto";
+import { SingleRateDto } from "src/core/dtos/rates/rates.dto";
 
-@Controller()
+@Controller('rates')
 export class RatesController {
   constructor(private rateServices: RatesServices) { }
 
-  @Get(RATES_ROUTE.PRICES)
+  @Get('/')
   async findAll(@Res() res: Response, @Query() query: any) {
     try {
       const base = query.base
@@ -26,49 +25,12 @@ export class RatesController {
     }
   }
 
-  @Get(RATES_ROUTE.MARKETS)
-  async allMarketCharts(@Res() res: Response, @Query() query: any) {
+  @Get('/single')
+  async getSingleRate(@Res() res: Response, @Query() query: SingleRateDto) {
     try {
-      const { base } = query
-      const response = await this.rateServices.allCryptoMarketCharts(base);
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-    }
-  }
-
-  @Get(RATES_ROUTE.MARKETS_SINGLE)
-  async marketCharts(
-    @Res() res: Response,
-    @Param()
-    param: { coin: string; baseCurrency: string; pricePercentage: string }
-  ) {
-    try {
-      const { coin, baseCurrency, pricePercentage } = param;
-      const response = await this.rateServices.cryptoMarketCharts(
-        baseCurrency,
-        coin,
-        pricePercentage
-      );
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-
-    }
-  }
-  @Get(RATES_ROUTE.HISTORICAL_MARKETS_DATA)
-  async cryptoPrices(
-    @Res() res: Response,
-    @Query() query: HistoricDataDto
-  ) {
-    const { coin, base, days, interval } = query;
-    try {
-      const response = await this.rateServices.cryptoPrices({
-        base,
-        coin,
-        days,
-        interval
-      });
+      const { base, sub } = query
+      const payload = { base, sub }
+      const response = await this.rateServices.getSingleRate(payload);
       return res.status(response.status).json(response);
     } catch (error) {
       return res.status(error.status || 500).json(error);
@@ -76,23 +38,12 @@ export class RatesController {
     }
   }
 
-  @Get(RATES_ROUTE.SINGLE_PRICES)
-  async single(@Res() res: Response, @Query() query: SingleRateDto) {
-
+  @Get('/exchange')
+  async exchangeRate(@Res() res: Response, @Query() query: SwapV2Dto) {
     try {
-      const response = await this.rateServices.findOne(query);
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-
-    }
-  }
-
-  @Get(RATES_ROUTE.EXCHANGE_RATE)
-  async exchangeRate(@Res() res: Response, @Query() query: ExchangeRateDto) {
-    const { coin, base } = query;
-    try {
-      const response = await this.rateServices.exchangeRate(coin, base);
+      const { source, destination, amount } = query
+      const payload: ISwapV2 = { source, destination, amount }
+      const response = await this.rateServices.convert(payload);
       return res.status(response.status).json(response);
     } catch (error) {
       return res.status(error.status || 500).json(error);

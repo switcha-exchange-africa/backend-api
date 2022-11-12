@@ -108,6 +108,19 @@ export class UtilsServices {
     }
   }
 
+   swapV2(payload: { sourceRate: number, destinationRate: number, amount: number }): { rate: number, destinationAmount: number } {
+    try {
+      const { sourceRate, destinationRate, amount } = payload
+      const conversionRate = _.divide(sourceRate, destinationRate)
+      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 3)
+
+      return { rate: conversionRate, destinationAmount }
+
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
   /**
    *  Util function for calculating our fees
    */
@@ -347,7 +360,7 @@ export class UtilsServices {
 
           // in app notification
           // email notification
-          
+
         } catch (error) {
           Logger.error(error);
           throw new Error(error);

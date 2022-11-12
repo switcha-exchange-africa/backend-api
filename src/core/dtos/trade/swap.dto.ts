@@ -1,10 +1,14 @@
-import { IsNotEmpty, IsNumber, IsEnum } from "class-validator";
+import { Type } from "class-transformer";
+import { IsNotEmpty, IsNumber, IsEnum, IsPositive } from "class-validator";
 
 export enum SwapableCoin {
   BTC = 'BTC',
   USDT = 'USDT',
   USDC = 'USDC',
-  ETH = 'ETH'
+  ETH = 'ETH',
+  USDT_TRON = 'USDT_TRON',
+  BUSD = 'BUSD',
+  BNB = 'BNB'
 }
 export class SwapDto {
 
@@ -20,3 +24,25 @@ export class SwapDto {
   @IsEnum(SwapableCoin)
   destinationCoin: SwapableCoin;
 }
+
+
+export type ICreateSwap = SwapDto & {
+  userId: string
+  email: string
+}
+export class SwapV2Dto {
+  @IsNotEmpty()
+  @Type(() => Number)
+  @IsPositive()
+  amount: number;
+
+  @IsNotEmpty()
+  @IsEnum(SwapableCoin)
+  source: SwapableCoin;
+
+  @IsNotEmpty()
+  @IsEnum(SwapableCoin)
+  destination: SwapableCoin;
+}
+
+export type ISwapV2 = SwapV2Dto & {}

@@ -52,7 +52,7 @@ export class SingleRateDto {
   sub: string;
 
 }
-
+export type IGetSingleRate = SingleRateDto & {}
 export enum TatumBaseCurrency {
   USD = 'USD',
   NGN = 'NGN'

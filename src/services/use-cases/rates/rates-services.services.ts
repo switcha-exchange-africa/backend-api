@@ -2,7 +2,10 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
-import { SingleRateDto } from "src/core/dtos/rates/rates.dto";
+import { IGetSingleRate } from "src/core/dtos/rates/rates.dto";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
+import { ISwapV2 } from "src/core/dtos/trade/swap.dto";
 
 const CURRENCY_IDS: string = "bitcoin,ethereum,ripple,stellar,celo";
 const COIN_GECKO_BASE_URL: string = "https://api.coingecko.com/api/v3";
@@ -20,7 +23,11 @@ const config = {
 
 @Injectable()
 export class RatesServices {
-  constructor(private http: IHttpServices) { }
+  constructor(
+    private http: IHttpServices,
+    private readonly utilsService: UtilsServices,
+
+  ) { }
   private TATUM_CONFIG = {
     headers: {
       "X-API-Key": TATUM_API_KEY,
@@ -48,7 +55,7 @@ export class RatesServices {
     }
   }
 
-  async findOne(payload: SingleRateDto): Promise<ResponsesType<any>> {
+  async getSingleRate(payload: IGetSingleRate): Promise<ResponsesType<any>> {
 
     try {
       const { base, sub } = payload
@@ -141,6 +148,52 @@ export class RatesServices {
       return { message: "Exchange rate recieved successfully", rate, status: HttpStatus.OK }
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'TATUM EXCHANGE RATE',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async convert(payload: ISwapV2): Promise<ResponsesType<any>> {
+    try {
+      const { source, destination, amount } = payload
+      const sourceUrl = `${TATUM_BASE_URL}/tatum/rate/${source}?basePair=USD`;
+      const destinationUrl = `${TATUM_BASE_URL}/tatum/rate/${destination}?basePair=USD`;
+
+      const { value: sourceRate } = await this.http.get(sourceUrl, this.TATUM_CONFIG)
+      const { value: destinationRate } = await this.http.get(destinationUrl, this.TATUM_CONFIG)
+      const { destinationAmount, rate } = await this.utilsService.swapV2({ sourceRate, destinationRate, amount })
+      return {
+        message: "Exchange rate recieved successfully",
+        data: {
+          sourceRate,
+          destinationRate,
+          amount,
+          destinationAmount,
+          rate
+        },
+        status: HttpStatus.OK,
+        state: ResponseState.SUCCESS
+      }
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'TATUM EXCHANGE RATE',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

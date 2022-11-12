@@ -2,7 +2,7 @@ import { TransactionFactoryService } from "src/services/use-cases/transaction/tr
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { SwapDto } from "src/core/dtos/trade/swap.dto";
+import { ICreateSwap, SwapDto } from "src/core/dtos/trade/swap.dto";
 import { env } from "src/configuration";
 // import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 
@@ -346,5 +346,107 @@ export class SwapServices {
       })
     }
 
+  }
+
+  async swapV2(payload: ICreateSwap) {
+    const { amount, sourceCoin, destinationCoin, email, userId } = payload;
+    try {
+      const [sourceWallet, destinationWallet, feeWallet] = await Promise.all([
+        this.data.wallets.findOne({
+          userId,
+          coin: sourceCoin,
+        }),
+        this.data.wallets.findOne({
+          userId,
+          coin: destinationCoin,
+        }),
+        this.data.feeWallets.findOne({
+          coin: destinationCoin,
+        }),
+      ]);
+
+      // check if user has access to this feature
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (!userManagement.canSwap) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
+      // checks for if any of the wallet exists
+      if (!feeWallet) {
+        this.discord.inHouseNotification({
+          title: `Error Reporter :- ${env.env} environment`,
+          message: `
+  
+              Action: Buy Action
+  
+              User: ${email}
+  
+              ${destinationCoin} fee wallet not set by admin
+      `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature under maintenance`,
+          error: null,
+        });
+      }
+      if (!sourceWallet) {
+        Logger.error("SOURCE WALLET DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: `${sourceCoin} wallet does not exists`,
+          error: null,
+        });
+      }
+      if (!destinationWallet) {
+        Logger.error("DESTINATION WALLET DOES NOT EXISTS")
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: `${destinationCoin} wallet does not exists`,
+          error: null,
+        });
+      }
+
+      return {
+        message: `Swap successful`,
+        data: {
+          amount
+        },
+        status: 200,
+        state: ResponseState.SUCCESS,
+      };
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'SWAP CRYPTO',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
   }
 }
