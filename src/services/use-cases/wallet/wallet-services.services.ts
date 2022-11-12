@@ -110,12 +110,14 @@ export class WalletServices {
         this.data.users.findOne({ _id: userId }),
 
       ]);
-      if (walletExists) return Promise.reject({
-        status: HttpStatus.CONFLICT,
-        state: ResponseState.ERROR,
-        message: 'Wallet already exists',
-        error: null,
-      })
+      if (walletExists) {
+        return {
+          status: HttpStatus.ACCEPTED,
+          state: ResponseState.SUCCESS,
+          message: 'Wallet already exists',
+          data: {},
+        }
+      }
       if (!userExists) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
