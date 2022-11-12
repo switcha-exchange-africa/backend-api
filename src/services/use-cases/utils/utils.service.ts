@@ -108,7 +108,7 @@ export class UtilsServices {
     }
   }
 
-   swapV2(payload: { sourceRate: number, destinationRate: number, amount: number }): { rate: number, destinationAmount: number } {
+  swapV2(payload: { sourceRate: number, destinationRate: number, amount: number }): { rate: number, destinationAmount: number } {
     try {
       const { sourceRate, destinationRate, amount } = payload
       const conversionRate = _.divide(sourceRate, destinationRate)
@@ -136,8 +136,8 @@ export class UtilsServices {
       if (!getFee) return { fee: 0, deduction: amount }
 
       if (getFee.amountType === IFeeAmountType.PERCENTAGE) {
-        const fee = _.multiply(amount, _.divide(getFee.amountInPercentage, 100))
-        const deduction = _.subtract(amount, fee)
+        const fee = _.floor(_.multiply(amount, _.divide(getFee.amountInPercentage, 100)), 3)
+        const deduction = _.floor(_.subtract(amount, fee), 3)
         return { deduction, fee }
       }
 
