@@ -3,9 +3,8 @@ import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_S
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { ICreateSwap, SwapDto } from "src/core/dtos/trade/swap.dto";
-import { env } from "src/configuration";
-// import { IHttpServices } from "src/core/abstracts/http-services.abstract";
-
+import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
+import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 import * as mongoose from "mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
@@ -28,7 +27,7 @@ import { IErrorReporter } from "src/core/types/error";
 export class SwapServices {
   constructor(
     private data: IDataServices,
-    // private http: IHttpServices,
+    private http: IHttpServices,
     private txFactoryServices: TransactionFactoryService,
     private discord: INotificationServices,
     private readonly utils: UtilsServices,
@@ -36,6 +35,12 @@ export class SwapServices {
     private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
   ) { }
+
+  private TATUM_CONFIG = {
+    headers: {
+      "X-API-Key": TATUM_API_KEY,
+    },
+  };
 
   async swap(body: SwapDto, userId: string): Promise<ResponsesType<any>> {
     let email
@@ -422,11 +427,207 @@ export class SwapServices {
           error: null,
         });
       }
+      const sourceUrl = `${TATUM_BASE_URL}/tatum/rate/${sourceCoin}?basePair=USD`;
+      const destinationUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=USD`;
+      const { value: sourceRate } = await this.http.get(sourceUrl, this.TATUM_CONFIG)
+      const { value: destinationRate } = await this.http.get(destinationUrl, this.TATUM_CONFIG)
+      const { destinationAmount, rate } = await this.utilsService.swapV2({ sourceRate, destinationRate, amount })
 
+      const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount: destinationAmount })
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const creditDestinationWallet = await this.data.wallets.update(
+            {
+              _id: destinationWallet._id,
+            },
+            {
+              $inc: {
+                balance: deduction,
+              },
+              lastDeposit: deduction
+
+            },
+            session
+          );
+
+          if (!creditDestinationWallet) {
+            Logger.error("Error Occurred");
+            return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: "Destination wallet does not match criteria",
+              error: null,
+            });
+          }
+
+          const debitSourceWallet = await this.data.wallets.update(
+            {
+              _id: sourceWallet.id,
+              balance: { $gte: amount },
+            },
+            {
+              $inc: {
+                balance: -amount,
+              },
+              lastWithdrawal: amount
+            },
+            session
+          );
+          if (!debitSourceWallet) {
+            Logger.error("Error Occurred");
+            return Promise.reject({
+              status: HttpStatus.BAD_REQUEST,
+              state: ResponseState.ERROR,
+              message: "Source wallet does not match criteria",
+              error: null,
+            });
+          }
+          const creditedFeeWallet = await this.data.feeWallets.update(
+            {
+              _id: feeWallet._id,
+            },
+            {
+              $inc: {
+                balance: fee,
+              },
+              lastDeposit: fee
+            },
+            session
+          );
+          const generalTransactionReference = generateReference('general')
+
+          const txCreditPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(destinationWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: deduction,
+            signedAmount: deduction,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: creditDestinationWallet?.balance,
+            balanceBefore: destinationWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.CREDIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+          };
+
+          const txDebitPayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(sourceWallet?._id),
+            currency: sourceCoin as unknown as CoinType,
+            amount: amount,
+            signedAmount: -amount,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: debitSourceWallet?.balance,
+            balanceBefore: sourceWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.DEBIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            generalTransactionReference,
+            reference: generateReference('debit'),
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+          };
+          const txFeePayload: OptionalQuery<Transaction> = {
+            userId,
+            walletId: String(destinationWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: fee,
+            signedAmount: -fee,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: `Charged ${fee} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+            generalTransactionReference,
+            reference: generateReference('debit'),
+          };
+
+          const txFeeWalletPayload = {
+            feeWalletId: String(feeWallet?._id),
+            currency: destinationCoin as unknown as CoinType,
+            amount: fee,
+            signedAmount: fee,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Charged ${fee} ${destinationCoin}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
+            rate: {
+              pair: `${sourceCoin}${destinationCoin}`,
+              rate: rate
+            },
+            balanceBefore: feeWallet.balance,
+            balanceAfter: creditedFeeWallet.balance,
+            generalTransactionReference,
+            reference: generateReference('credit'),
+          };
+
+          const [txCreditFactory, txDebitFactory, activityFactory, txFeeFactory, txFeeWalletFactory] = await Promise.all([
+            this.txFactoryServices.create(txCreditPayload),
+            this.txFactoryServices.create(txDebitPayload),
+            this.activityFactory.create({
+              action: ActivityAction.SWAP,
+              description: 'Swapped crypto',
+              userId
+            }),
+            this.txFactoryServices.create(txFeePayload),
+            this.txFactoryServices.create(txFeeWalletPayload),
+
+          ])
+
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.transactions.create(txDebitFactory, session)
+          await this.data.activities.create(activityFactory, session)
+          await this.data.transactions.create(txFeeFactory, session)
+          await this.data.transactions.create(txFeeWalletFactory, session)
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+      };
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      await Promise.all([
+
+        this.discord.inHouseNotification({
+          title: `Swap Coins :- ${env.env} environment`,
+          message: `
+  
+              Swap Crypto
+  
+              User: ${email}
+  
+              Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}
+  
+               Fee ${fee} ${destinationCoin}
+  
+      `,
+          link: env.isProd ? SWAP_CHANNEL_LINK_PRODUCTION : SWAP_CHANNEL_LINK_DEVELOPMENT,
+        })
+      ])
       return {
         message: `Swap successful`,
         data: {
-          amount
+          amount,
+          destinationAmount, rate
         },
         status: 200,
         state: ResponseState.SUCCESS,

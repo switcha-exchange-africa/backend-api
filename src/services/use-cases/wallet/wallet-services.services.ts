@@ -388,7 +388,7 @@ export class WalletServices {
       const cleanedPayload = this.cleanQueryPayload(payload)
       if (!isAdmin) {
         await this.emitter.emit("create.wallet", {
-          userId: payload,
+          userId: payload.userId,
           email: payload.email,
           fullName: payload.fullName
         })

@@ -10,7 +10,8 @@ export enum RateCurrencies {
   ETHEREUM = "ethereum",
   STELLAR = "stellar",
   RIPPLE = "ripple",
-  CELO = "celo"
+  CELO = "celo",
+  TETHER = 'tether'
 }
 
 export enum RateBaseCurrencies {

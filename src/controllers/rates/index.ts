@@ -38,6 +38,16 @@ export class RatesController {
     }
   }
 
+  @Get('/markets')
+  async allMarketCharts(@Res() res: Response, @Query() query: any) {
+    try {
+      const { base } = query
+      const response = await this.rateServices.allCryptoMarketCharts(base);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
   @Get('/exchange')
   async exchangeRate(@Res() res: Response, @Query() query: SwapV2Dto) {
     try {
