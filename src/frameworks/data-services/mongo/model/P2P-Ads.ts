@@ -110,6 +110,20 @@ P2pAdsSchema.pre<P2pAdsDocument>(/^find/, function (next) {
   next();
 });
 
+P2pAdsSchema.index({
+  _id: 'text',
+  id: 'text',
+  price: 'text',
+  totalAmount: 'text',
+},
+  {
+    weights: {
+      _id: 5,
+      price: 5,
+      totalAmount: 5
+    },
+  },);
+
 export { P2pAdsSchema }
 
 
