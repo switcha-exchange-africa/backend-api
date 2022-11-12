@@ -65,6 +65,24 @@ export class WithdrawalServices {
     try {
       const { coin, address, amount: amountBeforeFee, userId, email } = payload
 
+      // check if user has access to this feature
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      if (!userManagement) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Service not available to you`,
+          error: null
+        })
+      }
+      if (env.isProd && !userManagement.canWithdraw) {
+        return Promise.reject({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          state: ResponseState.ERROR,
+          message: `Feature not available to you`,
+          error: null
+        })
+      }
       // if(amountBeforeFee)
       const wallet: mongoose.HydratedDocument<Wallet> = await this.data.wallets.findOne({ userId, coin })
       if (!wallet) {
