@@ -32,6 +32,7 @@ import { TradeDisputeServicesModule } from "./use-cases/trade-disputes/trade-dis
 import { WebsocketServiceModule } from "./use-cases/web-sockets/websocket.module";
 import { ChatMessageServicesModule } from "./use-cases/chat-messages/chat-messages.module";
 import { DashboardServicesModule } from "./use-cases/dashboard/dashboard.module";
+import { ActivityServicesModule } from "./use-cases/activity/activity.module";
 
 export default [
   AxiosServiceModule,
@@ -67,5 +68,7 @@ export default [
   TradeDisputeServicesModule,
   ChatMessageServicesModule,
   WebsocketServiceModule,
-  DashboardServicesModule
+  DashboardServicesModule,
+  ActivityServicesModule
+
 ]
