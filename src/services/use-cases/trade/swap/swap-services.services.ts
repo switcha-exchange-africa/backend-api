@@ -17,6 +17,8 @@ import { UtilsServices } from "../../utils/utils.service";
 import { ActivityAction } from "src/core/dtos/activity";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
 import { IErrorReporter } from "src/core/types/error";
+import { IActivity } from "src/core/entities/Activity";
+import { INotification } from "src/core/entities/notification.entity";
 
 // const TATUM_CONFIG = {
 //   headers: {
@@ -605,6 +607,21 @@ export class SwapServices {
         atomicTransaction,
         this.connection
       )
+
+      const activity: IActivity = {
+        userId,
+        action: ActivityAction.SWAP,
+        description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
+        amount,
+        coin: sourceCoin
+      }
+      const notification: INotification = {
+        userId,
+        title: `Swap`,
+        message: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`
+      }
+      await this.utilsService.storeActivitySendNotification({ activity, notification })
+
       await Promise.all([
 
         this.discord.inHouseNotification({

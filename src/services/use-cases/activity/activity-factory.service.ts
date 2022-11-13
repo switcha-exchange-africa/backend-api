@@ -11,6 +11,8 @@ export class ActivityFactoryService {
     if (data.image) activity.image = data.image;
     if (data.type) activity.type = data.type;
     if (data.description) activity.description = data.description;
+    if (data.amount) activity.amount = data.amount;
+    if (data.coin) activity.coin = data.coin;
     return activity;
   }
 }

@@ -21,12 +21,21 @@ export class Activity {
   @Prop()
   description: string
 
+
+  @Prop()
+  coin: string
+
   @Prop({
     type: Types.ObjectId,
     ref: "User",
     required: true
   })
   userId: string;
+
+  @Prop({
+    default: 0
+  })
+  amount: number;
 
   @Prop()
   createdAt: Date;

@@ -6,10 +6,14 @@ export class Activity {
   type: string
   description: string
   userId: string;
+  coin: string
+  amount: number;
 }
 
-export type IActivity =  {
+export type IActivity = {
   action: ActivityAction,
   description: string,
   userId: string
+  amount: number
+  coin?: string
 }

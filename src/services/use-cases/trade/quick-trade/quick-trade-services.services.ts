@@ -1015,7 +1015,9 @@ export class QuickTradeServices {
       const activity: IActivity = {
         userId,
         action: type === P2pOrderType.SELL ? ActivityAction.QUICK_TRADE_SELL : ActivityAction.QUICK_TRADE_BUY,
-        description: `Created P2P ${type} Order`
+        description: `Created P2P ${type} Order`,
+        amount,
+        coin
       }
       const notification: INotification = {
         userId: String(merchant._id),

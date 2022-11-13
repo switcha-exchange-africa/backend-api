@@ -133,7 +133,9 @@ export class P2pServices {
       const activity: IActivity = {
         userId,
         action: type === P2pAdsType.SELL ? ActivityAction.P2P_SELL_AD : ActivityAction.P2P_BUY_AD,
-        description: `Created P2P ${type} Ad`
+        description: `Created P2P ${type} Ad`,
+        amount: totalAmount,
+        coin
       }
       const notification: INotification = {
         userId,
@@ -752,7 +754,9 @@ export class P2pServices {
       const activity: IActivity = {
         userId: clientId,
         action: type === P2pOrderType.SELL ? ActivityAction.P2P_SELL : ActivityAction.P2P_BUY,
-        description: `Created P2P ${type} Order`
+        description: `Created P2P ${type} Order`,
+        amount: quantity,
+        coin: ad.coin
       }
       const notification: INotification = {
         userId: String(merchant._id),
@@ -1402,7 +1406,7 @@ export class P2pServices {
           link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
         }),
         this.inMemoryServices.del(redisKey)
-      ]) 
+      ])
 
       return {
         message: "Order confirmed succesfully",
