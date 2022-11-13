@@ -1,4 +1,5 @@
 import { AccountController } from "./account";
+import { ActivityController } from "./activity";
 import admin from "./admin";
 import { AuthenticationController } from "./authentication";
 import { BankController } from "./bank";
@@ -49,5 +50,6 @@ export default [
   ChatMessageController,
   TradeDisputeController,
   FeatureManagementController,
+  ActivityController,
   ...admin
 ]
