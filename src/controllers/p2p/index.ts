@@ -131,10 +131,12 @@ export class P2pController {
   @Get('/p2p/ads')
   @isAuthenticated('strict')
   async getAllAds(
+    @Req() req: Request,
     @Res() res: Response,
     @Query() query: any
   ) {
     try {
+      const user = req?.user!
       const {
         perpage,
         page,
@@ -150,7 +152,7 @@ export class P2pController {
       } = query
       const payload: IGetP2pAds = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,
-        isPublished, coin, isSwitchaMerchant
+        isPublished, coin, isSwitchaMerchant, email: user.email
       }
 
       const response = await this.services.getAllAds(payload);
@@ -270,6 +272,7 @@ export class P2pController {
         orderId,
         bankId,
         method,
+        email: req?.user?.email,
         q
       }
       const response = await this.services.getP2pOrders(payload);
@@ -324,6 +327,7 @@ export class P2pController {
         orderId,
         bankId,
         method,
+        email: req?.user?.email,
         q
       }
       const response = await this.services.getP2pOrders(payload);

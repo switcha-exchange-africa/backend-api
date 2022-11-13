@@ -180,6 +180,8 @@ export type IGetP2pAds = PaginationType & {
   coin: string;
   isPublished: boolean
   isSwitchaMerchant: boolean
+  email?: string
+
 }
 export type IGetP2pBanks = PaginationType & {
   accountNumber: string
@@ -206,6 +208,7 @@ export type IGetP2pAdBank = PaginationType & {
   isAcceptingToPaymentTo: boolean
   isWillingToPayTo: boolean
   type: string
+  
 }
 export class P2pConfirmOrderDto {
   @IsOptional()
@@ -228,7 +231,7 @@ export type IGetP2pOrders = PaginationType & {
   orderId: string
   bankId: string
   method: string
-
+  email?: string
 }
 
 

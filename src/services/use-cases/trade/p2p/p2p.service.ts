@@ -348,6 +348,7 @@ export class P2pServices {
     return key
   }
   async getAllAds(payload: IGetP2pAds) {
+    const { email } = payload
     try {
       const cleanedPayload = this.cleanQueryPayload(payload)
       const { data, pagination } = await this.data.p2pAds.findAllWithPagination({
@@ -370,6 +371,7 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'GET P2P ADS',
         error,
+        email,
         message: error.message
       }
 
@@ -1504,8 +1506,9 @@ export class P2pServices {
     }
   }
   async getP2pOrders(payload: IGetP2pOrders) {
+    const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy, email } = payload
+
     try {
-      const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
       if (q) {
         const { data, pagination } = await this.data.p2pOrders.search({
           query: {
@@ -1545,6 +1548,7 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'GET P2P ORDERS',
         error,
+        email,
         message: error.message
       }
 

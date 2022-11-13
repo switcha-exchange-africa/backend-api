@@ -125,7 +125,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         .populate(populated)
         .limit(perpage)
         .skip(page * perpage - perpage)
-        .sort(sortQuery);
+        .sort(sortQuery)
+        .lean();
       return Promise.resolve({
         data,
         pagination: {
