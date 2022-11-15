@@ -57,4 +57,17 @@ KycSchema.pre<KycDocument>(/^find/, function (next) {
   next();
 });
 
+KycSchema.index({
+  _id: 'text',
+  id: 'text',
+  userId: 'text',
+},
+  {
+    weights: {
+      _id: 5,
+      userId: 5,
+      id: 5
+    },
+  },);
+
 export { KycSchema }

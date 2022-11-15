@@ -26,11 +26,7 @@ export class DashboardServices {
       today = new Date().setHours(0, 0, 0, 0);
       const updateToday = new Date()
       const year = new Date(updateToday.setMonth(updateToday.getMonth() - 12))
-      console.log("first", first)
-      console.log("last", last)
-      console.log("firstDay", firstday)
-      console.log("lastday", lastday)
-      console.log("last year", year)
+    
 
       const [transactionsVolume, totalUsers, totalTransactionVolume, dailyUserData, weeklyUserData, monthlyUserData, yearlyUserData] = await Promise.all([
         this.data.transactions.aggregation([

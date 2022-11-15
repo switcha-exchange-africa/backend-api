@@ -101,7 +101,7 @@ export class BankController {
   }
 
 
-  @Get(BANK_ROUTE.NIGERIA_ROUTE)
+  @Get('/default/nigerian-banks')
   @isAuthenticated('strict')
   async getNigeriaBanks(
     @Res() res: Response

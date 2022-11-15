@@ -27,6 +27,7 @@ export class AdminKycController {
         userId,
         status,
         level,
+        q
       } = query
       const payload: IGetKyc = {
         perpage,
@@ -38,6 +39,8 @@ export class AdminKycController {
         userId,
         status,
         level,
+        q
+
       }
       const response = await this.services.getAllKyc(payload);
       return res.status(response.status).json(response);
