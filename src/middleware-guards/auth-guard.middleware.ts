@@ -122,6 +122,7 @@ export class IsLevelTwoGuard implements CanActivate {
       const decorator = this.reflector.get<string>('level-two', context.getHandler());
       if (isEmpty(decorator)) return true
 
+      if (request.user.level === 'three') return true
       if (request.user.level !== 'two') throw new UnAuthorizedException("Please upgrade your kyc to level 2")
 
       return true;
