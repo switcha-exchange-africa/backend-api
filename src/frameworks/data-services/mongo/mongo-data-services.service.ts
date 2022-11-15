@@ -166,7 +166,7 @@ export class MongoDataServices
     this.quickTradeContracts = new MongoGenericRepository<QuickTradeContract>(this.QuickTradeContractRepository)
     this.exchangeRates = new MongoGenericRepository<ExchangeRate>(this.ExchangeRateRepository)
     this.admins = new MongoGenericRepository<Admin>(this.AdminRepository)
-    this.kyc = new MongoGenericRepository<Kyc>(this.KycRepository, ['userId'])
+    this.kyc = new MongoGenericRepository<Kyc>(this.KycRepository)
     this.fees = new MongoGenericRepository<Fee>(this.FeeRepository, ['userId'])
     this.feeWallets = new MongoGenericRepository<FeeWallet>(this.FeeWalletRepository, ['userId'])
     this.userFeatureManagement = new MongoGenericRepository<UserFeatureManagement>(this.UserFeatureManagementRepository, ['userId'])
