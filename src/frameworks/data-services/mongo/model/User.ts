@@ -121,10 +121,10 @@ export class User {
   disabledDate: Date;
 
   @Prop()
-  disabledReason: Date;
+  disabledReason: string;
 
   @Prop()
-  blacklistedDate: Date; 
+  blacklistedDate: Date;
 
   @Prop()
   blacklistedReason: string;
