@@ -1,7 +1,7 @@
-import { Controller, Get, Param, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Put, Query, Res } from "@nestjs/common";
 import { UserServices } from "src/services/use-cases/user/user-services.services";
 import { Response } from 'express'
-import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { FindByIdDto, IMutateUserAccount, MutateUserAccountDto } from "src/core/dtos/authentication/login.dto";
 import { isAdminAuthenticated } from "src/core/decorators";
 import { IGetUsers } from "src/core/dtos/users";
 
@@ -85,4 +85,58 @@ export class AdminUsersController {
     }
   }
 
+
+  @isAdminAuthenticated('strict')
+  @Put('/:id/blacklist')
+  async blacklist(@Res() res: Response, @Body() body: MutateUserAccountDto, @Param() param: FindByIdDto) {
+    try {
+      const { id } = param;
+      const { reason } = body
+      const payload: IMutateUserAccount = {
+        id,
+        reason
+      }
+      const response = await this.services.blacklist(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  @isAdminAuthenticated('strict')
+  @Put('/:id/disable')
+  async disable(@Res() res: Response, @Body() body: MutateUserAccountDto, @Param() param: FindByIdDto) {
+    try {
+      const { id } = param;
+      const { reason } = body
+      const payload: IMutateUserAccount = {
+        id,
+        reason
+      }
+      const response = await this.services.disable(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  @isAdminAuthenticated('strict')
+  @Put('/:id/lock')
+  async lock(@Res() res: Response, @Body() body: MutateUserAccountDto, @Param() param: FindByIdDto) {
+    try {
+      const { id } = param;
+      const { reason } = body
+      const payload: IMutateUserAccount = {
+        id,
+        reason
+      }
+      const response = await this.services.lock(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }

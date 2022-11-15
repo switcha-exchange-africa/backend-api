@@ -117,3 +117,14 @@ export class CalculateWithdrawalFeeDto {
   public amount: number;
 
 }
+
+export class MutateUserAccountDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly reason: string;
+
+}
+
+export type IMutateUserAccount = MutateUserAccountDto & {
+  id: Types.ObjectId
+}

@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
+import { IMutateUserAccount } from "src/core/dtos/authentication/login.dto";
 import { IGetUsers } from "src/core/dtos/users";
 import { ResponseState } from "src/core/types/response";
 
@@ -37,7 +38,7 @@ export class UserServices {
 
     return key
   }
-  
+
   async getAllUsers(payload: IGetUsers) {
     try {
       const { q, perpage, page, dateFrom, dateTo, sortBy, orderBy } = payload
@@ -115,7 +116,91 @@ export class UserServices {
     }
   }
 
+  async disable(payload: IMutateUserAccount) {
+    try {
+      const { id, reason } = payload
+      await this.data.users.update({ _id: id }, {
+        isDisabled: true,
+        disabledReason: reason,
+        disabledDate: new Date()
+      });
+
+      return {
+        status: 200,
+        message: "User disabled successfully",
+        data: {},
+        state: ResponseState.SUCCESS,
+
+      };
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+
+
+  async lock(payload: IMutateUserAccount) {
+    try {
+      const { id, reason } = payload
+      await this.data.users.update({ _id: id }, {
+        lock: true,
+        lockedReason: reason,
+        lockedDate: new Date()
+      });
+
+      return {
+        status: 200,
+        message: "User locked successfully",
+        data: {},
+        state: ResponseState.SUCCESS,
+
+      };
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async blacklist(payload: IMutateUserAccount) {
+    try {
+      const { id, reason } = payload
+      await this.data.users.update({ _id: id }, {
+        isBlacklisted: true,
+        blacklistedReason: reason,
+        blacklistedDate: new Date()
+      });
+
+      return {
+        status: 200,
+        message: "User locked successfully",
+        data: {},
+        state: ResponseState.SUCCESS,
+
+      };
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
 }
+
 
 
 

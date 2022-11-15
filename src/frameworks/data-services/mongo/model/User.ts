@@ -72,8 +72,6 @@ export class User {
   @Prop()
   lastLoginDate: Date
 
-
-
   @Prop({ default: false })
   lock: boolean;
 
@@ -112,6 +110,27 @@ export class User {
 
   @Prop()
   createdAt: Date;
+
+  @Prop()
+  lockedDate: Date;
+
+  @Prop()
+  lockedReason: string;
+
+  @Prop()
+  disabledDate: Date;
+
+  @Prop()
+  disabledReason: Date;
+
+  @Prop()
+  blacklistedDate: Date; 
+
+  @Prop()
+  blacklistedReason: string;
+
+  @Prop({ default: false })
+  isDisabled: boolean;
 
   @Prop()
   updatedAt: Date;
