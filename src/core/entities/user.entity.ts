@@ -35,7 +35,7 @@ export class User {
   lockedDate: Date;
   lockedReason: string;
   disabledDate: Date;
-  disabledReason: Date;
+  disabledReason: string;
   isDisabled: boolean;
 }
 
