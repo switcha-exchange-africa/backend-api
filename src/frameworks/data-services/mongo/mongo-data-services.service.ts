@@ -30,6 +30,7 @@ import { WebPush, WebPushDocument } from "./model/Web-Push";
 import { FeatureManagement, FeatureManagementDocument } from "./model/Feature-Management";
 import { TradeDispute, TradeDisputeDocument } from "./model/Trade-Dispute";
 import { ChatMessage, ChatMessageDocument } from "./model/Chat-Messages";
+import { MutateUser, MutateUserDocument } from './model/MutateUser';
 
 
 
@@ -63,6 +64,7 @@ export class MongoDataServices
   featureManagement: MongoGenericRepository<FeatureManagement>
   tradeDisputes: MongoGenericRepository<TradeDispute>
   chatMessages: MongoGenericRepository<ChatMessage>
+  mutateUser: MongoGenericRepository<MutateUser>
 
 
   constructor(
@@ -148,6 +150,10 @@ export class MongoDataServices
 
     @InjectModel(ChatMessage.name)
     private ChatMessagesRepository: Model<ChatMessageDocument>,
+
+    @InjectModel(MutateUser.name)
+    private MutateUserRepository: Model<MutateUserDocument>,
+    
   ) { }
 
 
@@ -179,6 +185,7 @@ export class MongoDataServices
     this.featureManagement = new MongoGenericRepository<FeatureManagement>(this.FeatureManagementRepository)
     this.tradeDisputes = new MongoGenericRepository<TradeDispute>(this.TradeDisputesRepository)
     this.chatMessages = new MongoGenericRepository<ChatMessage>(this.ChatMessagesRepository)
+    this.mutateUser = new MongoGenericRepository<MutateUser>(this.MutateUserRepository)
 
 
     // this.books = new MongoGenericRepository<Book>(this.BookRepository, [

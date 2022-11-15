@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MutateUser } from 'src/core/entities/MutateUser';
 import { User } from 'src/core/entities/user.entity';
 import { UserFeatureManagement } from 'src/core/entities/UserFeatureManagement';
 import { OptionalQuery } from 'src/core/types/database';
@@ -54,4 +55,20 @@ export class UserFeatureManagementFactoryService {
     return manage;
   }
 
+  
+}
+
+@Injectable()
+export class MutateUserFactoryService {
+  async mutate(data: OptionalQuery<MutateUser>) {
+    const mutate = new MutateUser();
+    if (data.userId) mutate.userId = data.userId;
+    if (data.reason) mutate.reason = data.reason;
+    if (data.active) mutate.active = data.active;
+    if (data.type) mutate.type = data.type;
+    
+    return mutate;
+  }
+
+  
 }

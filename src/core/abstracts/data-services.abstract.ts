@@ -25,6 +25,7 @@ import { WebPush } from '../entities/WebPush';
 import { FeatureManagement } from '../entities/Feature-Management';
 import { ChatMessage } from '../entities/Chat-Messages';
 import { TradeDispute } from '../entities/Trade-Disputes';
+import { MutateUser } from '../entities/MutateUser';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -54,5 +55,7 @@ export abstract class IDataServices {
   abstract featureManagement: IGenericRepository<FeatureManagement>
   abstract tradeDisputes: IGenericRepository<TradeDispute>
   abstract chatMessages: IGenericRepository<ChatMessage>
+  abstract mutateUser: IGenericRepository<MutateUser>
+
 } 
 

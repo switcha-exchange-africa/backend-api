@@ -4,11 +4,18 @@ import { IDataServices } from "src/core/abstracts";
 import { IMutateUserAccount } from "src/core/dtos/authentication/login.dto";
 import { IGetUsers } from "src/core/dtos/users";
 import { ResponseState } from "src/core/types/response";
+import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
+import { MutateUserFactoryService } from "./user-factory.service";
+import * as mongoose from "mongoose";
+import { InjectConnection } from "@nestjs/mongoose";
 
 @Injectable()
 export class UserServices {
   constructor(
-    private data: IDataServices,
+    private readonly data: IDataServices,
+    private readonly mutateUserFactory: MutateUserFactoryService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
+
   ) { }
   cleanUserQueryPayload(payload: IGetUsers) {
     let key = {}
@@ -119,12 +126,32 @@ export class UserServices {
   async disable(payload: IMutateUserAccount) {
     try {
       const { id, reason } = payload
-      await this.data.users.update({ _id: id }, {
-        isDisabled: true,
-        disabledReason: reason,
-        disabledDate: new Date()
-      });
 
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const mutateFactory = await this.mutateUserFactory.mutate({
+            userId: String(id),
+            reason,
+            type: 'disable'
+          })
+
+          await this.data.users.update({ _id: id }, {
+            isDisabled: true,
+            disabledReason: reason,
+            disabledDate: new Date()
+          }, session);
+          await this.data.mutateUser.create(mutateFactory, session)
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
       return {
         status: 200,
         message: "User disabled successfully",
@@ -148,12 +175,33 @@ export class UserServices {
   async lock(payload: IMutateUserAccount) {
     try {
       const { id, reason } = payload
-      await this.data.users.update({ _id: id }, {
-        lock: true,
-        lockedReason: reason,
-        lockedDate: new Date()
-      });
 
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const mutateFactory = await this.mutateUserFactory.mutate({
+            userId: String(id),
+            reason,
+            type: 'lock'
+          })
+
+          await this.data.users.update({ _id: id }, {
+            lock: true,
+            lockedReason: reason,
+            lockedDate: new Date()
+          }, session);
+          await this.data.mutateUser.create(mutateFactory, session)
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
       return {
         status: 200,
         message: "User locked successfully",
@@ -175,12 +223,32 @@ export class UserServices {
   async blacklist(payload: IMutateUserAccount) {
     try {
       const { id, reason } = payload
-      await this.data.users.update({ _id: id }, {
-        isBlacklisted: true,
-        blacklistedReason: reason,
-        blacklistedDate: new Date()
-      });
 
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const mutateFactory = await this.mutateUserFactory.mutate({
+            userId: String(id),
+            reason,
+            type: 'blacklist'
+          })
+
+          await this.data.users.update({ _id: id }, {
+            isBlacklisted: true,
+            blacklistedReason: reason,
+            blacklistedDate: new Date()
+          }, session);
+          await this.data.mutateUser.create(mutateFactory, session)
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
       return {
         status: 200,
         message: "User locked successfully",

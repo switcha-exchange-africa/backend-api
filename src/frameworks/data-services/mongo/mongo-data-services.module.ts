@@ -30,6 +30,7 @@ import { WebPush, WebPushSchema } from "./model/Web-Push";
 import { FeatureManagement, FeatureManagementSchema } from "./model/Feature-Management";
 import { ChatMessage, ChatMessageSchema } from "./model/Chat-Messages";
 import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
+import { MutateUser, MutateUserSchema } from './model/MutateUser';
 
 @Module({
   imports: [
@@ -61,6 +62,8 @@ import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
       { name: FeatureManagement.name, schema: FeatureManagementSchema },
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: TradeDispute.name, schema: TradeDisputeSchema },
+      { name: MutateUser.name, schema: MutateUserSchema },
+
 
 
 
