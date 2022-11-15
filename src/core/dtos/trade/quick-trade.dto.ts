@@ -42,6 +42,7 @@ export class QuickTradeBuySellV2Dto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   amount: number;
 
 
@@ -86,6 +87,7 @@ export class QuickTradeSellDto {
 
 
   @IsNumber()
+  @IsPositive()
   @IsPositive()
   public unitPrice: number
 

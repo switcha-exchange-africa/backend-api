@@ -1,13 +1,15 @@
 import {
   IsNotEmpty,
   IsNumber,
-  IsEnum
+  IsEnum,
+  IsPositive
 } from "class-validator";
 import { CoinType } from "src/core/types/coin";
 export class BuySellDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   amount: number;
 
 

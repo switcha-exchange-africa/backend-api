@@ -33,22 +33,27 @@ export class P2pCreateAdDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   price: number
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   totalAmount: number
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   minLimit: number
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   maxLimit: number
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   highestPriceOrder: number
 
 
@@ -208,7 +213,7 @@ export type IGetP2pAdBank = PaginationType & {
   isAcceptingToPaymentTo: boolean
   isWillingToPayTo: boolean
   type: string
-  
+
 }
 export class P2pConfirmOrderDto {
   @IsOptional()
