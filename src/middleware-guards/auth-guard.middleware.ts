@@ -108,7 +108,52 @@ export class BypassGuard implements CanActivate {
   }
 }
 
+@Injectable()
+export class IsLevelTwoGuard implements CanActivate {
+  constructor(
+    private readonly reflector: Reflector
 
+  ) { }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+
+    try {
+      const request: any = context.switchToHttp().getRequest();
+      const decorator = this.reflector.get<string>('level-two', context.getHandler());
+      if (isEmpty(decorator)) return true
+
+      if (request.user.level !== 'two') throw new UnAuthorizedException("Please upgrade your kyc to level 3")
+
+      return true;
+    } catch (error) {
+      Logger.error('@jwt-bypass-error', error)
+      throw new UnAuthorizedException(error.message)
+    }
+  }
+}
+@Injectable()
+export class IsLevelThreeGuard implements CanActivate {
+  constructor(
+    private readonly reflector: Reflector
+
+  ) { }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+
+    try {
+      const request: any = context.switchToHttp().getRequest();
+      const decorator = this.reflector.get<string>('level-three', context.getHandler());
+      if (isEmpty(decorator)) return true
+
+      if (request.user.level !== 'three') throw new UnAuthorizedException("Please upgrade your kyc to level 3")
+
+      return true;
+    } catch (error) {
+      Logger.error('@jwt-bypass-error', error)
+      throw new UnAuthorizedException(error.message)
+    }
+  }
+}
 // @Injectable()
 // export class UserFeatureManagementGuard implements CanActivate {
 //   constructor(
