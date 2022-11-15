@@ -4,7 +4,7 @@ import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGet
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
-import { FeatureManagement } from "src/decorator";
+import { FeatureManagement, IsLevelThree } from "src/decorator";
 import { FeatureEnum } from "src/core/dtos/activity";
 
 @Controller()
@@ -13,9 +13,10 @@ export class P2pController {
     private services: P2pServices,
   ) { }
 
+  @isAuthenticated('strict')
+  @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_AD)
   @Post('/p2p/ads')
-  @isAuthenticated('strict')
   async createAds(
     @Req() req: Request,
     @Res() res: Response,
@@ -33,8 +34,9 @@ export class P2pController {
     }
   }
 
-  @Post('/p2p/bank')
   @isAuthenticated('strict')
+  @IsLevelThree('three')
+  @Post('/p2p/bank')
   async createAdsBank(
     @Req() req: Request,
     @Res() res: Response,
@@ -110,8 +112,10 @@ export class P2pController {
     }
   }
 
-  @Post('/p2p/bank/:id')
+
   @isAuthenticated('strict')
+  @IsLevelThree('three')
+  @Post('/p2p/bank/:id')
   async disableAdsBank(
     @Res() res: Response,
     @Param() params: FindByIdDto,
@@ -202,9 +206,10 @@ export class P2pController {
     }
   }
 
+  @isAuthenticated('strict')
+  @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order')
-  @isAuthenticated('strict')
   async createP2pOrder(
     @Req() req: Request,
     @Res() res: Response,
@@ -339,9 +344,10 @@ export class P2pController {
     }
   }
 
+  @isAuthenticated('strict')
+  @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order/:id')
-  @isAuthenticated('strict')
   async confirmP2pOrder(
     @Req() req: Request,
     @Res() res: Response,
@@ -365,9 +371,10 @@ export class P2pController {
     }
   }
 
-  @FeatureManagement(FeatureEnum.P2P_ORDER)
-  @Post('/p2p/order/:id/notify-merchant')
   @isAuthenticated('strict')
+  @IsLevelThree('three')
+  @FeatureManagement(FeatureEnum.P2P_ORDER)
+  @Post('/p2p/order/:id/notify-merchant')    
   async notifyMerchantP2pOrder(
     @Req() req: Request,
     @Res() res: Response,
