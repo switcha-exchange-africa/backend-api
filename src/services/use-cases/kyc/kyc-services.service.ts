@@ -20,7 +20,6 @@ export class KycServices {
 
   async levelTwo(payload: IKycLevelTwo) {
     const { userId, email } = payload
-    console.log(payload)
     try {
       const kyc = await this.data.kyc.findOne({
         userId,
