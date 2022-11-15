@@ -1,6 +1,6 @@
 import { IDataServices } from "src/core/abstracts";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { KycFactoryService } from "./kyc-factory.service";
 import { IGetKyc, IKycLevelThree, IKycLevelTwo, IProcessKyc } from "src/core/dtos/kyc";
 import { ResponseState } from "src/core/types/response";
@@ -8,13 +8,19 @@ import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { USER_LEVEL_TYPE } from "src/lib/constants";
 import { Status } from "src/core/types/status";
+import { NotificationFactoryService } from "../notification/notification-factory.service";
+import { InjectConnection } from "@nestjs/mongoose";
+import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 
 @Injectable()
 export class KycServices {
   constructor(
-    private data: IDataServices,
-    private factory: KycFactoryService,
-    private readonly utilsService: UtilsServices
+    private readonly data: IDataServices,
+    private readonly factory: KycFactoryService,
+    private readonly notificationFactory: NotificationFactoryService,
+    private readonly utilsService: UtilsServices,
+    @InjectConnection() private readonly connection: mongoose.Connection,
+
   ) { }
 
 
@@ -24,11 +30,11 @@ export class KycServices {
       const kyc = await this.data.kyc.findOne({
         userId,
         level: USER_LEVEL_TYPE.TWO,
-          $or: [
-            { status: Status.APPROVED },
-            { status: Status.PENDING },
+        $or: [
+          { status: Status.APPROVED },
+          { status: Status.PENDING },
 
-          ]
+        ]
 
       })
       if (kyc) {
@@ -228,7 +234,7 @@ export class KycServices {
 
   async processKyc(payload: IProcessKyc) {
     try {
-      const { id, status } = payload
+      const { id, status, reason } = payload
       const data = await this.data.kyc.findOne({ _id: id });
       if (!data) {
         return Promise.reject({
@@ -238,8 +244,30 @@ export class KycServices {
           error: null
         })
       }
+      const user = await this.data.users.findOne({ _id: data.userId })
+
+
       if (status === Status.DENIED) {
-        await this.data.kyc.update({ _id: id }, { status: Status.DENIED })
+
+        const atomicTransaction = async (session: mongoose.ClientSession) => {
+          try {
+            const notificationFactory = this.notificationFactory.create({
+              userId: String(data.userId),
+              title: `Level ${data.level} kyc document denied`,
+              message: reason
+            })
+            await this.data.notifications.create(notificationFactory, session)
+            await this.data.kyc.update({ _id: id }, { status: Status.DENIED }, session)
+          } catch (error) {
+            Logger.error(error);
+            return Promise.reject(error)
+          }
+        }
+
+        await databaseHelper.executeTransactionWithStartTransaction(
+          atomicTransaction,
+          this.connection
+        )
         return Promise.resolve({
           message: `${status} successfully`,
           status: HttpStatus.OK,
@@ -254,17 +282,64 @@ export class KycServices {
           data,
         });
       }
-      if (status === Status.APPROVED) {
-        await this.data.kyc.update({ _id: id }, { status: Status.APPROVED })
-        await this.data.users.update({ _id: data.userId }, { level: data.level })
-        return Promise.resolve({
-          message: `${status} successfully`,
+
+
+      if (data.level === 'two' && user.level === 'two') {
+        return {
+          message: `Processed successfully`,
           status: HttpStatus.OK,
           data,
-        });
+        };
       }
+      if (data.level === 'three' && user.level === 'three') {
+        return {
+          message: `Processed successfully`,
+          status: HttpStatus.OK,
+          data,
+        };
+      }
+
+      if (data.level === 'three' && user.level !== 'two') {
+        return {
+          message: `User must be in level 2 to process level 3 document`,
+          status: HttpStatus.BAD_REQUEST,
+          error: null,
+          state: ResponseState.ERROR
+        };
+      }
+
+      if (data.level === 'two' && user.level !== 'one') {
+        return {
+          message: `User must be in level 1 to process level 2 document`,
+          status: HttpStatus.BAD_REQUEST,
+          error: null,
+          state: ResponseState.ERROR
+        };
+      }
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const notificationFactory = this.notificationFactory.create({
+            userId: String(data.userId),
+            title: `Level ${data.level} kyc document approved`,
+            message: reason
+          })
+          await this.data.notifications.create(notificationFactory, session)
+          await this.data.kyc.update({ _id: id }, { status: Status.APPROVED }, session)
+          await this.data.users.update({ _id: data.userId }, { level: data.level }, session)
+        } catch (error) {
+          Logger.error(error);
+          return Promise.reject(error)
+        }
+      }
+
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
       return Promise.resolve({
-        message: "Kyc retrieved succesfully",
+        message: `${status} successfully`,
         status: HttpStatus.OK,
         data,
       });
