@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { AddBankDto, IBank, IGetBank, IGetSingleBank } from "src/core/dtos/bank";
-import { BANK_ROUTE } from "src/lib/route-constant";
 import { Request, Response } from 'express';
 import { BankServices } from "src/services/use-cases/bank/bank-services.services";
 import { nigeriaBanks } from "src/lib/nigerian-banks";
