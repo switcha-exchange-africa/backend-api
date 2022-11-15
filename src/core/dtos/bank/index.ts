@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
+import { Types } from "mongoose"
+import { PaginationType } from "src/core/types/database"
 
 
 export class AddBankDto {
@@ -33,4 +35,16 @@ export interface IBank {
   accountNumber: string
   userId: string
 
+}
+
+export type IGetBank = PaginationType & {
+  userId: string
+  name: string
+  code: string
+
+}
+export type IGetSingleBank = {
+  id: Types.ObjectId,
+  email: string,
+  userId: string
 }

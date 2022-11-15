@@ -38,6 +38,24 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
+  async delete(key: FilterQuery<T>, session?: ClientSession) {
+    try {
+      const result = await this._repository.deleteOne({ ...key }).session(session || null);
+      return Promise.resolve(result);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+  async deleteMany(key: FilterQuery<T>[], session?: ClientSession) {
+    try {
+      const result = await this._repository.deleteMany({ ...key }).session(session || null);
+      return Promise.resolve(result);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+
   async find(fields: FilterQuery<T>, options?: { select?: string, isLean?: boolean }) {
     try {
       const data = options?.isLean ? await this._repository.find(fields).populate(this._populateOnFind).select(options?.select).lean() : await this._repository.find(fields).select(options?.select)

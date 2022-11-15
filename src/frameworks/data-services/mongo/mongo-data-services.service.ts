@@ -157,7 +157,7 @@ export class MongoDataServices
     this.transactions = new MongoGenericRepository<Transaction>(this.TransactionRepository, ['userId'])
     this.faucets = new MongoGenericRepository<Faucet>(this.FaucetRepository)
     this.withdrawals = new MongoGenericRepository<Withdrawal>(this.WithdrawalRepository)
-    this.banks = new MongoGenericRepository<Bank>(this.BankRepository, ['userId'])
+    this.banks = new MongoGenericRepository<Bank>(this.BankRepository)
     this.activities = new MongoGenericRepository<Activity>(this.ActivityRepository)
     this.emailChangeRequests = new MongoGenericRepository<EmailChangeRequest>(this.EmailChangeRequestRepository)
     this.customLogger = new MongoGenericRepository<CustomLogger>(this.CustomLoggerRepository)
