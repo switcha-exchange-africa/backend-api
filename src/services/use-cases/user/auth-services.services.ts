@@ -534,7 +534,7 @@ export class AuthServices {
             fromEmail: 'support@switcha.africa',
             fromName: "Support",
             toEmail: user.email,
-            toName: `${user.firstName} ${user.lastName}`,
+            toName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
             templateId: EmailTemplates.RECOVER_PASSWORD,
             subject: 'Recover Password',
             variables: {
@@ -603,7 +603,7 @@ export class AuthServices {
       return {
         status: HttpStatus.OK,
         message: 'You will receive an email with a link to reset your password if you have an account with this email.',
-        data:  resetToken,
+        data: resetToken,
         state: ResponseState.SUCCESS,
       }
 
