@@ -11,6 +11,8 @@ import { NotificationFactoryService } from "../notification/notification-factory
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { Wallet } from "src/core/entities/wallet.entity";
+import { IErrorReporter } from "src/core/types/error";
+import { UtilsServices } from "../utils/utils.service";
 
 Injectable()
 export class WebhookServices {
@@ -19,6 +21,7 @@ export class WebhookServices {
     private txFactoryServices: TransactionFactoryService,
     private notificationFactory: NotificationFactoryService,
     private discord: INotificationServices,
+    private readonly utilsService: UtilsServices,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -146,6 +149,14 @@ export class WebhookServices {
       return { message: "Webhook received successfully", status: 200, data: payload }
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'INCOMING DEPOSIT',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
       return Promise.resolve({ message: error, status: 200 })
     }
@@ -170,6 +181,14 @@ export class WebhookServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'INCOMING PENDING DEPOSIT',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
       if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
       return Promise.resolve({ message: error, status: 200 })
     }
