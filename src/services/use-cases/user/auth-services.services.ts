@@ -427,7 +427,7 @@ export class AuthServices {
           message: 'User does not exists',
           error: null
         })
-      } 
+      }
 
       // If reset link is valid and not expired
       const validReset = await compareHash(String(token), userRequestReset);
@@ -438,7 +438,7 @@ export class AuthServices {
           message: 'Invalid or expired reset token',
           error: null
         })
-      } 
+      }
 
       // Store update users password
       const twenty4H = 1 * 60 * 60 * 24;
@@ -662,7 +662,12 @@ export class AuthServices {
         message: 'Account is temporary locked',
         error: null
       })
-
+      if (user.isDisabled) return Promise.reject({
+        status: HttpStatus.FORBIDDEN,
+        state: ResponseState.ERROR,
+        message: 'Account is disabled',
+        error: null
+      })
       const correctPassword: boolean = await compareHash(password, user?.password!);
       if (!correctPassword) {
         const { state, retries } = await this.utilsService.shouldLimitUser({
@@ -685,7 +690,7 @@ export class AuthServices {
         )
 
         return Promise.reject({
-          status: HttpStatus.FORBIDDEN,
+          status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: 'Password is incorrect',
           error: null
