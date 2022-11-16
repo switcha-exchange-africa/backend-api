@@ -595,7 +595,11 @@ export class AuthServices {
           String(RESET_PASSWORD_EXPIRY)
         )
       ])
-
+      this.discordServices.inHouseNotification({
+        title: `Recover Generated TOKEN :- ${env.env} environment`,
+        message: `Recovery token for ${user.email} is ${resetToken}`,
+        link: DISCORD_VERIFICATION_CHANNEL_LINK,
+      })
       return {
         status: HttpStatus.OK,
         message: 'You will receive an email with a link to reset your password if you have an account with this email.',
