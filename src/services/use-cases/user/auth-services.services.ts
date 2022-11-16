@@ -668,6 +668,12 @@ export class AuthServices {
         message: 'Account is disabled',
         error: null
       })
+      if (!user.password) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Please reset your password',
+        error: null
+      })
       const correctPassword: boolean = await compareHash(password, user?.password!);
       if (!correctPassword) {
         const { state, retries } = await this.utilsService.shouldLimitUser({
