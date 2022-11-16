@@ -603,7 +603,7 @@ export class AuthServices {
       return {
         status: HttpStatus.OK,
         message: 'You will receive an email with a link to reset your password if you have an account with this email.',
-        data: env.isProd ? null : resetToken,
+        data:  resetToken,
         state: ResponseState.SUCCESS,
       }
 
