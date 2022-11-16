@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { env } from "src/configuration";
-import { IDataServices } from "src/core/abstracts";
+import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
-import { RedisPrefix, RESET_PASSWORD_EXPIRY } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY } from "src/lib/constants";
 import {
   compareHash,
   hash,
@@ -21,7 +21,7 @@ import {
 } from "../exceptions";
 import * as speakeasy from 'speakeasy';
 import { TwoFaFactoryService } from "../user-factory.service";
-import { ICheckTwoFaCode } from "src/core/dtos/account/kyc.dto";
+import { IChangePassword, ICheckTwoFaCode } from "src/core/dtos/account/kyc.dto";
 
 @Injectable()
 export class AccountServices {
@@ -29,7 +29,8 @@ export class AccountServices {
     private data: IDataServices,
     private inMemoryServices: IInMemoryServices,
     private readonly utilsService: UtilsServices,
-    private readonly twoFaFactory: TwoFaFactoryService
+    private readonly twoFaFactory: TwoFaFactoryService,
+    private readonly discordServices: INotificationServices,
 
   ) { }
 
@@ -452,6 +453,95 @@ export class AccountServices {
       if (error.name === "TypeError")
         throw new HttpException(error.message, 500);
       throw new Error(error);
+    }
+  }
+
+  async changePassword(payload: IChangePassword) {
+    const { email, oldPassword, password, userId, code } = payload
+
+    try {
+      const user = await this.data.users.findOne({ _id: userId })
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User not found',
+          error: null
+        })
+      }
+      const redisKey = `change--${email}`
+      // await this.inMemoryServices.del(redisKey)
+      if (isEmpty(code)) {
+        // send code to user phone number
+        const verificationCode = randomFixedInteger(6)
+        const hashedCode = await hash(String(verificationCode))
+        await Promise.all([
+          this.discordServices.inHouseNotification({
+            title: `Change Password Verification code :- ${env.env} environment`,
+            message: `
+              Verification code for user ${email} :- ${verificationCode}
+
+            `,
+            link: DISCORD_VERIFICATION_CHANNEL_LINK,
+          }),
+          this.inMemoryServices.set(redisKey, hashedCode, String(ONE_HOUR_IN_SECONDS))
+
+        ])
+        return {
+          message: "Verification code sent to your email",
+          status: HttpStatus.ACCEPTED,
+          data: env.isProd ? null : verificationCode,
+        }
+      }
+      // check verification code
+      const savedCode = await this.inMemoryServices.get(redisKey);
+      if (isEmpty(savedCode)) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Code is incorrect, invalid or has expired',
+        error: null,
+      })
+
+      const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
+      if (!correctCode) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Code is incorrect, invalid or has expired',
+        error: null,
+      })
+
+      const correctPassword: boolean = await compareHash(oldPassword, user?.password);
+      if (!correctPassword) return Promise.reject({
+        status: HttpStatus.BAD_REQUEST,
+        state: ResponseState.ERROR,
+        message: 'Email or Password is incorrect',
+        error: null,
+      })
+
+      await this.data.users.update({ _id: userId }, { password: await hash(password) })
+      return {
+        status: HttpStatus.OK,
+        message: 'Password changed successfully',
+        data: {},
+        state: ResponseState.SUCCESS,
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CHECK TWO FA VALID AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 }

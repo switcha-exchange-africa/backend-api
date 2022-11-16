@@ -58,8 +58,30 @@ export class CheckTwoFaCodeDto {
   public readonly code: string
 }
 
+export class ChangePasswordDto {
+
+  @IsString()
+  @IsOptional()
+  public readonly code: string
+
+  @IsString()
+  @IsNotEmpty()
+  public readonly oldPassword: string
+
+
+  @IsString()
+  @IsNotEmpty()
+  public readonly password: string
+
+}
+
 
 export type ICheckTwoFaCode = CheckTwoFaCodeDto & {
+  email: string
+  userId: string
+}
+
+export type IChangePassword = ChangePasswordDto & {
   email: string
   userId: string
 }
