@@ -19,6 +19,9 @@ import {
   DoesNotExistsException,
   TooManyRequestsException,
 } from "../exceptions";
+import * as speakeasy from 'speakeasy';
+import { TwoFaFactoryService } from "../user-factory.service";
+import { ICheckTwoFaCode } from "src/core/dtos/account/kyc.dto";
 
 @Injectable()
 export class AccountServices {
@@ -26,6 +29,7 @@ export class AccountServices {
     private data: IDataServices,
     private inMemoryServices: IInMemoryServices,
     private readonly utilsService: UtilsServices,
+    private readonly twoFaFactory: TwoFaFactoryService
 
   ) { }
 
@@ -285,6 +289,124 @@ export class AccountServices {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'DISABLE AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async checkTwoFa(payload: ICheckTwoFaCode) {
+    const { email, code } = payload
+
+    try {
+      const twoFa = await this.data.twoFa.findOne({ email });
+      if (!twoFa) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'Two fa not setup',
+          state: ResponseState.ERROR,
+          error: null,
+        };
+      }
+
+      const isValid = await speakeasy.totp.verify({
+        secret: twoFa.secret,
+        encoding: 'base32',
+        token: code,
+      });
+      if (!isValid) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'Two fa code is invalid',
+          state: ResponseState.ERROR,
+          error: null,
+        };
+      }
+      return {
+        status: HttpStatus.OK,
+        message: 'Code is valid',
+        data: {},
+        state: ResponseState.SUCCESS,
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CHECK TWO FA VALID AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+  async generateAuthenticator(payload: { userId: string, email: string }) {
+    const { userId, email } = payload
+
+    try {
+      const [twoFaCode, getTwoFaDetails, user] = await Promise.all([
+        speakeasy.generateSecret(),
+        this.data.twoFa.findOne({ email }),
+        this.data.users.findOne({ email })
+      ]);
+      const twoFaPayload = {
+        secret: twoFaCode.base32,
+        email,
+        userId
+      }
+      if (!user.authenticator) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: '2Fa is not enabled',
+          state: ResponseState.ERROR,
+          error: null,
+        };
+      }
+      if (!getTwoFaDetails) {
+        const factory = await this.twoFaFactory.create(twoFaPayload)
+        await this.data.twoFa.create(factory)
+        return {
+          status: HttpStatus.OK,
+          message: 'Two fa generated successfully',
+          data: {
+            url: twoFaCode.otpauth_url,
+            secret: twoFaCode.base32
+          },
+          state: ResponseState.SUCCESS,
+        }
+      }
+
+      await this.data.twoFa.update({ email }, { secret: twoFaCode.base32, })
+      return {
+        status: HttpStatus.OK,
+        message: 'Two fa generated successfully',
+        data: {
+          url: twoFaCode.otpauth_url,
+          secret: twoFaCode.base32
+        },
+        state: ResponseState.SUCCESS,
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GENERATE AUTHENTICATOR',
         error,
         email,
         message: error.message

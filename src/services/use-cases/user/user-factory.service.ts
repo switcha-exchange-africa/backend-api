@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MutateUser } from 'src/core/entities/MutateUser';
+import { TwoFa } from 'src/core/entities/TwoFa';
 import { User } from 'src/core/entities/user.entity';
 import { UserFeatureManagement } from 'src/core/entities/UserFeatureManagement';
 import { OptionalQuery } from 'src/core/types/database';
@@ -68,6 +69,22 @@ export class MutateUserFactoryService {
     if (data.type) mutate.type = data.type;
     
     return mutate;
+  }
+
+  
+}
+
+@Injectable()
+export class TwoFaFactoryService {
+  async create(data: OptionalQuery<TwoFa>) {
+    const twoFa = new TwoFa();
+    if (data.userId) twoFa.userId = data.userId;
+    if (data.email) twoFa.email = data.email;
+    if (data.securityQuestion) twoFa.securityQuestion = data.securityQuestion;
+    if (data.securityAnswer) twoFa.securityAnswer = data.securityAnswer;
+    if (data.secret) twoFa.secret = data.secret;
+
+    return twoFa;
   }
 
   

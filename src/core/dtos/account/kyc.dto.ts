@@ -36,7 +36,7 @@ export class TxPinDto {
 
 }
 
-export class UpdateTxPinDto{
+export class UpdateTxPinDto {
   @IsString()
   @IsNotEmpty()
   pin: string;
@@ -46,8 +46,20 @@ export class UpdateTxPinDto{
   oldPin: string;
 }
 
-export class UploadAvatarDto{
+export class UploadAvatarDto {
   @IsString()
   @IsNotEmpty()
   url: string
+}
+
+export class CheckTwoFaCodeDto {
+  @IsString()
+  @IsNotEmpty()
+  public readonly code: string
+}
+
+
+export type ICheckTwoFaCode = CheckTwoFaCodeDto & {
+  email: string
+  userId: string
 }

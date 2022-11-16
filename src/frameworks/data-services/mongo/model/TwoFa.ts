@@ -21,6 +21,10 @@ export class TwoFa {
   securityQuestion: string;
 
   @Prop()
+  secret: string;
+
+
+  @Prop()
   securityAnswer: string;
 
   @Prop()

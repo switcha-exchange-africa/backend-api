@@ -9,6 +9,7 @@ import { WalletFactoryService } from '../wallet/wallet-factory.service';
 import { UserServices } from './user-services.services';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import { UtilsServicesModule } from '../utils/utils.module';
+import { TwoFaFactoryService } from "./user-factory.service";
 
 @Module({
   imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
@@ -21,7 +22,8 @@ import { UtilsServicesModule } from '../utils/utils.module';
     UserServices,
     UserFeatureManagementFactoryService,
     ActivityFactoryService,
-    MutateUserFactoryService
+    MutateUserFactoryService,
+    TwoFaFactoryService
   ],
   exports: [
     UserFactoryService,

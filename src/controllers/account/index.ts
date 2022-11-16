@@ -10,6 +10,8 @@ import { ACCOUNT_ROUTE } from "src/lib/route-constant";
 import { AccountServices } from "src/services/use-cases/user/account/account.services";
 import { Response, Request } from "express";
 import {
+  CheckTwoFaCodeDto,
+  ICheckTwoFaCode,
   KycDto,
   TxPinDto,
   UpdateTxPinDto,
@@ -163,4 +165,46 @@ export class AccountController {
     }
   }
 
+  @isAuthenticated('strict')
+  @Put('/account/generate-two-fa')
+  async generateTwoFa(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user?.email
+      const response = await this.accountServices.generateAuthenticator({
+        email,
+        userId
+      });
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  @isAuthenticated('strict')
+  @Put('/account/two-fa-valid')
+  async checkTwoFa(
+    @Req() req: Request,
+    @Body() body: CheckTwoFaCodeDto,
+    @Res() res: Response
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user?.email
+      const payload: ICheckTwoFaCode = {
+        ...body,
+        email,
+        userId
+      }
+      const response = await this.accountServices.checkTwoFa(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }
