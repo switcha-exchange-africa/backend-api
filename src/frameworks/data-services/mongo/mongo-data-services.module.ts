@@ -31,6 +31,7 @@ import { FeatureManagement, FeatureManagementSchema } from "./model/Feature-Mana
 import { ChatMessage, ChatMessageSchema } from "./model/Chat-Messages";
 import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
 import { MutateUser, MutateUserSchema } from './model/MutateUser';
+import { TwoFa, TwoFaSchema } from './model/TwoFa';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { MutateUser, MutateUserSchema } from './model/MutateUser';
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: TradeDispute.name, schema: TradeDisputeSchema },
       { name: MutateUser.name, schema: MutateUserSchema },
+      { name: TwoFa.name, schema: TwoFaSchema },
 
 
 

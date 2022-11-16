@@ -270,7 +270,7 @@ export class AccountServices {
     }
   }
 
-  async disabledAuthenticator(payload: { userId: string, email: string }) {
+  async disableAuthenticator(payload: { userId: string, email: string }) {
     const { userId, email } = payload
 
     try {
