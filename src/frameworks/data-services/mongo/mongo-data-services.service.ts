@@ -31,6 +31,7 @@ import { FeatureManagement, FeatureManagementDocument } from "./model/Feature-Ma
 import { TradeDispute, TradeDisputeDocument } from "./model/Trade-Dispute";
 import { ChatMessage, ChatMessageDocument } from "./model/Chat-Messages";
 import { MutateUser, MutateUserDocument } from './model/MutateUser';
+import { TwoFa, TwoFaDocument } from './model/TwoFa';
 
 
 
@@ -65,6 +66,7 @@ export class MongoDataServices
   tradeDisputes: MongoGenericRepository<TradeDispute>
   chatMessages: MongoGenericRepository<ChatMessage>
   mutateUser: MongoGenericRepository<MutateUser>
+  twoFa: MongoGenericRepository<TwoFa>
 
 
   constructor(
@@ -153,7 +155,12 @@ export class MongoDataServices
 
     @InjectModel(MutateUser.name)
     private MutateUserRepository: Model<MutateUserDocument>,
-    
+
+    @InjectModel(TwoFa.name)
+    private TwoFaRepository: Model<TwoFaDocument>,
+
+
+
   ) { }
 
 
@@ -186,11 +193,8 @@ export class MongoDataServices
     this.tradeDisputes = new MongoGenericRepository<TradeDispute>(this.TradeDisputesRepository)
     this.chatMessages = new MongoGenericRepository<ChatMessage>(this.ChatMessagesRepository)
     this.mutateUser = new MongoGenericRepository<MutateUser>(this.MutateUserRepository)
+    this.twoFa = new MongoGenericRepository<TwoFa>(this.TwoFaRepository)
 
 
-    // this.books = new MongoGenericRepository<Book>(this.BookRepository, [
-    //   'author',
-    //   'genre',
-    // ]);
   }
 }

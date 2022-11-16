@@ -37,6 +37,7 @@ export class User {
   disabledDate: Date;
   disabledReason: string;
   isDisabled: boolean;
+  enableTwoFa: boolean;
 }
 
 

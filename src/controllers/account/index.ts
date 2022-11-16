@@ -38,9 +38,6 @@ export class AccountController {
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -62,9 +59,6 @@ export class AccountController {
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -85,9 +79,6 @@ export class AccountController {
       );
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -109,10 +100,6 @@ export class AccountController {
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
@@ -133,11 +120,28 @@ export class AccountController {
       });
       return res.status(response.status).json(response);
     } catch (error) {
-      Logger.error(error);
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
       return res.status(error.status || 500).json(error);
     }
   }
+
+  @isAuthenticated('strict')
+  @Put('/account/enable-two-fa')
+  async enableTwoFa(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user?.email
+      const response = await this.accountServices.enableAuthenticator({
+        userId,
+        email
+      });
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
 }

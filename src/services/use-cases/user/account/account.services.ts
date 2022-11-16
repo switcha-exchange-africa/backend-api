@@ -3,6 +3,8 @@ import { Types } from "mongoose";
 import { env } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
+import { IErrorReporter } from "src/core/types/error";
+import { ResponseState } from "src/core/types/response";
 import { RedisPrefix, RESET_PASSWORD_EXPIRY } from "src/lib/constants";
 import {
   compareHash,
@@ -11,6 +13,7 @@ import {
   randomFixedInteger,
   secondsToDhms,
 } from "src/lib/utils";
+import { UtilsServices } from "../../utils/utils.service";
 import {
   BadRequestsException,
   DoesNotExistsException,
@@ -21,7 +24,9 @@ import {
 export class AccountServices {
   constructor(
     private data: IDataServices,
-    private inMemoryServices: IInMemoryServices
+    private inMemoryServices: IInMemoryServices,
+    private readonly utilsService: UtilsServices,
+
   ) { }
 
   async createTransactionPin(userId: string, pin: string) {
@@ -236,9 +241,10 @@ export class AccountServices {
     }
   }
 
-  async enableAuthenticator(id: Types.ObjectId) {
+  async enableAuthenticator(payload: { userId: string, email: string }) {
+    const { userId, email } = payload
     try {
-      await this.data.users.update({ _id: id }, { authenticator: true })
+      await this.data.users.update({ _id: userId }, { authenticator: true })
       return {
         message: "Authenticator enabled successfully",
         status: HttpStatus.OK,
@@ -246,15 +252,29 @@ export class AccountServices {
       }
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ENABLE AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
-  async disabledAuthenticator(id: Types.ObjectId) {
+
+  async disabledAuthenticator(payload: { userId: string, email: string }) {
+    const { userId, email } = payload
+
     try {
-      await this.data.users.update({ _id: id }, { authenticator: false })
+      await this.data.users.update({ _id: userId }, { authenticator: false })
       return {
         message: "Authenticator disabled successfully",
         status: HttpStatus.OK,
@@ -262,10 +282,21 @@ export class AccountServices {
       }
 
     } catch (error) {
-      Logger.error(error);
-      if (error.name === "TypeError")
-        throw new HttpException(error.message, 500);
-      throw new Error(error);
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'DISABLE AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
   async enableNotification(id: Types.ObjectId) {

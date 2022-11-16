@@ -84,6 +84,9 @@ export class User {
   @Prop({ default: false })
   isBlacklisted: boolean;
 
+  @Prop({ default: false })
+  enableTwoFa: boolean;
+
   @Prop()
   transactionPin: string
 

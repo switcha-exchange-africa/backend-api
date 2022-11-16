@@ -58,6 +58,7 @@
     "rxjs": "^7.2.0",
     "slugify": "^1.6.5",
     "socket.io": "^4.5.3",
+    "speakeasy": "^2.0.0",
     "swagger-ui-express": "^4.3.0",
     "twilio": "^3.75.1",
     "web-push": "^3.5.0",
