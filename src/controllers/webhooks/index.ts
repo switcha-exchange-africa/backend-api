@@ -10,11 +10,15 @@ import { Request, Response } from "express";
 import { WebhookServices } from "src/services/use-cases/webhook/webhook-services.services";
 import * as crypto from "crypto";
 import { env, TATUM_WEBHOOK_SECRET } from "src/configuration";
+import { INotificationServices } from "src/core/abstracts";
+import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants";
 
 @Controller()
 export class WebhookController {
     constructor(
-        private services: WebhookServices
+        private services: WebhookServices,
+        private readonly discordServices: INotificationServices,
+
 
     ) { }
     @Post(WEBHOOK_ROUTE.ROUTE)
@@ -57,6 +61,15 @@ export class WebhookController {
                     .digest("hex");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
+                    await this.discordServices.inHouseNotification({
+                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        message: `Wrong signature
+                        
+                        ${JSON.stringify(req.body)}
+                        
+                        `,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                    })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
             }
@@ -84,6 +97,15 @@ export class WebhookController {
                     .digest("hex");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
+                    await this.discordServices.inHouseNotification({
+                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        message: `Wrong signature
+                        
+                        ${JSON.stringify(req.body)}
+                        
+                        `,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                    })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
             }
