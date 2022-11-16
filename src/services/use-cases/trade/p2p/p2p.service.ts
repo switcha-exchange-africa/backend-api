@@ -76,9 +76,33 @@ export class P2pServices {
   }
   async createAds(payload: ICreateP2pAd) {
     try {
-      const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo } = payload
+      const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo, minLimit, maxLimit } = payload
       let p2pId
 
+      if (minLimit > totalAmount) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your minimum limit cannot be greater than your total amount`,
+          error: null
+        })
+      }
+      if (minLimit > maxLimit) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your minimum limit cannot be greater than your max limit`,
+          error: null
+        })
+      }
+      if (maxLimit > totalAmount) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your max limit cannot be greater than your total amount`,
+          error: null
+        })
+      }
       const [wallet, user] = await Promise.all([
         this.data.wallets.findOne({ coin, userId }),
         this.data.users.findOne({ _id: userId })

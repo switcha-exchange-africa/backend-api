@@ -910,7 +910,7 @@ export class QuickTradeServices {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
-          message: `No current ad match for ${amount}${coin}`,
+          message: `No current ad match for ${amount} ${coin}`,
           error: null
         })
       }
