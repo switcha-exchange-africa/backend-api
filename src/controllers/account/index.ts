@@ -186,7 +186,7 @@ export class AccountController {
   }
 
   @isAuthenticated('strict')
-  @Put('/account/two-fa-valid')
+  @Post('/account/two-fa-valid')
   async checkTwoFa(
     @Req() req: Request,
     @Body() body: CheckTwoFaCodeDto,
