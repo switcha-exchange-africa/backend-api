@@ -4,6 +4,9 @@ export class GenerateNonCustodialWalletDto {
     @IsNotEmpty()
     @IsString()
     public readonly coin: string
+
+
+    
 }
 
 export type IGenerateNonCustodialWallet = GenerateNonCustodialWalletDto & {

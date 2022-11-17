@@ -4,19 +4,21 @@ import { IGenerateNonCustodialWallet } from "src/core/dtos/non-custodial-wallet"
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { UtilsServices } from "../utils/utils.service";
+import { NonCustodialWalletLib } from "./non-custodial.lib";
 
 @Injectable()
 export class NonCustodialWalletServices {
     constructor(
         private readonly data: IDataServices,
-        private readonly utilsService: UtilsServices
-
+        private readonly utilsService: UtilsServices,
+        private readonly lib: NonCustodialWalletLib
     ) { }
 
 
     async generateWallet(payload: IGenerateNonCustodialWallet) {
-        const { userId, email, coin } = payload
+        const { email, coin } = payload
         try {
+            console.log(coin)
             const coinExists = await this.data.coins.findOne({})
             if (!coinExists) {
                 return Promise.reject({
@@ -26,13 +28,12 @@ export class NonCustodialWalletServices {
                     error: null
                 })
             }
-
+            const generatedWallet = await this.lib.generateEthWallet()
+            console.log(generatedWallet)
             return {
                 message: 'Wallet created successfully',
                 status: HttpStatus.CREATED,
-                data: {
-                    userId, email, coin
-                },
+                data: generatedWallet,
                 state: ResponseState.SUCCESS
             }
 

@@ -35,6 +35,7 @@
     "@nestjs/swagger": "^5.2.0",
     "@nestjs/websockets": "^9.1.6",
     "@socket.io/redis-adapter": "^7.2.0",
+    "@tatumio/eth": "^2.0.1-alpha.381.3",
     "@types/uuid": "^8.3.4",
     "accesscontrol": "^2.2.1",
     "axios": "^0.26.1",

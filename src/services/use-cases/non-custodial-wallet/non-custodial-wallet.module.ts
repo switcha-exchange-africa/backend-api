@@ -4,6 +4,7 @@ import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.modu
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { DataServicesModule } from "src/services/data-services/data-services.module";
 import { UtilsServicesModule } from "../utils/utils.module";
+import { NonCustodialWalletLib } from "./non-custodial.lib";
 import { NonCustodialWalletServices } from "./non-custodial.service";
 
 @Module({
@@ -14,10 +15,12 @@ import { NonCustodialWalletServices } from "./non-custodial.service";
         UtilsServicesModule
     ],
     providers: [
-        NonCustodialWalletServices
+        NonCustodialWalletServices,
+        NonCustodialWalletLib
     ],
     exports: [
-        NonCustodialWalletServices
+        NonCustodialWalletServices,
+        NonCustodialWalletLib
     ]
 })
 
