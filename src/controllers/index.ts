@@ -13,6 +13,7 @@ import { FeeController } from "./fee";
 import { HomeController } from "./home";
 import { KycController } from "./kyc";
 import { MiscController } from "./misc";
+import { NonCustodialWalletController } from "./non-custodial-wallet";
 import { NotificationController } from "./notification";
 import { P2pController } from "./p2p";
 import { QuickTradeController } from "./quick-trade";
@@ -51,5 +52,6 @@ export default [
   TradeDisputeController,
   FeatureManagementController,
   ActivityController,
+  NonCustodialWalletController,
   ...admin
 ]

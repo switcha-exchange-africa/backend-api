@@ -33,6 +33,7 @@ import { WebsocketServiceModule } from "./use-cases/web-sockets/websocket.module
 import { ChatMessageServicesModule } from "./use-cases/chat-messages/chat-messages.module";
 import { DashboardServicesModule } from "./use-cases/dashboard/dashboard.module";
 import { ActivityServicesModule } from "./use-cases/activity/activity.module";
+import { NonCustodialWalletServicesModule } from "./use-cases/non-custodial-wallet/non-custodial-wallet.module";
 
 export default [
   AxiosServiceModule,
@@ -69,6 +70,6 @@ export default [
   ChatMessageServicesModule,
   WebsocketServiceModule,
   DashboardServicesModule,
-  ActivityServicesModule
-
+  ActivityServicesModule,
+  NonCustodialWalletServicesModule
 ]
