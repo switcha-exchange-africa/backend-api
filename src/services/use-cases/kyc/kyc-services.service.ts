@@ -2,7 +2,7 @@ import { IDataServices } from "src/core/abstracts";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import mongoose, { Types } from "mongoose";
 import { KycFactoryService } from "./kyc-factory.service";
-import { IGetKyc, IKycLevelThree, IKycLevelTwo, IProcessKyc } from "src/core/dtos/kyc";
+import { IGetKyc, IGetSingleKyc, IKycLevelThree, IKycLevelTwo, IProcessKyc } from "src/core/dtos/kyc";
 import { ResponseState } from "src/core/types/response";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
@@ -231,7 +231,33 @@ export class KycServices {
       })
     }
   }
+  async getSingleKycByLevel(payload: IGetSingleKyc) {
+    try {
+      const { userId, level } = payload
+      const data = await this.data.kyc.findOne({ userId, level });
+      return Promise.resolve({
+        message: "Kyc retrieved succesfully",
+        status: HttpStatus.OK,
+        data,
+      });
 
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE KYC',
+        error,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
   async processKyc(payload: IProcessKyc) {
     try {
       const { id, status, reason } = payload

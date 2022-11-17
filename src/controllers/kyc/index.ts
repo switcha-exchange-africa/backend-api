@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -10,7 +11,7 @@ import {
 
 import { Response, Request } from "express";
 import { isAuthenticated } from "src/core/decorators";
-import { AddKycLevelThreeDto, AddKycLevelTwoDto, IGetKyc, IKycLevelThree, IKycLevelTwo } from "src/core/dtos/kyc";
+import { AddKycLevelThreeDto, AddKycLevelTwoDto, IGetKyc, IGetSingleKyc, IKycLevelThree, IKycLevelTwo } from "src/core/dtos/kyc";
 import { KycServices } from "src/services/use-cases/kyc/kyc-services.service";
 
 @Controller('/kyc')
@@ -99,4 +100,25 @@ export class KycController {
     }
   }
 
+
+  @Get('/:level')
+  @isAuthenticated('strict')
+  async getSingleKyc(
+    @Req() req: Request,
+    @Param() params: any,
+    @Res() res: Response
+  ) {
+    try {
+      const user = req?.user
+      const { level } = params
+      const payload: IGetSingleKyc = {
+        userId: user._id,
+        level,
+      }
+      const response = await this.services.getSingleKycByLevel(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
 }

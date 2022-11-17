@@ -60,3 +60,8 @@ export type IKycLevelThree = AddKycLevelThreeDto & {
   email: string
   userId: string
 }
+
+export type IGetSingleKyc = {
+  userId: string
+  level: string
+}
