@@ -65,12 +65,12 @@ export class ChangePasswordDto {
   public readonly code: string
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   public readonly oldPassword: string
 
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   public readonly password: string
 
 }
