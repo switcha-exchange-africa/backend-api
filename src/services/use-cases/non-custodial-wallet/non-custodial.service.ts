@@ -1,4 +1,5 @@
 import { Injectable, HttpStatus, Logger } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { IDataServices } from "src/core/abstracts";
 import { IGenerateNonCustodialWallet } from "src/core/dtos/non-custodial-wallet";
 import { CoinType } from "src/core/types/coin";
@@ -14,7 +15,9 @@ export class NonCustodialWalletServices {
         private readonly data: IDataServices,
         private readonly virtualAccountFactory: VirtualAccountFactoryService,
         private readonly utilsService: UtilsServices,
-        private readonly lib: NonCustodialWalletLib
+        private readonly lib: NonCustodialWalletLib,
+        private readonly emitter: EventEmitter2,
+
     ) { }
 
 
@@ -35,9 +38,9 @@ export class NonCustodialWalletServices {
                     error: null
                 })
             }
-            if (!virtualAccount) {
+            if (virtualAccount) {
                 return Promise.reject({
-                    status: HttpStatus.NOT_FOUND,
+                    status: HttpStatus.CONFLICT,
                     state: ResponseState.ERROR,
                     message: `Already have ${coin} wallet`,
                     error: null
@@ -80,6 +83,9 @@ export class NonCustodialWalletServices {
                     frozen: cleanAccount.frozen
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                this.emitter.emit("send.webhook.subscription", {
+                    accountId: data.accountId
+                })
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
@@ -101,6 +107,9 @@ export class NonCustodialWalletServices {
                     frozen: cleanAccount.frozen
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                this.emitter.emit("send.webhook.subscription", {
+                    accountId: data.accountId
+                })
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
@@ -122,6 +131,9 @@ export class NonCustodialWalletServices {
                     frozen: cleanAccount.frozen
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                this.emitter.emit("send.webhook.subscription", {
+                    accountId: data.accountId
+                })
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
@@ -143,6 +155,9 @@ export class NonCustodialWalletServices {
                     frozen: cleanAccount.frozen
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                this.emitter.emit("send.webhook.subscription", {
+                    accountId: data.accountId
+                })
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
@@ -165,6 +180,9 @@ export class NonCustodialWalletServices {
                     frozen: cleanAccount.frozen
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                this.emitter.emit("send.webhook.subscription", {
+                    accountId: data.accountId
+                })
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,

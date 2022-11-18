@@ -91,7 +91,7 @@ export class WalletCreateListener {
           type: "ACCOUNT_INCOMING_BLOCKCHAIN_TRANSACTION",
           attr: {
             id: accountId,
-            url: `${API_URL}/api/webhook/tatum`,
+            url: `${API_URL}/api/v1/webhook/tatum-incoming-transaction`,
           },
         },
         CONFIG
@@ -101,27 +101,26 @@ export class WalletCreateListener {
           type: "ACCOUNT_PENDING_BLOCKCHAIN_TRANSACTION",
           attr: {
             id: accountId,
-            url: `${API_URL}/api/webhook/tatum`,
+            url: `${API_URL}/api/v1/webhook/tatum-pending-transaction`,
           },
         },
         CONFIG
       )
-      const withdrawalTransaction = await this.http.post(`${TATUM_BASE_URL}/subscription`,
-        {
-          type: "TRANSACTION_IN_THE_BLOCK",
-          attr: {
-            id: accountId,
-            url: `${API_URL}/api/webhook/tatum`,
-          },
-        },
-        CONFIG
-      )
+      // const withdrawalTransaction = await this.http.post(`${TATUM_BASE_URL}/subscription`,
+      //   {
+      //     type: "TRANSACTION_IN_THE_BLOCK",
+      //     attr: {
+      //       url: `${API_URL}/api/v1/webhook/tatum-tx-block`,
+      //     },
+      //   },
+      //   CONFIG
+      // )
       await this.data.virtualAccounts.update(
-        { _id: accountId },
+        { accountId },
         {
           pendingTransactionSubscriptionId: pendingTransaction.id,
           incomingTransactionSubscriptionId: incomingTransaction.id,
-          withdrawalTransactionSubscriptionId: withdrawalTransaction.id
+          // withdrawalTransactionSubscriptionId: withdrawalTransaction.id
         })
     } catch (error) {
       Logger.error(error)
