@@ -26,6 +26,7 @@ import { env } from "src/configuration";
     }),
     DataServicesModule,
     WalletServicesModule,
+    
     BullModule.registerQueue(
       { name: `${env.env}.wallet` },
       { name: `${env.env}.wallet.webhook.subscription` }

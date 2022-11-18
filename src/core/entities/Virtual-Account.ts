@@ -9,6 +9,7 @@ export class VirtualAccount {
     currency: CoinType;
     pendingTransactionSubscriptionId: string;
     incomingTransactionSubscriptionId: string;
+    withdrawalTransactionSubscriptionId: string
     active: boolean;
     frozen: boolean;
 }

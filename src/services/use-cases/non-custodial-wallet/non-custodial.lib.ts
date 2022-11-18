@@ -4,13 +4,9 @@ import { env, TATUM_API_KEY } from "src/configuration";
 import { TatumTronSDK } from '@tatumio/tron'
 import { TatumBtcSDK } from "@tatumio/btc";
 import { TatumBscSDK } from '@tatumio/bsc'
-// import { TatumCeloSDK } from '@tatumio/celo'
 import { Currency } from '@tatumio/api-client'
-
 import { decryptData, encryptData } from "src/lib/utils";
 import { CoinType } from "src/core/types/coin";
-
-// import { TatumBscSDK } from '@tatumio/bsc'
 
 const API_KEY_CONFIG = {
     apiKey: TATUM_API_KEY
@@ -35,7 +31,7 @@ export class NonCustodialWalletLib {
 
             const encrypted = encryptData({ text: mnemonic, username, userId, pin })
             const decrypted = decryptData({ text: encrypted, username, userId, pin })
-
+            // await ethSDK.subscriptions.
             return {
                 account,
                 privateKey,
@@ -191,3 +187,5 @@ export class NonCustodialWalletLib {
 
     // }
 }
+
+

@@ -1,5 +1,6 @@
 import {
     Controller,
+    Get,
     Logger,
     Post,
     Req,
@@ -35,7 +36,7 @@ export class WebhookController {
         }
     }
 
-    @Post(WEBHOOK_ROUTE.INCOMING_TRANSACTION_ROUTE)
+    @Get(WEBHOOK_ROUTE.INCOMING_TRANSACTION_ROUTE)
     async incomingTransactions(
         @Req() req: Request,
         @Res() res: Response,

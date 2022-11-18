@@ -39,6 +39,9 @@ export class VirtualAccount {
     incomingTransactionSubscriptionId: string
 
     @Prop()
+    withdrawalTransactionSubscriptionId: string
+
+    @Prop()
     xpub: string
 
     @Prop()

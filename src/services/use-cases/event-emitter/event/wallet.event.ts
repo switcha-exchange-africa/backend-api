@@ -1,3 +1,4 @@
+
 export class WalletCreatedEvent {
   userId: string
   fullName: string
@@ -5,3 +6,7 @@ export class WalletCreatedEvent {
 }
 
 export interface WALLET_PAYLOAD_TYPE extends WalletCreatedEvent { }
+
+export type IWalletSubscription = {
+  accountId: string
+}
