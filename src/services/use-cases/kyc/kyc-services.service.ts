@@ -52,7 +52,7 @@ export class KycServices {
       const data = await this.data.kyc.create(factory)
 
       return Promise.resolve({
-        message: "Kyc created successfully",
+        message: "Document uploaded successfully",
         status: HttpStatus.CREATED,
         data,
       });
@@ -104,7 +104,7 @@ export class KycServices {
       const data = await this.data.kyc.create(factory)
 
       return Promise.resolve({
-        message: "Kyc created successfully",
+        message: "Document uploaded successfully",
         status: HttpStatus.CREATED,
         data,
       });
