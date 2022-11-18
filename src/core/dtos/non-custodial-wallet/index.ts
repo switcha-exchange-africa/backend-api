@@ -6,10 +6,11 @@ export class GenerateNonCustodialWalletDto {
     public readonly coin: string
 
 
-    
+
 }
 
 export type IGenerateNonCustodialWallet = GenerateNonCustodialWalletDto & {
     userId: string
+    username: string
     email: string
 }

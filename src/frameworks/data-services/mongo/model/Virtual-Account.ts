@@ -15,7 +15,6 @@ export type VirtualAccountDocument = VirtualAccount & Document;
 })
 export class VirtualAccount {
 
-
     @Prop()
     key: string
     @Prop({
@@ -29,10 +28,23 @@ export class VirtualAccount {
     accountId: string
 
     @Prop()
+    pendingTransactionSubscriptionId: string
+
+    @Prop()
+    incomingTransactionSubscriptionId: string
+
+    @Prop()
     xpub: string
 
     @Prop()
     mnemonic: string
+
+    @Prop({ default: true })
+    active: boolean;
+
+    @Prop({ default: false })
+    frozen: boolean;
+
 
     @Prop()
     createdAt: Date;

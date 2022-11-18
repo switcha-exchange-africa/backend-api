@@ -16,7 +16,7 @@ export class NonCustodialWalletServices {
 
 
     async generateWallet(payload: IGenerateNonCustodialWallet) {
-        const { email, coin } = payload
+        const { email, coin, username, userId } = payload
         try {
             console.log(coin)
             const coinExists = await this.data.coins.findOne({})
@@ -28,7 +28,26 @@ export class NonCustodialWalletServices {
                     error: null
                 })
             }
-            const generatedWallet = await this.lib.generateEthWallet()
+            const user = await this.data.users.findOne({ _id: userId })
+            if (!user) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    message: 'User does not exists',
+                    error: null
+                })
+            }
+
+            if (!username) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    message: 'Please generate a username',
+                    error: null
+                })
+            }
+
+            const generatedWallet = await this.lib.generateEthWallet({ username, userId, pin: user.transactionPin })
             console.log(generatedWallet)
             return {
                 message: 'Wallet created successfully',

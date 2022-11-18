@@ -4,4 +4,10 @@ export class VirtualAccount {
     accountId: string;
     xpub: string;
     mnemonic: string;
+    subscriptionId: string;
+    pendingTransactionSubscriptionId: string;
+    incomingTransactionSubscriptionId: string;
+    active: boolean;
+    frozen: boolean;
 }
+

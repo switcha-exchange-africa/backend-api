@@ -22,7 +22,7 @@ export class NonCustodialWalletController {
             const user = req?.user
             const userId = user._id
             const email = user.email
-            const payload: IGenerateNonCustodialWallet = { ...body, userId, email }
+            const payload: IGenerateNonCustodialWallet = { ...body, userId, email, username: user.username }
             const response = await this.services.generateWallet(payload)
             return res.status(response.status).json(response);
 

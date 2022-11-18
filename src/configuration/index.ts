@@ -44,7 +44,6 @@ export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
 export const TATUM_API_KEY = getEnv('TATUM_API_KEY')!
 export const ADMIN_CYPHER_SECRET = getEnv('ADMIN_CYPHER_SECRET')!
 export const TATUM_BASE_URL = getEnv('TATUM_BASE_URL')!
-export const API_URL = getEnv('API_URL', true)
 export const TATUM_USDT_ACCOUNT_ID = getEnv('TATUM_USDT_ACCOUNT_ID')!
 export const TATUM_USDC_ACCOUNT_ID = getEnv('TATUM_USDC_ACCOUNT_ID')!
 export const TATUM_BTC_ACCOUNT_ID = getEnv('TATUM_BTC_ACCOUNT_ID')!
@@ -63,10 +62,10 @@ export const TATUM_BTC_XPUB_KEY = getEnv("TATUM_BTC_XPUB_KEY", true)
 export const WEB_PUSH_PUBLIC_KEY = getEnv("WEB_PUSH_PUBLIC_KEY", true)
 export const WEB_PUSH_PRIVATE_KEY = getEnv("WEB_PUSH_PRIVATE_KEY", true)
 export const FRONTEND_URL = getEnv("FRONTEND_URL", true)
-
-
-
-
+export const API_URL = getEnv('API_URL', true)
+export const WALLET_ENCRYPTION_PRIVATE_KEY = getEnv('WALLET_ENCRYPTION_PRIVATE_KEY', true)
+export const WALLET_ENCRYPTION_PUBLIC_KEY = getEnv('WALLET_ENCRYPTION_PUBLIC_KEY', true)
+export const WALLET_ENCRYPTION_ALGORITHM = getEnv('WALLET_ENCRYPTION_ALGORITHM', true)
 
 export const LOGS_LEVEL = (): LogLevel[] => {
 
@@ -79,6 +78,6 @@ export const TATUM_CONFIG = {
   headers: {
     "X-API-Key": TATUM_API_KEY,
   },
-}; 
+};
 
 // https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/

@@ -1,4 +1,4 @@
-import { GOOGLE_CLIENT_SECRET, PORT } from './../configuration/index';
+import { GOOGLE_CLIENT_SECRET, PORT, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
 import moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
@@ -6,6 +6,7 @@ import { env, GOOGLE_CLIENT_ID } from "src/configuration";
 import { createCipheriv, randomBytes, scrypt } from "crypto";
 import { promisify } from "util";
 import { google } from "googleapis";
+import * as crypto from "crypto";
 
 export const convertDate = (date: any) => {
   return new Date(date).toISOString();
@@ -157,7 +158,7 @@ export const generateReference = (type: string) => {
   return ref;
 };
 
-export const generateGoogleAuthUrl = ()=>{
+export const generateGoogleAuthUrl = () => {
   const oauth2Client = new google.auth.OAuth2(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
@@ -178,3 +179,45 @@ export const generateGoogleAuthUrl = ()=>{
     scope: scopes, // If you only need one scope you can pass it as string
   });
 }
+
+
+export const generateEncryptionKey = (payload: { username: string, userId: string, pin: string }) => {
+  const { username, userId, pin } = payload
+  const key = `+${userId}+${WALLET_ENCRYPTION_PRIVATE_KEY}+${username}+${pin}+${WALLET_ENCRYPTION_PUBLIC_KEY}`
+  return crypto.scryptSync(key, "salt", 24);
+};
+
+export const generateEncryptionIV = () => {
+  return Buffer.alloc(16, 0); // Initialization vector.
+};
+
+export const encryptData = (payload: { text: string, username: string, userId: string, pin: string }) => {
+  try {
+    const { text, username, userId, pin } = payload
+    const key = generateEncryptionKey({ username, userId, pin });
+    const iv = generateEncryptionIV();
+    const cipher = crypto.createCipheriv(WALLET_ENCRYPTION_ALGORITHM, key, iv);
+
+    let encrypted;
+    encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return encrypted;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
+export const decryptData = (payload: { text: string, username: string, userId: string, pin: string }) => {
+  try {
+    const { text, username, userId, pin } = payload
+    const key = generateEncryptionKey({ username, userId, pin });
+    const iv = generateEncryptionIV();
+    const decipher = crypto.createDecipheriv(WALLET_ENCRYPTION_ALGORITHM, key, iv);
+
+    let decrypted = decipher.update(text, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
