@@ -88,6 +88,91 @@ export class NonCustodialWalletServices {
                 }
             }
 
+            if (coin === 'USDT') {
+
+                const { account: cleanAccount, encrypted } = await this.lib.generateERC20Wallet({ username, userId, pin: user.transactionPin, coin })
+                const virtualAccountFactory = this.virtualAccountFactory.create({
+                    currency: cleanAccount.currency as CoinType,
+                    userId,
+                    accountId: cleanAccount.id,
+                    xpub: cleanAccount.xpub,
+                    mnemonic: encrypted,
+                    active: cleanAccount.active,
+                    frozen: cleanAccount.frozen
+                })
+                const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                return {
+                    message: 'Wallet created successfully',
+                    status: HttpStatus.CREATED,
+                    data,
+                    state: ResponseState.SUCCESS
+                }
+            }
+
+            if (coin === 'USDC') {
+
+                const { account: cleanAccount, encrypted } = await this.lib.generateERC20Wallet({ username, userId, pin: user.transactionPin, coin })
+                const virtualAccountFactory = this.virtualAccountFactory.create({
+                    currency: cleanAccount.currency as CoinType,
+                    userId,
+                    accountId: cleanAccount.id,
+                    xpub: cleanAccount.xpub,
+                    mnemonic: encrypted,
+                    active: cleanAccount.active,
+                    frozen: cleanAccount.frozen
+                })
+                const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                return {
+                    message: 'Wallet created successfully',
+                    status: HttpStatus.CREATED,
+                    data,
+                    state: ResponseState.SUCCESS
+                }
+            }
+
+            if (coin === 'BTC') {
+
+                const { account: cleanAccount, encrypted } = await this.lib.generateBtcWallet({ username, userId, pin: user.transactionPin })
+                const virtualAccountFactory = this.virtualAccountFactory.create({
+                    currency: cleanAccount.currency as CoinType,
+                    userId,
+                    accountId: cleanAccount.id,
+                    xpub: cleanAccount.xpub,
+                    mnemonic: encrypted,
+                    active: cleanAccount.active,
+                    frozen: cleanAccount.frozen
+                })
+                const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                return {
+                    message: 'Wallet created successfully',
+                    status: HttpStatus.CREATED,
+                    data,
+                    state: ResponseState.SUCCESS
+                }
+            }
+
+
+            if (coin === 'BSC') {
+
+                const { account: cleanAccount, encrypted } = await this.lib.generateBscWallet({ username, userId, pin: user.transactionPin })
+                const virtualAccountFactory = this.virtualAccountFactory.create({
+                    currency: cleanAccount.currency as CoinType,
+                    userId,
+                    accountId: cleanAccount.id,
+                    xpub: cleanAccount.xpub,
+                    mnemonic: encrypted,
+                    active: cleanAccount.active,
+                    frozen: cleanAccount.frozen
+                })
+                const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                return {
+                    message: 'Wallet created successfully',
+                    status: HttpStatus.CREATED,
+                    data,
+                    state: ResponseState.SUCCESS
+                }
+            }
+
             return {
                 message: 'Wallet created successfully',
                 status: HttpStatus.CREATED,
