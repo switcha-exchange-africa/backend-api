@@ -32,6 +32,7 @@ import { TradeDispute, TradeDisputeDocument } from "./model/Trade-Dispute";
 import { ChatMessage, ChatMessageDocument } from "./model/Chat-Messages";
 import { MutateUser, MutateUserDocument } from './model/MutateUser';
 import { TwoFa, TwoFaDocument } from './model/TwoFa';
+import { VirtualAccount, VirtualAccountDocument } from './model/Virtual-Account';
 
 
 
@@ -67,6 +68,7 @@ export class MongoDataServices
   chatMessages: MongoGenericRepository<ChatMessage>
   mutateUser: MongoGenericRepository<MutateUser>
   twoFa: MongoGenericRepository<TwoFa>
+  virtualAccounts: MongoGenericRepository<VirtualAccount>
 
 
   constructor(
@@ -159,6 +161,8 @@ export class MongoDataServices
     @InjectModel(TwoFa.name)
     private TwoFaRepository: Model<TwoFaDocument>,
 
+    @InjectModel(VirtualAccount.name)
+    private VirtualAccountRepository: Model<VirtualAccountDocument>,
 
 
   ) { }
@@ -194,6 +198,7 @@ export class MongoDataServices
     this.chatMessages = new MongoGenericRepository<ChatMessage>(this.ChatMessagesRepository)
     this.mutateUser = new MongoGenericRepository<MutateUser>(this.MutateUserRepository)
     this.twoFa = new MongoGenericRepository<TwoFa>(this.TwoFaRepository)
+    this.virtualAccounts = new MongoGenericRepository<VirtualAccount>(this.VirtualAccountRepository)
 
 
   }

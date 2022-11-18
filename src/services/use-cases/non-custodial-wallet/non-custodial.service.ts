@@ -1,15 +1,18 @@
 import { Injectable, HttpStatus, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { IGenerateNonCustodialWallet } from "src/core/dtos/non-custodial-wallet";
+import { CoinType } from "src/core/types/coin";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { UtilsServices } from "../utils/utils.service";
+import { VirtualAccountFactoryService } from "./non-custodial-factory.service";
 import { NonCustodialWalletLib } from "./non-custodial.lib";
 
 @Injectable()
 export class NonCustodialWalletServices {
     constructor(
         private readonly data: IDataServices,
+        private readonly virtualAccountFactory: VirtualAccountFactoryService,
         private readonly utilsService: UtilsServices,
         private readonly lib: NonCustodialWalletLib
     ) { }
@@ -18,7 +21,6 @@ export class NonCustodialWalletServices {
     async generateWallet(payload: IGenerateNonCustodialWallet) {
         const { email, coin, username, userId } = payload
         try {
-            console.log(coin)
             const coinExists = await this.data.coins.findOne({})
             if (!coinExists) {
                 return Promise.reject({
@@ -37,24 +39,49 @@ export class NonCustodialWalletServices {
                     error: null
                 })
             }
-
+            if (!user.transactionPin) {
+                return Promise.reject({
+                    status: HttpStatus.BAD_REQUEST,
+                    state: ResponseState.ERROR,
+                    message: 'Transaction pin does not exists',
+                    error: null
+                })
+            }
             if (!username) {
                 return Promise.reject({
-                    status: HttpStatus.NOT_FOUND,
+                    status: HttpStatus.BAD_REQUEST,
                     state: ResponseState.ERROR,
                     message: 'Please generate a username',
                     error: null
                 })
             }
+            if (coin === 'ETH') {
+                const { account: cleanAccount, encrypted } = await this.lib.generateEthWallet({ username, userId, pin: user.transactionPin })
+                const virtualAccountFactory = this.virtualAccountFactory.create({
+                    currency: cleanAccount.currency as CoinType,
+                    userId,
+                    accountId: cleanAccount.id,
+                    xpub: cleanAccount.xpub,
+                    mnemonic: encrypted,
+                    active: cleanAccount.active,
+                    frozen: cleanAccount.frozen
+                })
+                const data = await this.data.virtualAccounts.create(virtualAccountFactory)
+                return {
+                    message: 'Wallet created successfully',
+                    status: HttpStatus.CREATED,
+                    data,
+                    state: ResponseState.SUCCESS
+                }
+            }
 
-            const generatedWallet = await this.lib.generateEthWallet({ username, userId, pin: user.transactionPin })
-            console.log(generatedWallet)
             return {
                 message: 'Wallet created successfully',
                 status: HttpStatus.CREATED,
-                data: generatedWallet,
+                data: {},
                 state: ResponseState.SUCCESS
             }
+
 
         } catch (error) {
             Logger.error(error)

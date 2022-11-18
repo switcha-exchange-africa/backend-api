@@ -30,7 +30,6 @@ export class Wallet {
   })
   userId: string;
 
-
   @Prop()
   accountId: string;
 
@@ -69,8 +68,6 @@ export class Wallet {
 
   @Prop()
   tatumMessage: string;
-
-
 
 
 }

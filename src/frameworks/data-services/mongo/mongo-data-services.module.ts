@@ -32,6 +32,7 @@ import { ChatMessage, ChatMessageSchema } from "./model/Chat-Messages";
 import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
 import { MutateUser, MutateUserSchema } from './model/MutateUser';
 import { TwoFa, TwoFaSchema } from './model/TwoFa';
+import { VirtualAccount, VirtualAccountSchema } from "./model/Virtual-Account";
 
 @Module({
   imports: [
@@ -65,6 +66,8 @@ import { TwoFa, TwoFaSchema } from './model/TwoFa';
       { name: TradeDispute.name, schema: TradeDisputeSchema },
       { name: MutateUser.name, schema: MutateUserSchema },
       { name: TwoFa.name, schema: TwoFaSchema },
+      { name: VirtualAccount.name, schema: VirtualAccountSchema },
+
 
 
 

@@ -4,6 +4,7 @@ import {
     SchemaFactory
 } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
+import { CoinType } from 'src/core/types/coin';
 
 
 export type VirtualAccountDocument = VirtualAccount & Document;
@@ -17,6 +18,10 @@ export class VirtualAccount {
 
     @Prop()
     key: string
+
+    @Prop()
+    currency: CoinType
+
     @Prop({
         type: Types.ObjectId,
         ref: "User",
@@ -44,7 +49,6 @@ export class VirtualAccount {
 
     @Prop({ default: false })
     frozen: boolean;
-
 
     @Prop()
     createdAt: Date;

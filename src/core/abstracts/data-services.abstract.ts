@@ -27,6 +27,7 @@ import { ChatMessage } from '../entities/Chat-Messages';
 import { TradeDispute } from '../entities/Trade-Disputes';
 import { MutateUser } from '../entities/MutateUser';
 import { TwoFa } from '../entities/TwoFa';
+import { VirtualAccount } from '../entities/Virtual-Account';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -58,6 +59,7 @@ export abstract class IDataServices {
   abstract chatMessages: IGenericRepository<ChatMessage>
   abstract mutateUser: IGenericRepository<MutateUser>
   abstract twoFa: IGenericRepository<TwoFa>
+  abstract virtualAccounts: IGenericRepository<VirtualAccount>
 
 } 
 
