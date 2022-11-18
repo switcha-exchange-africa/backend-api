@@ -21,7 +21,7 @@ import {
 } from "../exceptions";
 import * as speakeasy from 'speakeasy';
 import { TwoFaFactoryService } from "../user-factory.service";
-import { IChangePassword, ICheckTwoFaCode } from "src/core/dtos/account/kyc.dto";
+import { IChangePassword, ICheckTwoFaCode, ICreateTransactionPin, IUpdateTransactionPin } from "src/core/dtos/account/kyc.dto";
 
 @Injectable()
 export class AccountServices {
@@ -34,48 +34,90 @@ export class AccountServices {
 
   ) { }
 
-  async createTransactionPin(userId: string, pin: string) {
+  async createTransactionPin(payload: ICreateTransactionPin) {
+    const { userId, pin, email } = payload
     try {
-      const user = await this.data.users.findOne({ _id: userId });
-      if (!user) throw new DoesNotExistsException("user does not exists");
+
       const hashedPin = await hash(pin);
       await this.data.users.update(
-        { _id: user?._id },
+        { _id: userId },
         { transactionPin: hashedPin }
       );
-      return { status: 201, message: "transaction pin created successfully" };
+
+      return {
+        status: HttpStatus.CREATED,
+        message: "Transaction pin created successfully",
+        state: ResponseState.SUCCESS,
+        data: {}
+      };
     } catch (error) {
-      if (error.name === "TypeError") {
-        throw new HttpException(error.message, 500);
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CREATING TRANSACTION PIN',
+        error,
+        email,
+        message: error.message
       }
-      Logger.error(error);
-      throw error;
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
-  async updateTransactionPin(payload: {
-    userId: string;
-    pin: string;
-    oldPin: string;
-  }) {
+  async updateTransactionPin(payload: IUpdateTransactionPin) {
+    const { userId, pin, oldPin, email } = payload;
+
     try {
-      const { userId, pin, oldPin } = payload;
       const user = await this.data.users.findOne({ _id: userId });
-      if (!user) throw new DoesNotExistsException("user does not exists");
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null,
+          message: "User does not exists"
+        })
+      };
+
       const comparePin = await compareHash(oldPin, user?.transactionPin);
-      if (!comparePin)
-        throw new BadRequestsException("old transaction pin is invalid");
+      if (!comparePin) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null,
+          message: "Old transaction pin is invalid"
+        })
+      }
       const hashedPin = await hash(pin);
       await this.data.users.update(
         { _id: user?._id },
         { transactionPin: hashedPin }
       );
-      return { status: 200, message: "transaction pin updated successfully" };
+      return {
+        status: HttpStatus.OK,
+        message: "Transaction pin updated successfully",
+        data: {},
+        state: ResponseState.SUCCESS
+      };
     } catch (error) {
-      if (error.name === "TypeError") {
-        throw new HttpException(error.message, 500);
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'UPDATING TRANSACTION PIN',
+        error,
+        email,
+        message: error.message
       }
-      Logger.error(error);
-      throw error;
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
     }
   }
 

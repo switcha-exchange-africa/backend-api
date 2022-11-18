@@ -6,7 +6,6 @@ import {
   Req,
   Res,
 } from "@nestjs/common";
-import { ACCOUNT_ROUTE } from "src/lib/route-constant";
 import { AccountServices } from "src/services/use-cases/user/account/account.services";
 import { Response, Request } from "express";
 import {
@@ -14,99 +13,72 @@ import {
   CheckTwoFaCodeDto,
   IChangePassword,
   ICheckTwoFaCode,
-  KycDto,
+  ICreateTransactionPin,
+  IUpdateTransactionPin,
   TxPinDto,
   UpdateTxPinDto,
   UploadAvatarDto,
-  UploadIdDto,
 } from "src/core/dtos/account/kyc.dto";
 import { isAuthenticated } from "src/core/decorators";
 
-@Controller()
+@Controller("account")
 export class AccountController {
   constructor(private accountServices: AccountServices) { }
 
-  @Put(ACCOUNT_ROUTE.KYC)
-  @isAuthenticated('strict')
-  async kyc(@Req() req: Request, @Res() res: Response, @Body() body: KycDto) {
-    try {
-      const { userType, phone, code } = body;
-      const userId = req?.user?._id;
-      const response = await this.accountServices.kyc({
-        userId,
-        userType,
-        phone,
-        code,
-      });
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-    }
-  }
 
-  @Put(ACCOUNT_ROUTE.UPLOAD_ID_CARD)
   @isAuthenticated('strict')
-  async uploadIdCard(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Body() body: UploadIdDto
-  ) {
-    try {
-      const userId = req?.user?._id;
-      const { documentType, url } = body;
-      const response = await this.accountServices.uploadIdCard({
-        userId,
-        documentType,
-        url,
-      });
-      return res.status(response.status).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json(error);
-    }
-  }
-
-  @Post(ACCOUNT_ROUTE.TRANSACTION_PIN)
-  @isAuthenticated('strict')
+  @Post("/transaction-pin")
   async createTransactionPin(
     @Req() req: Request,
     @Res() res: Response,
     @Body() body: TxPinDto
   ) {
     try {
+
       const userId = req?.user?._id;
+      const email = req?.user.email
+
       const { pin } = body;
-      const response = await this.accountServices.createTransactionPin(
+      const payload: ICreateTransactionPin = {
         userId,
-        pin
-      );
+        pin,
+        email
+      }
+      const response = await this.accountServices.createTransactionPin(payload);
       return res.status(response.status).json(response);
+
     } catch (error) {
       return res.status(error.status || 500).json(error);
     }
   }
 
-  @Put(ACCOUNT_ROUTE.TRANSACTION_PIN)
   @isAuthenticated('strict')
+  @Put("/transaction-pin")
   async updateTransactionPin(
     @Req() req: Request,
     @Res() res: Response,
     @Body() body: UpdateTxPinDto
   ) {
     try {
+      
       const userId = req?.user?._id;
       const { pin, oldPin } = body;
-      const response = await this.accountServices.updateTransactionPin({
+
+      const payload: IUpdateTransactionPin = {
         userId,
         pin,
         oldPin,
-      });
+        email: req?.user?.email
+      }
+      const response = await this.accountServices.updateTransactionPin(payload);
       return res.status(response.status).json(response);
+
     } catch (error) {
       return res.status(error.status || 500).json(error);
     }
   }
 
-  @Put(ACCOUNT_ROUTE.UPLOAD_AVATAR)
+  @Put("/avatar")
   @isAuthenticated('strict')
   async uploadAvatar(
     @Req() req: Request,
@@ -127,7 +99,7 @@ export class AccountController {
   }
 
   @isAuthenticated('strict')
-  @Put('/account/enable-two-fa')
+  @Put('/enable-two-fa')
   async enableTwoFa(
     @Req() req: Request,
     @Res() res: Response

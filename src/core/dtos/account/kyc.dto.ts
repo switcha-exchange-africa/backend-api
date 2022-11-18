@@ -1,7 +1,9 @@
 import {
   IsNotEmpty,
   IsOptional,
-  IsString
+  IsString,
+  MaxLength,
+  MinLength
 } from "class-validator";
 
 export class KycDto {
@@ -30,20 +32,40 @@ export class UploadIdDto {
 }
 
 export class TxPinDto {
-  @IsString()
+
   @IsNotEmpty()
-  pin: string;
+  @IsString()
+  @MinLength(6, {
+    message: 'Pin is too short',
+  })
+  @MaxLength(6, {
+    message: 'Pin is too long',
+  })
+  public readonly pin: string;
 
 }
 
-export class UpdateTxPinDto {
-  @IsString()
-  @IsNotEmpty()
-  pin: string;
+export type ICreateTransactionPin = TxPinDto & {
+  userId: string
+  email: string
+}
+export type IUpdateTransactionPin = ICreateTransactionPin & {
 
-  @IsString()
-  @IsNotEmpty()
   oldPin: string;
+}
+export class UpdateTxPinDto {
+
+  @IsOptional()
+  @IsNotEmpty()
+  public readonly pin: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  public readonly oldPin: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  public readonly code: string;
 }
 
 export class UploadAvatarDto {
