@@ -21,7 +21,12 @@ export class NonCustodialWalletServices {
     async generateWallet(payload: IGenerateNonCustodialWallet) {
         const { email, coin, username, userId } = payload
         try {
-            const coinExists = await this.data.coins.findOne({})
+            const [coinExists, user, virtualAccount] = await Promise.all([
+                this.data.coins.findOne({ coin: coin.toUpperCase() }),
+                this.data.users.findOne({ _id: userId }),
+                this.data.virtualAccounts.findOne({ coin: coin.toUpperCase() }),
+
+            ])
             if (!coinExists) {
                 return Promise.reject({
                     status: HttpStatus.NOT_FOUND,
@@ -30,7 +35,14 @@ export class NonCustodialWalletServices {
                     error: null
                 })
             }
-            const user = await this.data.users.findOne({ _id: userId })
+            if (!virtualAccount) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    message: `Already have ${coin} wallet`,
+                    error: null
+                })
+            }
             if (!user) {
                 return Promise.reject({
                     status: HttpStatus.NOT_FOUND,
@@ -56,6 +68,7 @@ export class NonCustodialWalletServices {
                 })
             }
             if (coin === 'ETH') {
+
                 const { account: cleanAccount, encrypted } = await this.lib.generateEthWallet({ username, userId, pin: user.transactionPin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
                     currency: cleanAccount.currency as CoinType,
