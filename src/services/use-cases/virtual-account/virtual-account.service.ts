@@ -163,7 +163,10 @@ export class VirtualAccountServices {
             if (hasPendingAddress) {
                 return {
                     status: HttpStatus.OK,
-                    data: hasPendingAddress,
+                    data: {
+                        address: hasPendingAddress.address,
+                        coin
+                    },
                     state: ResponseState.SUCCESS,
                     message: 'Address generated successfully'
                 }
@@ -181,7 +184,10 @@ export class VirtualAccountServices {
             const data = await this.data.depositAddresses.create(factory)
             return {
                 status: HttpStatus.CREATED,
-                data: data,
+                data: {
+                    address: data.address,
+                    coin
+                },
                 state: ResponseState.SUCCESS,
                 message: 'Address generated successfully'
             }
