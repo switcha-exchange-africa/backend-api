@@ -244,7 +244,7 @@ export class KycServices {
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
-        action: 'GET SINGLE KYC',
+        action: 'GET SINGLE KYC BY LEVEL',
         error,
         message: error.message
       }
@@ -373,7 +373,7 @@ export class KycServices {
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
-        action: 'GET SINGLE KYC',
+        action: 'PROCESS KYC',
         error,
         message: error.message
       }
