@@ -27,7 +27,7 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       id: downloadfile  # Remember to give an ID if you need the output
       with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1668812690/switcha-staging-env/env_ckf9zg.txt"
+        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1668900649/switcha-staging-env/env_seacri.txt"
         target: ./
 
     - name: Install doctl
