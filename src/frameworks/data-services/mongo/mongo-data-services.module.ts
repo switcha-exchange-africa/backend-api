@@ -33,6 +33,7 @@ import { TradeDispute, TradeDisputeSchema } from "./model/Trade-Dispute";
 import { MutateUser, MutateUserSchema } from './model/MutateUser';
 import { TwoFa, TwoFaSchema } from './model/TwoFa';
 import { VirtualAccount, VirtualAccountSchema } from "./model/Virtual-Account";
+import { DepositAddress, DepositAddressSchema } from "./model/Deposit-Addresses";
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { VirtualAccount, VirtualAccountSchema } from "./model/Virtual-Account";
       { name: MutateUser.name, schema: MutateUserSchema },
       { name: TwoFa.name, schema: TwoFaSchema },
       { name: VirtualAccount.name, schema: VirtualAccountSchema },
+      { name: DepositAddress.name, schema: DepositAddressSchema },
 
 
 

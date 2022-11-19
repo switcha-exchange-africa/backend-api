@@ -33,6 +33,7 @@ import { ChatMessage, ChatMessageDocument } from "./model/Chat-Messages";
 import { MutateUser, MutateUserDocument } from './model/MutateUser';
 import { TwoFa, TwoFaDocument } from './model/TwoFa';
 import { VirtualAccount, VirtualAccountDocument } from './model/Virtual-Account';
+import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresses';
 
 
 
@@ -69,6 +70,7 @@ export class MongoDataServices
   mutateUser: MongoGenericRepository<MutateUser>
   twoFa: MongoGenericRepository<TwoFa>
   virtualAccounts: MongoGenericRepository<VirtualAccount>
+  depositAddresses: MongoGenericRepository<DepositAddress>
 
 
   constructor(
@@ -164,6 +166,9 @@ export class MongoDataServices
     @InjectModel(VirtualAccount.name)
     private VirtualAccountRepository: Model<VirtualAccountDocument>,
 
+    @InjectModel(DepositAddress.name)
+    private DepositAddressRepository: Model<DepositAddressDocument>,
+
 
   ) { }
 
@@ -199,6 +204,8 @@ export class MongoDataServices
     this.mutateUser = new MongoGenericRepository<MutateUser>(this.MutateUserRepository)
     this.twoFa = new MongoGenericRepository<TwoFa>(this.TwoFaRepository)
     this.virtualAccounts = new MongoGenericRepository<VirtualAccount>(this.VirtualAccountRepository)
+    this.depositAddresses = new MongoGenericRepository<DepositAddress>(this.DepositAddressRepository)
+
 
 
   }

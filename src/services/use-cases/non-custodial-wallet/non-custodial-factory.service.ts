@@ -15,7 +15,7 @@ export class VirtualAccountFactoryService {
     if (data.mnemonic) account.mnemonic = data.mnemonic;
     if (data.active) account.active = data.active;
     if (data.frozen) account.frozen = data.frozen;
-    if (data.currency) account.currency = data.currency;
+    if (data.coin) account.coin = data.coin;
 
     
 

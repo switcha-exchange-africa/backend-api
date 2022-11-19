@@ -20,7 +20,7 @@ export class VirtualAccount {
     key: string
 
     @Prop()
-    currency: CoinType
+    coin: CoinType
 
     @Prop({
         type: Types.ObjectId,

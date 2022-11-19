@@ -6,7 +6,7 @@ export class VirtualAccount {
     accountId: string;
     xpub: string;
     mnemonic: string;
-    currency: CoinType;
+    coin: CoinType;
     pendingTransactionSubscriptionId: string;
     incomingTransactionSubscriptionId: string;
     withdrawalTransactionSubscriptionId: string
