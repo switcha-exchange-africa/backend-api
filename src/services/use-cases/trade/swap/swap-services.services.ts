@@ -1,5 +1,5 @@
 import { TransactionFactoryService } from "src/services/use-cases/transaction/transaction-factory.services";
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { ICreateSwap, SwapDto } from "src/core/dtos/trade/swap.dto";
@@ -19,6 +19,7 @@ import { ActivityFactoryService } from "../../activity/activity-factory.service"
 import { IErrorReporter } from "src/core/types/error";
 import { IActivity } from "src/core/entities/Activity";
 import { INotification } from "src/core/entities/notification.entity";
+import { Status } from "src/core/types/status";
 
 // const TATUM_CONFIG = {
 //   headers: {
@@ -208,7 +209,7 @@ export class SwapServices {
             signedAmount: destinationAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditDestinationWallet?.balance,
             balanceBefore: destinationWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -229,7 +230,7 @@ export class SwapServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: ` Swapped ${amount} ${sourceCoin} to ${destinationAmount} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitSourceWallet?.balance,
             balanceBefore: sourceWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -249,7 +250,7 @@ export class SwapServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
             rate: {
@@ -267,7 +268,7 @@ export class SwapServices {
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Charged ${fee} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
             rate: {
@@ -507,7 +508,7 @@ export class SwapServices {
             signedAmount: deduction,
             type: TRANSACTION_TYPE.CREDIT,
             description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditDestinationWallet?.balance,
             balanceBefore: destinationWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -528,7 +529,7 @@ export class SwapServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitSourceWallet?.balance,
             balanceBefore: sourceWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -548,7 +549,7 @@ export class SwapServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
             rate: {
@@ -566,7 +567,7 @@ export class SwapServices {
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Charged ${fee} ${destinationCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP,
             rate: {

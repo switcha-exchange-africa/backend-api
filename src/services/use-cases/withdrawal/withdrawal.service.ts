@@ -3,7 +3,7 @@ import { env, TATUM_BASE_URL, TATUM_CONFIG } from "src/configuration"
 import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { ICreateWithdrawal } from "src/core/dtos/withdrawal"
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity"
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity"
 import { CoinType } from "src/core/types/coin"
 import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
@@ -23,6 +23,7 @@ import { InjectConnection } from "@nestjs/mongoose"
 import { WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
+import { Status } from "src/core/types/status"
 
 @Injectable()
 export class WithdrawalServices {
@@ -142,7 +143,7 @@ export class WithdrawalServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Withdrawal request of ${amount} ${coin}`,
-            status: TRANSACTION_STATUS.PENDING,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -162,7 +163,7 @@ export class WithdrawalServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee}${coin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             rate: {
@@ -412,7 +413,7 @@ export class WithdrawalServices {
             signedAmount: -withdrawal.originalAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.REVERSAL,
@@ -438,8 +439,9 @@ export class WithdrawalServices {
           await this.data.notifications.create(notificationFactory, session)
           await this.data.activities.create(activityFactory, session)
           await this.data.transactions.create(transactionFactory, session)
-          await this.data.transactions.update({ _id: withdrawal.transactionId }, { status: TRANSACTION_STATUS.FAILED }, session)
-          await this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: TRANSACTION_STATUS.FAILED }, session)
+          await this.data.transactions.update({ _id: withdrawal.transactionId }, { 
+            status: Status.FAILED }, session)
+          await this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: Status.FAILED }, session)
           await this.data.wallets.update({ _id: wallet._id }, { lastDeposit: withdrawal.originalAmount }, session)
 
         } catch (error) {

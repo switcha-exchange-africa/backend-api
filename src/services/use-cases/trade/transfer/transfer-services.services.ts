@@ -7,11 +7,12 @@ import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
 import { TransferDto } from "src/core/dtos/trade/transfer.dto";
 import * as mongoose from "mongoose";
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { InjectConnection } from "@nestjs/mongoose";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
+import { Status } from "src/core/types/status";
 
 @Injectable()
 export class TransferServices {
@@ -89,7 +90,7 @@ export class TransferServices {
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
             description: "transfer currency",
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -107,7 +108,7 @@ export class TransferServices {
             signedAmount: amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: "transfer currency",
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,

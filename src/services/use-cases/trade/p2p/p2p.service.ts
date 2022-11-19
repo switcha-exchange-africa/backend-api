@@ -15,7 +15,7 @@ import { IActivity } from "src/core/entities/Activity";
 import { INotification } from "src/core/entities/notification.entity";
 import { P2pAds, P2pAdsType } from "src/core/entities/P2pAds";
 import { P2pOrder } from "src/core/entities/P2pOrder";
-import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { User } from "src/core/entities/user.entity";
 import { ResponseState } from "src/core/types/response";
 import { Status } from "src/core/types/status";
@@ -1041,12 +1041,12 @@ export class P2pServices {
           const clientTransactionPayload = {
             userId: String(client._id),
             walletId: String(order.clientWalletId),
-            currency: ad.coin as CoinType,
+            currency: ad.coin,
             amount: order.quantity,
             signedAmount: -order.quantity,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Sold ${order.quantity} ${ad.coin} to ${buyer.username}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: clientWallet?.balance,
             balanceBefore: _.add(clientWallet.balance, clientWallet.lockedBalance) || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -1059,12 +1059,12 @@ export class P2pServices {
           const merchantTransactionPayload = {
             userId: ad.userId,
             walletId: String(buyerWallet._id),
-            currency: ad.coin as CoinType,
+            currency: ad.coin,
             amount: buyerAmount,
             signedAmount: buyerAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Recieved ${buyerAmount} ${ad.coin} from ${client.username}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedBuyerWallet.balance,
             balanceBefore: buyerWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -1077,12 +1077,12 @@ export class P2pServices {
 
           const feeTransactionPayload = {
             feeWalletId: String(buyerWallet._id),
-            currency: ad.coin as CoinType,
+            currency: ad.coin,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `P2p Order:- Charged ${fee} ${ad.coin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedFeeWallet.balance,
             balanceBefore: feeWallet?.balance,
             subType: TRANSACTION_SUBTYPE.FEE,
@@ -1284,7 +1284,7 @@ export class P2pServices {
             signedAmount: -order.quantity,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Sold ${order.quantity} ${ad.coin} to ${buyer.username}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: merchantWallet?.balance,
             balanceBefore: _.add(merchantWallet?.balance, ad.totalAmount),
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -1302,7 +1302,7 @@ export class P2pServices {
             signedAmount: buyerAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Recieved ${buyerAmount} ${ad.coin} from ${merchant.username}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedBuyerWallet.balance,
             balanceBefore: buyerWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -1319,7 +1319,7 @@ export class P2pServices {
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `P2p Order:- Charged ${fee} ${ad.coin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedFeeWallet.balance,
             balanceBefore: feeWallet?.balance,
             subType: TRANSACTION_SUBTYPE.FEE,

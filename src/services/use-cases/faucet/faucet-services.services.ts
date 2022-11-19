@@ -5,13 +5,14 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import * as mongoose from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { Faucet } from "src/core/entities/faucet.entity";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
 import { CoinType } from "src/core/types/coin";
+import { Status } from "src/core/types/status";
 
 @Injectable()
 export class FaucetServices {
@@ -47,7 +48,7 @@ export class FaucetServices {
             type: TRANSACTION_TYPE.CREDIT,
             description,
             reference: generateReference('credit'),
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: faucet?.balance,
             balanceBefore: faucet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -119,12 +120,12 @@ export class FaucetServices {
           const txDebitFaucetPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: "faucet",
-            currency: coin as CoinType,
+            currency: coin,
             amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: "debited faucet",
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitFaucet?.balance,
             balanceBefore: faucet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -136,12 +137,12 @@ export class FaucetServices {
           const txWalletCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId,
-            currency: coin as CoinType,
+            currency: coin,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
             description: "credited wallet",
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditWallet?.balance,
             balanceBefore: wallet?.balance,
             generalTransactionReference,

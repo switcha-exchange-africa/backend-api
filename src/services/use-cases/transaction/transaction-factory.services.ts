@@ -29,6 +29,8 @@ export class TransactionFactoryService {
     if (data.feeWalletId) transaction.feeWalletId = data.feeWalletId
     if (data.metadata) transaction.metadata = data.metadata
     if (data.accountId) transaction.accountId = data.accountId
+    if (data.tatumWithdrawalId) transaction.tatumWithdrawalId = data.tatumWithdrawalId
+    if (data.destination) transaction.destination = data.destination
 
     
     transaction.createdAt = new Date();

@@ -8,7 +8,7 @@ import {
 } from "../../user/exceptions";
 import { env } from "src/configuration";
 import * as mongoose from "mongoose";
-import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { OptionalQuery } from "src/core/types/database";
@@ -19,6 +19,7 @@ import { UtilsServices } from "../../utils/utils.service";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
 import { ActivityAction } from "src/core/dtos/activity";
 import { IErrorReporter } from "src/core/types/error";
+import { Status } from "src/core/types/status";
 
 @Injectable()
 export class BuySellServices {
@@ -190,7 +191,7 @@ export class BuySellServices {
             signedAmount: creditedAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Bought ${creditedAmount} ${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -212,7 +213,7 @@ export class BuySellServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Bought ${creditedAmount} ${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -232,7 +233,7 @@ export class BuySellServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
             rate: {
@@ -249,7 +250,7 @@ export class BuySellServices {
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Charged ${fee} ${creditCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.BUY,
             rate: {
@@ -512,7 +513,7 @@ export class BuySellServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Sold ${amount}${debitCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -531,7 +532,7 @@ export class BuySellServices {
             signedAmount: creditedAmount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Sold ${amount}${debitCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: creditWallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -553,7 +554,7 @@ export class BuySellServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${debitCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             generalTransactionReference,
             rate: {
@@ -570,7 +571,7 @@ export class BuySellServices {
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Charged ${fee} ${debitCoin}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedFeeWallet?.balance,
             balanceBefore: creditFeeWallet?.balance,
             subType: TRANSACTION_SUBTYPE.FEE,

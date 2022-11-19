@@ -43,7 +43,7 @@ export class WebhookController {
     ) {
         try {
 
-            if (env.isProd) {
+            if (!env.isDev) {
                 const signature = req.headers['x-payload-hash']
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
@@ -58,7 +58,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -79,7 +79,7 @@ export class WebhookController {
     ) {
         try {
 
-            if (env.isProd) {
+            if (!env.isDev) {
                 const signature = req.headers['x-payload-hash']
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
@@ -94,7 +94,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -115,7 +115,7 @@ export class WebhookController {
     ) {
         try {
 
-            if (env.isProd) {
+            if (!env.isDev) {
                 const signature = req.headers['x-payload-hash']
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
@@ -130,7 +130,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -152,7 +152,7 @@ export class WebhookController {
     ) {
         try {
 
-            if (env.isProd) {
+            if (!env.isDev) {
                 const signature = req.headers['x-payload-hash']
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
@@ -167,7 +167,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -181,6 +181,43 @@ export class WebhookController {
 
         }
     }
+    @Post('/tatum-tx-block')
+    async txBlock(
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
+        try {
+
+            if (!env.isDev) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("hex");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    await this.discordServices.inHouseNotification({
+                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        message: `Wrong signature
+                        
+                        ${JSON.stringify(req.body)}
+                        
+                        `,
+                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                    })
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
+            }
+
+            const response = await this.services.txBlock(req.body)
+            return res.status(200).json(response)
+
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
+
 }
 
 

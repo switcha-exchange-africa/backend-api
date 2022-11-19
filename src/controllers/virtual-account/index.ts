@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/com
 import { isAuthenticated } from "src/core/decorators";
 import { VirtualAccountServices } from "src/services/use-cases/virtual-account/virtual-account.service";
 import { Request, Response } from "express"
-import { DepositVirtualAccountDto, IDepositVirtualAccount, IGetVirtualAccounts } from "src/core/dtos/virtual-account";
+import { DepositVirtualAccountDto, IDepositVirtualAccount, IGetVirtualAccounts, IWithdrawVirtualAccount, WithdrawVirtualAccountDto } from "src/core/dtos/virtual-account";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
 @Controller('virtual-account')
@@ -61,7 +61,7 @@ export class VirtualAccountController {
     }
 
     @isAuthenticated('strict')
-    @Post('/:id')
+    @Post('/:id/deposit')
     async deposit(
         @Req() req: Request,
         @Param() params: FindByIdDto,
@@ -88,7 +88,7 @@ export class VirtualAccountController {
 
     @isAuthenticated('strict')
     @Get('/:id')
-    async getSingleTransaction(
+    async getSingleVirtualAccount(
         @Req() req: Request,
         @Res() res: Response,
         @Param() param: FindByIdDto
@@ -132,4 +132,30 @@ export class VirtualAccountController {
         }
     }
 
+
+    @isAuthenticated('strict')
+    @Post('/:id/withdraw')
+    async withdraw(
+        @Req() req: Request,
+        @Param() params: FindByIdDto,
+        @Body() body: WithdrawVirtualAccountDto,
+        @Res() res: Response
+    ) {
+        try {
+            const user = req?.user
+            const { id } = params
+            const payload: IWithdrawVirtualAccount = {
+                userId: user._id,
+                id,
+                email: user.email,
+                ...body
+            }
+            const response = await this.services.withdraw(payload)
+            return res.status(response.status).json(response);
+
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
 }

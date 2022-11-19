@@ -6,7 +6,7 @@ import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
-import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
@@ -94,7 +94,7 @@ export class WebhookServices {
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Recieved ${amount} ${currency} from ${from}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: wallet?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -221,7 +221,7 @@ export class WebhookServices {
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
             description: `Recieved ${amount} ${currency} from ${from}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: creditedAccount?.balance,
             balanceBefore: account?.balance,
             subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -401,6 +401,123 @@ export class WebhookServices {
     }
   }
 
+  async txBlock(payload: Record<string, any>) {
+    try {
+      const { txId, reference, accountId, currency, withdrawalId, address, amount } = payload
 
+      const [transactionAlreadyExists, transaction, virtualAccount] = await Promise.all([
+        this.data.transactions.findOne({ reference }),
+        this.data.transactions.findOne({ tatumTransactionId: txId, status: Status.PENDING, withdrawalId }),
+        this.data.virtualAccounts.findOne({ accountId, coin: currency.toUpperCase() })
+      ])
+
+      if (transactionAlreadyExists) return Promise.resolve({ message: 'Transaction already exists' })
+      if (!transaction) return Promise.resolve({ message: 'Transaction does not exists or already completed' })
+      if (!virtualAccount) return Promise.resolve({ message: 'Wallet does not exists' })
+
+
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          // deduct from virtualAccountBalance
+
+          const deductedAccount = await this.data.virtualAccounts.update(
+            {
+              _id: virtualAccount._id,
+            },
+            {
+              $inc: {
+                balance: -amount,
+              },
+              lastWithdrawal: amount
+            },
+            session
+          );
+          if (!deductedAccount) {
+            Logger.error("Error Occurred");
+            await this.discord.inHouseNotification({
+              title: `Withdrawal :- ${env.env} environment`,
+              message: `
+      Deduction Failed
+      
+              BODY : ${JSON.stringify(payload)}
+      `,
+              link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+            })
+            throw new Error("Error Occurred");
+          }
+          await this.data.transactions.update(
+            { _id: transaction._id },
+            {
+              status: Status.COMPLETED,
+              reference,
+              balanceAfter: deductedAccount.balance,
+              metadata: JSON.stringify(payload)
+            },
+            session
+          )
+
+
+          const notificationFactory = await this.notificationFactory.create({
+            title: "Withdrawal Completed",
+            message: `Withdrawal  of ${amount} ${currency} to ${address} was successful`,
+            userId: virtualAccount.userId
+          })
+
+          await this.data.notifications.create(notificationFactory, session)
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+      await this.discord.inHouseNotification({
+        title: `Withdrawal :- ${env.env} environment`,
+        message: `
+
+        External Withdrawal
+
+        Withdraw ${amount} ${currency} 
+        
+        
+        TO :- ${address}
+
+        TX ID/HASH: ${txId}
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      // state last withdrawal
+      // update transaction status and reference
+      // store reference
+      return { message: "Webhook received successfully", status: 200, data: payload }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'TATUM TX BLOCK',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
 }
 
+    // "txId": "0x026f4f05b972c09279111da13dfd20d8df04eff436d7f604cd97b9ffaa690567",
+    // "reference": "90270634-5b07-4fad-b17b-f82899953533",
+    // "accountId": "6086ed0744c45b24d4fbd039",
+    // "currency": "BSC",
+    // "withdrawalId": "608fe5b73a893234ba379ab2",
+    // "address": "0x8ce4e40889a13971681391AAd29E88eFAF91f784",
+    // "amount": "0.1",
+    // "blockHeight": 8517664

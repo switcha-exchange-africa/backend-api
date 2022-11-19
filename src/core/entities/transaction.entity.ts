@@ -1,4 +1,4 @@
-import { CoinType } from "../types/coin";
+import { Status } from "../types/status";
 
 
 export enum TRANSACTION_TYPE {
@@ -69,12 +69,12 @@ export interface Rates {
 export class Transaction {
   userId: string;
   walletId: string;
-  currency: CoinType;
+  currency: string;
   amount: number;
   signedAmount: number;
   type: TRANSACTION_TYPE;
   subType: TRANSACTION_SUBTYPE;
-  status: TRANSACTION_STATUS;
+  status: Status;
   balanceAfter: number;
   balanceBefore: number;
   rate?: Rates;
@@ -92,5 +92,7 @@ export class Transaction {
   feeWalletId: string
   metadata: object;
   accountId: string
+  tatumWithdrawalId;
+  destination: string
 }
 

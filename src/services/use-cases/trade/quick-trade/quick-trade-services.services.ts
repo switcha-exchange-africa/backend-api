@@ -12,7 +12,7 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
 import { generateReference } from "src/lib/utils";
-import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_STATUS, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { env } from "src/configuration";
 import { QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT, QUICK_TRADE_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { User } from "src/core/entities/user.entity";
@@ -98,7 +98,7 @@ export class QuickTradeServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Placed a buy ad for ${amount}${buy}`,
-            status: TRANSACTION_STATUS.COMPLETED,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -158,7 +158,9 @@ export class QuickTradeServices {
                 lastDeposit: amount
               }, session),
               this.data.notifications.create(sellerNotificationFactory, session),
-              this.data.transactions.update({ _id: sellerPendingTransaction._id }, { status: TRANSACTION_STATUS.COMPLETED }, session)
+              this.data.transactions.update({ _id: sellerPendingTransaction._id }, { 
+                status: Status.COMPLETED,
+              }, session)
             ])
 
             const sellerCreditTransactionPayload = {
@@ -169,7 +171,7 @@ export class QuickTradeServices {
               signedAmount: amount,
               type: TRANSACTION_TYPE.CREDIT,
               description: `Your seller ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
-              status: TRANSACTION_STATUS.COMPLETED,
+              status: Status.COMPLETED,
               balanceAfter: sellerCreditedWallet?.balance,
               balanceBefore: sellerWallet?.balance,
               subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -211,7 +213,7 @@ export class QuickTradeServices {
                 signedAmount: matchingTradeContract.price,
                 type: TRANSACTION_TYPE.CREDIT,
                 description: `Your buy ad of ${amount}${buy} has been matched and filled`,
-                status: TRANSACTION_STATUS.COMPLETED,
+                status: Status.COMPLETED,
                 balanceAfter: buyerCreditedWallet?.balance,
                 balanceBefore: creditWallet?.balance,
                 subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -260,7 +262,7 @@ export class QuickTradeServices {
               signedAmount: priceToPayBuyer,
               type: TRANSACTION_TYPE.CREDIT,
               description: `Your buy ad of ${amount}${buy} has been matched and partially filled`,
-              status: TRANSACTION_STATUS.COMPLETED,
+              status: Status.COMPLETED,
               balanceAfter: buyerCreditedWallet?.balance,
               balanceBefore: creditWallet?.balance,
               subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -440,7 +442,7 @@ export class QuickTradeServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Created a sell ad of ${amount}${sell}`,
-            status: TRANSACTION_STATUS.PENDING,
+            status: Status.PENDING,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: debitWallet?.balance,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -493,7 +495,9 @@ export class QuickTradeServices {
                 lastDeposit: amount
               }, session),
               this.data.notifications.create(buyerNotificationFactory, session),
-              this.data.transactions.update({ _id: buyerPendingTransaction._id }, { status: TRANSACTION_STATUS.COMPLETED }, session)
+              this.data.transactions.update({ _id: buyerPendingTransaction._id }, { 
+                status: Status.COMPLETED,
+              }, session)
             ])
             const buyerCreditTransactionPayload = {
               userId: String(buyer._id),
@@ -503,7 +507,7 @@ export class QuickTradeServices {
               signedAmount: amount,
               type: TRANSACTION_TYPE.CREDIT,
               description: `Your buy ad of ${matchingTrade.amount}${matchingTrade.pair} has been matched and filled`,
-              status: TRANSACTION_STATUS.COMPLETED,
+              status: Status.COMPLETED,
               balanceAfter: buyerCreditedWallet?.balance,
               balanceBefore: buyerWallet?.balance,
               subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -545,7 +549,7 @@ export class QuickTradeServices {
                 signedAmount: matchingTradeContract.price,
                 type: TRANSACTION_TYPE.CREDIT,
                 description: `Your sell ad of ${amount}${sell} has been matched and filled`,
-                status: TRANSACTION_STATUS.COMPLETED,
+                status: Status.COMPLETED,
                 balanceAfter: sellerCreditedWallet?.balance,
                 balanceBefore: creditWallet?.balance,
                 subType: TRANSACTION_SUBTYPE.CREDIT,
@@ -595,7 +599,7 @@ export class QuickTradeServices {
               signedAmount: priceToPaySeller,
               type: TRANSACTION_TYPE.CREDIT,
               description: `Your sell ad of ${amount}${sell} has been matched and partially filled`,
-              status: TRANSACTION_STATUS.COMPLETED,
+              status: Status.COMPLETED,
               balanceAfter: sellerCreditedWallet?.balance,
               balanceBefore: creditWallet?.balance,
               subType: TRANSACTION_SUBTYPE.CREDIT,

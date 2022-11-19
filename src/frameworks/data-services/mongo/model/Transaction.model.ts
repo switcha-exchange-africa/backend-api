@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { Types, Document } from "mongoose";
-import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_STATUS, TRANSACTION_STATUS_LIST, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
-import { COIN_TYPES_LIST, CoinType } from "src/core/types/coin";
+import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
+import { Status, STATUS_LIST } from "src/core/types/status";
 
 export type TransactionDocument = Transaction & Document;
 
@@ -47,11 +47,15 @@ export class Transaction {
   })
   p2pOrderId: string;
 
-  @Prop({ enum: COIN_TYPES_LIST })
-  currency: CoinType;
+  @Prop()
+  currency: string;
 
   @Prop()
   tatumTransactionId: string;
+
+  @Prop()
+  tatumWithdrawalId: string;
+
 
   @Prop()
   reference: string
@@ -72,12 +76,12 @@ export class Transaction {
   @Prop({ enum: TRANSACTION_TYPE_LIST })
   type: TRANSACTION_TYPE;
 
-  @Prop({ enum: TRANSACTION_SUBTYPE_LIST })
-  subType: TRANSACTION_SUBTYPE;
+  @Prop({ enum: STATUS_LIST })
+  subType: Status;
 
 
-  @Prop({ enum: TRANSACTION_STATUS_LIST })
-  status: TRANSACTION_STATUS;
+  @Prop({ enum: STATUS_LIST })
+  status: Status;
 
   @Prop()
   balanceAfter: number;
@@ -107,6 +111,9 @@ export class Transaction {
 
   @Prop()
   hash: string
+
+  @Prop()
+  destination: string
 
   @Prop({ type: Object })
   metadata: Object

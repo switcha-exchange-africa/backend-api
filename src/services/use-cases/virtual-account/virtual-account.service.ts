@@ -1,10 +1,13 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { IDepositVirtualAccount, IGetVirtualAccounts } from "src/core/dtos/virtual-account";
+import { IDepositVirtualAccount, IGetVirtualAccounts, IWithdrawVirtualAccount } from "src/core/dtos/virtual-account";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { Status } from "src/core/types/status";
+import { decryptData, generateReference } from "src/lib/utils";
+import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { UtilsServices } from "../utils/utils.service";
 import { DepositAddressFactoryService } from "./virtual-account.factory";
 import { VirtualAccountLib } from "./virtual-acount.lib";
@@ -15,6 +18,7 @@ export class VirtualAccountServices {
         private readonly data: IDataServices,
         private readonly depositAddressFactory: DepositAddressFactoryService,
         private readonly lib: VirtualAccountLib,
+        private readonly transactionFactory: TransactionFactoryService,
         // private readonly utils: UtilsServices,
         // private readonly transactionFactory: TransactionFactoryService,
         // private readonly withdrawalFactory: WithdrawalFactoryService,
@@ -78,7 +82,7 @@ export class VirtualAccountServices {
                         path: 'userId',
                         select: '_id firstName lastName email phone'
                     },
-                    select:['userId', 'accountId', 'active', 'frozen', 'coin', 'balance', 'lockedBalance', 'lastDeposit', 'lastWithdrawal']
+                    select: ['userId', 'accountId', 'active', 'frozen', 'coin', 'balance', 'lockedBalance', 'lastDeposit', 'lastWithdrawal']
                 }
             });
 
@@ -244,4 +248,89 @@ export class VirtualAccountServices {
             })
         }
     }
+
+    async withdraw(payload: IWithdrawVirtualAccount) {
+        const { email, id, coin, userId, amount, destination } = payload
+        try {
+            const coinExists = await this.data.coins.findOne({ coin: coin.toUpperCase() })
+            if (!coinExists) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    error: null,
+                    message: `Don't support ${coin}`
+                })
+            }
+            const virtualAccount = await this.data.virtualAccounts.findOne({ _id: id, coin, userId })
+            if (!virtualAccount) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    error: null,
+                    message: `${coin} wallet does not exists`
+                })
+            }
+            const user = await this.data.users.findOne({ _id: userId })
+            if (!user) {
+                return Promise.reject({
+                    status: HttpStatus.NOT_FOUND,
+                    state: ResponseState.ERROR,
+                    error: null,
+                    message: `User does not exists`
+                })
+            }
+            const mnemonic = decryptData({ text: virtualAccount.mnemonic, username: user.username, userId, pin: user.transactionPin })
+
+            const data: any = await this.lib.withdrawal({
+                mnemonic,
+                amount: String(amount),
+                accountId: virtualAccount.accountId,
+                destination,
+                coin
+            })
+            const txPayload = {
+                userId,
+                accountId: String(id),
+                currency: coin,
+                tatumTransactionId: data.txId,
+                tatumWithdrawalId: data.id,
+                generalTransactionReference: generateReference('general'),
+                signedAmount: -amount,
+                amount,
+                type: TRANSACTION_TYPE.DEBIT,
+                subType: TRANSACTION_SUBTYPE.DEBIT,
+                status: Status.PENDING,
+                balanceBefore: virtualAccount.balance,
+                customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
+                description: 'Withdrawal Pending',
+                hash: data.txId
+            }
+            const txFactory = await this.transactionFactory.create(txPayload)
+            await this.data.transactions.create(txFactory)
+            return {
+                status: HttpStatus.CREATED,
+                data,
+                state: ResponseState.SUCCESS,
+                message: 'Withdrawal request was successful'
+            }
+
+        } catch (error) {
+            Logger.error(error)
+            const errorPayload: IErrorReporter = {
+                action: 'WITHDRAW FROM VIRTUAL ACCOUNTS',
+                error,
+                email,
+                message: error.message
+            }
+
+            this.utilsService.errorReporter(errorPayload)
+            return Promise.reject({
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                state: ResponseState.ERROR,
+                message: error.message,
+                error: error
+            })
+        }
+    }
+
 }
