@@ -2,7 +2,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Document } from "mongoose";
 import { WithdrawalCryptoDestination, WithdrawalPaymentMethod, WithdrawalStatus, WithdrawalSubType, WithdrawalType, WITHDRAWAL_PAYMENT_METHOD_LIST, WITHDRAWAL_STATUS_LIST, WITHDRAWAL_SUB_TYPE_LIST, WITHDRAWAL_TYPE_LIST } from "src/core/entities/Withdrawal";
-import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 
 export type WithdrawalDocument = Withdrawal & Document;
@@ -57,8 +56,8 @@ export class Withdrawal {
   @Prop()
   processedReason: string
 
-  @Prop({ enum: COIN_TYPES_LIST })
-  currency: CoinType
+  @Prop()
+  currency: string
 
   @Prop()
   reference: string

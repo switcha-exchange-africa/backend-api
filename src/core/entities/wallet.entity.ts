@@ -1,4 +1,3 @@
-import { CoinType } from "../types/coin";
 
 export enum BLOCKCHAIN_NETWORK {
   BITCOIN = "bitcoin",
@@ -51,7 +50,7 @@ export class Wallet {
   userId: string;
   accountId: string;
   network: BLOCKCHAIN_NETWORK;
-  coin: CoinType;
+  coin: string;
   status: WALLET_STATUS;
   lastDeposit: number;
   lastWithdrawal: number;

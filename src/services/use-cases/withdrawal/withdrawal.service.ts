@@ -4,7 +4,6 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { ICreateWithdrawal } from "src/core/dtos/withdrawal"
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity"
-import { CoinType } from "src/core/types/coin"
 import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import { UtilsServices } from "../utils/utils.service"
@@ -138,7 +137,7 @@ export class WithdrawalServices {
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(wallet?._id),
-            currency: coin as CoinType,
+            currency: coin,
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -158,7 +157,7 @@ export class WithdrawalServices {
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(wallet?._id),
-            currency: coin as CoinType,
+            currency: coin,
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
@@ -192,7 +191,7 @@ export class WithdrawalServices {
               address,
               coin,
             },
-            currency: coin as CoinType,
+            currency: coin,
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
             subType: WithdrawalSubType.MANUAL,
@@ -408,7 +407,7 @@ export class WithdrawalServices {
           const transactionPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(wallet?._id),
-            currency: withdrawal.currency as CoinType,
+            currency: withdrawal.currency,
             amount: withdrawal.originalAmount,
             signedAmount: -withdrawal.originalAmount,
             type: TRANSACTION_TYPE.CREDIT,
@@ -439,8 +438,9 @@ export class WithdrawalServices {
           await this.data.notifications.create(notificationFactory, session)
           await this.data.activities.create(activityFactory, session)
           await this.data.transactions.create(transactionFactory, session)
-          await this.data.transactions.update({ _id: withdrawal.transactionId }, { 
-            status: Status.FAILED }, session)
+          await this.data.transactions.update({ _id: withdrawal.transactionId }, {
+            status: Status.FAILED
+          }, session)
           await this.data.transactions.update({ _id: withdrawal.feeTransactionId }, { status: Status.FAILED }, session)
           await this.data.wallets.update({ _id: wallet._id }, { lastDeposit: withdrawal.originalAmount }, session)
 

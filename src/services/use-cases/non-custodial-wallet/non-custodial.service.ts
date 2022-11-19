@@ -2,7 +2,6 @@ import { Injectable, HttpStatus, Logger } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { IDataServices } from "src/core/abstracts";
 import { IGenerateNonCustodialWallet } from "src/core/dtos/non-custodial-wallet";
-import { CoinType } from "src/core/types/coin";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { UtilsServices } from "../utils/utils.service";
@@ -74,7 +73,7 @@ export class NonCustodialWalletServices {
 
                 const { account: cleanAccount, encrypted } = await this.lib.generateEthWallet({ username, userId, pin: user.transactionPin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
-                    coin: cleanAccount.currency as CoinType,
+                    coin: cleanAccount.currency,
                     userId,
                     accountId: cleanAccount.id,
                     xpub: cleanAccount.xpub,
@@ -98,7 +97,7 @@ export class NonCustodialWalletServices {
 
                 const { account: cleanAccount, encrypted } = await this.lib.generateERC20Wallet({ username, userId, pin: user.transactionPin, coin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
-                    coin: cleanAccount.currency as CoinType,
+                    coin: cleanAccount.currency,
                     userId,
                     accountId: cleanAccount.id,
                     xpub: cleanAccount.xpub,
@@ -122,7 +121,7 @@ export class NonCustodialWalletServices {
 
                 const { account: cleanAccount, encrypted } = await this.lib.generateERC20Wallet({ username, userId, pin: user.transactionPin, coin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
-                    coin: cleanAccount.currency as CoinType,
+                    coin: cleanAccount.currency,
                     userId,
                     accountId: cleanAccount.id,
                     xpub: cleanAccount.xpub,
@@ -146,7 +145,7 @@ export class NonCustodialWalletServices {
 
                 const { account: cleanAccount, encrypted } = await this.lib.generateBtcWallet({ username, userId, pin: user.transactionPin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
-                    coin: cleanAccount.currency as CoinType,
+                    coin: cleanAccount.currency,
                     userId,
                     accountId: cleanAccount.id,
                     xpub: cleanAccount.xpub,
@@ -171,7 +170,7 @@ export class NonCustodialWalletServices {
 
                 const { account: cleanAccount, encrypted } = await this.lib.generateBscWallet({ username, userId, pin: user.transactionPin })
                 const virtualAccountFactory = this.virtualAccountFactory.create({
-                    coin: cleanAccount.currency as CoinType,
+                    coin: cleanAccount.currency,
                     userId,
                     accountId: cleanAccount.id,
                     xpub: cleanAccount.xpub,

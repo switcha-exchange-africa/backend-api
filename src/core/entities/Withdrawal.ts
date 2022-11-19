@@ -1,4 +1,3 @@
-import { CoinType } from "../types/coin"
 import { PaginationType } from "../types/database"
 
 export enum WithdrawalStatus {
@@ -62,7 +61,7 @@ export class Withdrawal {
   destination: WithdrawalCryptoDestination
 
   processedReason: string
-  currency: CoinType
+  currency: string
   reference: string
   type: WithdrawalType
   subType: WithdrawalSubType

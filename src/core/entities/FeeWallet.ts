@@ -1,4 +1,3 @@
-import { CoinType } from "../types/coin";
 import { BLOCKCHAIN_NETWORK, WALLET_STATUS } from "./wallet.entity";
 
 export class FeeWallet {
@@ -8,7 +7,7 @@ export class FeeWallet {
   userId?: string;
   accountId?: string;
   network?: BLOCKCHAIN_NETWORK;
-  coin?: CoinType;
+  coin?: string;
   status?: WALLET_STATUS;
   lastDeposit?: number;
   lastWithdrawal?: number;

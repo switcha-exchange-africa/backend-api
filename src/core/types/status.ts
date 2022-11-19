@@ -25,5 +25,5 @@ export const STATUS_LIST = [
   Status.FILLED,
   Status.RESOLVED,
   Status.DISPUTE,
-  Status.FAIL
+  Status.FAILED
 ]

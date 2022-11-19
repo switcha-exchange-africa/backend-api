@@ -4,7 +4,6 @@ import {
     SchemaFactory
 } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
-import { CoinType } from 'src/core/types/coin';
 
 
 export type VirtualAccountDocument = VirtualAccount & Document;
@@ -20,7 +19,7 @@ export class VirtualAccount {
     key: string
 
     @Prop()
-    coin: CoinType
+    coin: string
 
     @Prop({
         type: Types.ObjectId,

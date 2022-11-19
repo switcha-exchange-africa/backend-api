@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { Types, Document } from "mongoose";
-import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, CUSTOM_TRANSACTION_TYPES, Rates, TRANSACTION_SUBTYPE, TRANSACTION_SUBTYPE_LIST, TRANSACTION_TYPE, TRANSACTION_TYPE_LIST } from "src/core/entities/transaction.entity";
 import { Status, STATUS_LIST } from "src/core/types/status";
 
 export type TransactionDocument = Transaction & Document;
@@ -76,10 +76,10 @@ export class Transaction {
   @Prop({ enum: TRANSACTION_TYPE_LIST })
   type: TRANSACTION_TYPE;
 
-  @Prop({ enum: STATUS_LIST })
-  subType: Status;
+  @Prop({ enum: TRANSACTION_SUBTYPE_LIST })
+  subType: TRANSACTION_SUBTYPE;
 
-
+  
   @Prop({ enum: STATUS_LIST })
   status: Status;
 

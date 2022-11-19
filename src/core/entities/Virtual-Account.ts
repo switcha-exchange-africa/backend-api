@@ -1,4 +1,3 @@
-import { CoinType } from "../types/coin";
 
 export class VirtualAccount {
     key: string;
@@ -6,7 +5,7 @@ export class VirtualAccount {
     accountId: string;
     xpub: string;
     mnemonic: string;
-    coin: CoinType;
+    coin: string;
     pendingTransactionSubscriptionId: string;
     incomingTransactionSubscriptionId: string;
     withdrawalTransactionSubscriptionId: string

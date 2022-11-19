@@ -30,7 +30,6 @@ import { UtilsServices } from "../../utils/utils.service";
 import { P2pAdBankFactoryService, P2pFactoryService, P2pOrderFactoryService } from "./p2p-factory.service";
 import * as _ from 'lodash'
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
-import { CoinType } from "src/core/types/coin";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { IErrorReporter } from "src/core/types/error";
 import { EventEmitter2 } from "@nestjs/event-emitter";
@@ -1279,7 +1278,7 @@ export class P2pServices {
           const merchantTransactionPayload = {
             userId: String(merchant._id),
             walletId: String(merchantWallet._id),
-            currency: coin as CoinType,
+            currency: coin ,
             amount: order.quantity,
             signedAmount: -order.quantity,
             type: TRANSACTION_TYPE.DEBIT,
@@ -1297,7 +1296,7 @@ export class P2pServices {
           const buyerTransactionPayload = {
             userId: String(buyer._id),
             walletId: String(buyerWallet._id),
-            currency: coin as CoinType,
+            currency: coin,
             amount: buyerAmount,
             signedAmount: buyerAmount,
             type: TRANSACTION_TYPE.CREDIT,
@@ -1314,7 +1313,7 @@ export class P2pServices {
           }
           const feeTransactionPayload = {
             feeWalletId: String(merchantWallet._id),
-            currency: ad.coin as CoinType,
+            currency: ad.coin ,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,

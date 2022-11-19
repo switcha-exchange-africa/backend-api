@@ -12,7 +12,6 @@ import { ResponseState, ResponsesType } from "src/core/types/response";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
 import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, SWAP_CHANNEL_LINK_DEVELOPMENT, SWAP_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
-import { CoinType } from "src/core/types/coin";
 import { UtilsServices } from "../../utils/utils.service";
 import { ActivityAction } from "src/core/dtos/activity";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
@@ -204,7 +203,7 @@ export class SwapServices {
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: destinationAmount,
             signedAmount: destinationAmount,
             type: TRANSACTION_TYPE.CREDIT,
@@ -225,7 +224,7 @@ export class SwapServices {
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(sourceWallet?._id),
-            currency: sourceCoin as unknown as CoinType,
+            currency: sourceCoin ,
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -245,7 +244,7 @@ export class SwapServices {
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
@@ -263,7 +262,7 @@ export class SwapServices {
 
           const txFeeWalletPayload = {
             feeWalletId: String(destinationFeeWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
@@ -503,7 +502,7 @@ export class SwapServices {
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: deduction,
             signedAmount: deduction,
             type: TRANSACTION_TYPE.CREDIT,
@@ -524,7 +523,7 @@ export class SwapServices {
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(sourceWallet?._id),
-            currency: sourceCoin as unknown as CoinType,
+            currency: sourceCoin ,
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -544,7 +543,7 @@ export class SwapServices {
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
@@ -562,7 +561,7 @@ export class SwapServices {
 
           const txFeeWalletPayload = {
             feeWalletId: String(feeWallet?._id),
-            currency: destinationCoin as unknown as CoinType,
+            currency: destinationCoin ,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,

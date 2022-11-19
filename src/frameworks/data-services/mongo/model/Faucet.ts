@@ -1,7 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Document } from "mongoose";
-import { CoinType, COIN_TYPES_LIST } from "src/core/types/coin";
 
 export type FaucetDocument = Faucet & Document;
 
@@ -13,8 +12,8 @@ export class Faucet {
   @Prop()
   amount: number;
 
-  @Prop({ enum: COIN_TYPES_LIST })
-  coin: CoinType;
+  @Prop()
+  coin: string;
 
   @Prop()
   description: string

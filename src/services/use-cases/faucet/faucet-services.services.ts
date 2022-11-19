@@ -11,7 +11,6 @@ import { ResponseState, ResponsesType } from "src/core/types/response";
 import { DoesNotExistsException } from "../user/exceptions";
 import { generateReference } from "src/lib/utils";
 import { OptionalQuery } from "src/core/types/database";
-import { CoinType } from "src/core/types/coin";
 import { Status } from "src/core/types/status";
 
 @Injectable()
@@ -42,7 +41,7 @@ export class FaucetServices {
           const txPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: "faucet",
-            currency: coin as CoinType,
+            currency: coin ,
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
