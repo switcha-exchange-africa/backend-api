@@ -120,7 +120,7 @@ export class AccountController {
 
 
   @isAuthenticated('strict')
-  @Put('/account/disable-two-fa')
+  @Put('/disable-two-fa')
   async disableTwoFa(
     @Req() req: Request,
     @Res() res: Response
@@ -140,7 +140,7 @@ export class AccountController {
   }
 
   @isAuthenticated('strict')
-  @Put('/account/generate-two-fa')
+  @Put('/generate-two-fa')
   async generateTwoFa(
     @Req() req: Request,
     @Res() res: Response
@@ -160,7 +160,7 @@ export class AccountController {
   }
 
   @isAuthenticated('strict')
-  @Post('/account/two-fa-valid')
+  @Post('/two-fa-valid')
   async checkTwoFa(
     @Req() req: Request,
     @Body() body: CheckTwoFaCodeDto,
@@ -183,7 +183,7 @@ export class AccountController {
   }
 
   @isAuthenticated('strict')
-  @Post('/account/change-password')
+  @Post('/change-password')
   async changePassword(
     @Req() req: Request,
     @Body() body: ChangePasswordDto,

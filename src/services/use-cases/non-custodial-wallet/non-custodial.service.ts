@@ -34,7 +34,7 @@ export class NonCustodialWalletServices {
                 return Promise.reject({
                     status: HttpStatus.NOT_FOUND,
                     state: ResponseState.ERROR,
-                    message: 'Coin does not exists',
+                    message: `Don't support ${coin}`,
                     error: null
                 })
             }

@@ -188,4 +188,37 @@ export class CoinServices {
       })
     }
   }
+
+
+  async addCoin(payload: { coin: string }) {
+    try {
+      const { coin } = payload
+      const coinExists = await this.data.coins.findOne({ coin });
+      if (coinExists) {
+        return Promise.reject({
+          status: HttpStatus.CONFLICT,
+          state: ResponseState.ERROR,
+          error: null,
+          message: "Coin already enabled"
+        })
+      }
+      const data = {
+        coin,
+      }
+      return Promise.resolve({
+        message: "Coin Details retrieved succesfully",
+        status: HttpStatus.CREATED,
+        data,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 }

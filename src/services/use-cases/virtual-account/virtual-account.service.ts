@@ -147,7 +147,7 @@ export class VirtualAccountServices {
                     status: HttpStatus.NOT_FOUND,
                     state: ResponseState.ERROR,
                     error: null,
-                    message: 'Coin does not exists'
+                    message: `Don't support ${coin}`
                 })
             }
             const virtualAccount = await this.data.virtualAccounts.findOne({ _id: id, coin, userId })
@@ -209,7 +209,7 @@ export class VirtualAccountServices {
         const { accountId, email, coin, userId } = payload
         try {
             const { address } = await this.data.depositAddresses.findOne({ coin, accountId, userId });
-            
+
             return Promise.resolve({
                 message: "Address retrieved succesfully",
                 status: 200,
