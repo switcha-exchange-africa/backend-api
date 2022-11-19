@@ -2,12 +2,63 @@ import { Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/com
 import { isAuthenticated } from "src/core/decorators";
 import { VirtualAccountServices } from "src/services/use-cases/virtual-account/virtual-account.service";
 import { Request, Response } from "express"
-import { DepositVirtualAccountDto, IDepositVirtualAccount } from "src/core/dtos/virtual-account";
+import { DepositVirtualAccountDto, IDepositVirtualAccount, IGetVirtualAccounts } from "src/core/dtos/virtual-account";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 
 @Controller('virtual-account')
 export class VirtualAccountController {
     constructor(private services: VirtualAccountServices) { }
+
+    @isAuthenticated('strict')
+    @Get('/')
+    async getAllVirtualAccounts(
+        @Req() req: Request,
+        @Query() query: any,
+        @Res() res: Response
+    ) {
+        try {
+            const {
+                coin,
+                accountId,
+                pendingTransactionSubscriptionId,
+                incomingTransactionSubscriptionId,
+                withdrawalTransactionSubscriptionId,
+                active,
+                page,
+                q,
+                perpage,
+                orderBy,
+                sortBy,
+                frozen,
+                dateFrom,
+                dateTo
+            } = query
+            const payload: IGetVirtualAccounts = {
+                coin,
+                userId: req?.user._id,
+                accountId,
+                pendingTransactionSubscriptionId,
+                incomingTransactionSubscriptionId,
+                withdrawalTransactionSubscriptionId,
+                active,
+                frozen,
+                q,
+                page,
+                perpage,
+                orderBy,
+                sortBy,
+                dateFrom,
+                dateTo,
+                email: req?.user.email,
+            }
+            const response = await this.services.getAllVirtualAccounts(payload)
+            return res.status(response.status).json(response);
+
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
 
     @isAuthenticated('strict')
     @Post('/:id')
@@ -35,6 +86,23 @@ export class VirtualAccountController {
         }
     }
 
+    @isAuthenticated('strict')
+    @Get('/:id')
+    async getSingleTransaction(
+        @Req() req: Request,
+        @Res() res: Response,
+        @Param() param: FindByIdDto
+    ) {
+        try {
+            const { id } = param;
+            const user = req?.user
+            const response = await this.services.getSingleVirtualAccount({ id, email: user.email });
+            return res.status(response.status).json(response);
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
 
     @isAuthenticated('strict')
     @Get('/:id/deposit')

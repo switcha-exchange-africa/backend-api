@@ -13,6 +13,7 @@ export abstract class IGenericRepository<T> {
       queryFields?: Record<string, any>,
       misc?: {
         populated?: any
+        select?: string | string[]
       }
     });
 

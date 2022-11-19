@@ -98,6 +98,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     queryFields?: Record<string, any>,
     misc?: {
       populated?: any
+      select?: string | string[]
     }
   }) {
     try {
@@ -136,6 +137,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         $and: andArr
       };
       const populated = !isEmpty(options) && options.misc ? options.misc.populated || [] : this._populateOnFind || []
+      const selected = !isEmpty(options) && options.misc ? options.misc.select || [] : []
+
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
       const total = await this._repository.countDocuments(filterQuery as any);
       const data = await this._repository
@@ -144,6 +147,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         .limit(perpage)
         .skip(page * perpage - perpage)
         .sort(sortQuery)
+        .select(selected)
         .lean();
       return Promise.resolve({
         data,

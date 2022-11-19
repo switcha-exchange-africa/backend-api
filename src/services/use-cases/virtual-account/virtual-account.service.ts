@@ -77,7 +77,8 @@ export class VirtualAccountServices {
                     populated: {
                         path: 'userId',
                         select: '_id firstName lastName email phone'
-                    }
+                    },
+                    select:['userId', 'accountId', 'active', 'frozen', 'coin', 'balance', 'lockedBalance', 'lastDeposit', 'lastWithdrawal']
                 }
             });
 
