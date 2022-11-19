@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { isAuthenticated } from "src/core/decorators";
 import { VirtualAccountServices } from "src/services/use-cases/virtual-account/virtual-account.service";
 import { Request, Response } from "express"
@@ -34,4 +34,34 @@ export class VirtualAccountController {
 
         }
     }
+
+
+    @isAuthenticated('strict')
+    @Get('/:id/deposit')
+    async getVirtualAccountDepositAddress(
+        @Req() req: Request,
+        @Param() params: FindByIdDto,
+        @Query() query: any,
+        @Res() res: Response
+    ) {
+        try {
+            const user = req?.user
+            const { id } = params
+            const { coin } = query
+
+            const payload = {
+                userId: user._id,
+                accountId: String(id),
+                email: user.email,
+                coin
+            }
+            const response = await this.services.getVirtualAccountDepositAddress(payload)
+            return res.status(response.status).json(response);
+
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
+
 }

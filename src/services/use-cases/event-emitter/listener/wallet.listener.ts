@@ -91,7 +91,7 @@ export class WalletCreateListener {
           type: "ACCOUNT_INCOMING_BLOCKCHAIN_TRANSACTION",
           attr: {
             id: accountId,
-            url: `${API_URL}/api/v1/webhook/tatum-incoming-transaction`,
+            url: `${API_URL}/api/v1/webhook/tatum-virtual-account-incoming-transaction`,
           },
         },
         CONFIG
@@ -101,7 +101,7 @@ export class WalletCreateListener {
           type: "ACCOUNT_PENDING_BLOCKCHAIN_TRANSACTION",
           attr: {
             id: accountId,
-            url: `${API_URL}/api/v1/webhook/tatum-pending-transaction`,
+            url: `${API_URL}/api/v1/webhook/tatum-virtual-account-pending-transaction`,
           },
         },
         CONFIG

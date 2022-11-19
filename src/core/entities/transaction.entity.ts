@@ -90,7 +90,7 @@ export class Transaction {
   p2pAdId: string;
   p2pOrderId: string;
   feeWalletId: string
-  metadata: object
-
+  metadata: object;
+  accountId: string
 }
 

@@ -25,6 +25,12 @@ export class Transaction {
 
   @Prop({
     type: Types.ObjectId,
+    ref: "VirtualAccount",
+  })
+  accountId:string
+
+  @Prop({
+    type: Types.ObjectId,
     ref: "FeeWallet",
   })
   feeWalletId: string;

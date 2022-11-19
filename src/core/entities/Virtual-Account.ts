@@ -12,5 +12,10 @@ export class VirtualAccount {
     withdrawalTransactionSubscriptionId: string
     active: boolean;
     frozen: boolean;
+    lastDeposit: number;
+    lastWithdrawal: number;
+    balance: number;
+    lockedBalance: number;
+
 }
 

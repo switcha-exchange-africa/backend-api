@@ -7,4 +7,5 @@ export class DepositAddress {
     status: Status;
     address: string;
     derivationKey: string;
+    metaData: Record<string, any>
 }

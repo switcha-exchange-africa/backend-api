@@ -12,9 +12,9 @@ export class DepositAddressFactoryService {
     if (data.status) address.status = data.status;
     if (data.address) address.address = data.address;
     if (data.derivationKey) address.derivationKey = data.derivationKey;
+    if (data.metaData) address.metaData = data.metaData;
 
     
-
     return address;
   }
 }

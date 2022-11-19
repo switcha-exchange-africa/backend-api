@@ -176,6 +176,7 @@ export class VirtualAccountServices {
                 userId,
                 derivationKey: address.derivationKey,
                 address: address.address,
+                metaData: address
             })
             const data = await this.data.depositAddresses.create(factory)
             return {
@@ -189,6 +190,39 @@ export class VirtualAccountServices {
             Logger.error(error)
             const errorPayload: IErrorReporter = {
                 action: 'DEPOSIT TO VIRTUAL ACCOUNTS',
+                error,
+                email,
+                message: error.message
+            }
+
+            this.utilsService.errorReporter(errorPayload)
+            return Promise.reject({
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                state: ResponseState.ERROR,
+                message: error.message,
+                error: error
+            })
+        }
+    }
+
+    async getVirtualAccountDepositAddress(payload: { accountId: string, coin: string, email: string, userId: string }) {
+        const { accountId, email, coin, userId } = payload
+        try {
+            const { address } = await this.data.depositAddresses.findOne({ coin, accountId, userId });
+            
+            return Promise.resolve({
+                message: "Address retrieved succesfully",
+                status: 200,
+                data: {
+                    address,
+                    coin
+                },
+            });
+
+        } catch (error) {
+            Logger.error(error)
+            const errorPayload: IErrorReporter = {
+                action: 'GET DEPOSIT ADDRESS',
                 error,
                 email,
                 message: error.message

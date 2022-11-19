@@ -163,6 +163,129 @@ export class WebhookServices {
   }
 
 
+  /**
+   * 
+   * @param payload 
+   * @desc
+   *  Enable HTTP POST JSON notifications on incoming blockchain transactions on virtual accounts. 
+   * This web hook will be invoked, when the transaction is credited to the virtual account. 
+   * Transaction is credited, when it has sufficient amount of blockchain confirmations. For BTC, LTC, BCH, DOGE - 2 confirmations, others - 1 confirmation. 
+   * Request body of the POST request will be JSON object with attributes:
+   * @returns 
+   */
+   async incomingVirtualAccountTransactions(payload: Record<string, any>) {
+    try {
+      const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
+      const [account, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
+        this.data.virtualAccounts.findOne({ coin: currency.toUpperCase(), accountId }),
+        this.data.transactions.findOne({ reference }),
+        this.data.transactions.findOne({ tatumTransactionId: txId }),
+        this.data.transactions.findOne({ hash: blockHash })
+      ])
+      if (!account) return Promise.resolve({ message: 'Wallet does not exists' })
+      if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
+      if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })
+      if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
+
+      const user = await this.data.users.findOne({ _id: account.userId })
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const creditedAccount = await this.data.virtualAccounts.update(
+            {
+              _id: account._id,
+            },
+            {
+              $inc: {
+                balance: amount,
+              },
+              lastDeposit: amount
+            },
+            session
+          );
+          if (!creditedAccount) {
+            Logger.error("Error Occurred");
+            throw new BadRequestsException("Error Occurred");
+          }
+
+          const txCreditPayload = {
+            userId: String(user._id),
+            accountId: String(creditedAccount?._id),
+            currency,
+            amount,
+            signedAmount: amount,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Recieved ${amount} ${currency} from ${from}`,
+            status: TRANSACTION_STATUS.COMPLETED,
+            balanceAfter: creditedAccount?.balance,
+            balanceBefore: account?.balance,
+            subType: TRANSACTION_SUBTYPE.CREDIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
+            senderAddress: from,
+            hash: blockHash,
+            reference,
+            tatumTransactionId: txId,
+            metadata: payload
+          };
+
+          const notificationPayload = {
+            userId: account.userId,
+            title: "Deposit",
+            message: `Recieved ${amount} ${currency} from ${from} `,
+          }
+
+          const [notificationFactory, txCreditFactory] = await Promise.all([
+            this.notificationFactory.create(notificationPayload),
+            this.txFactoryServices.create(txCreditPayload)
+          ])
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.notifications.create(notificationFactory, session)
+
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
+      };
+
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+      await this.discord.inHouseNotification({
+        title: `External Deposit :- ${env.env} environment`,
+        message: `
+
+        External Deposit
+
+        Recieved ${amount} ${currency} 
+        
+        FROM:-  ${from}
+        
+        TO :- ${to}
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      return { message: "Webhook received successfully", status: 200, data: payload }
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'INCOMING DEPOSIT',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
+
+
+  
   async incomingPendingTransactions(payload: Record<string, any>) {
     try {
 
@@ -193,5 +316,38 @@ export class WebhookServices {
       return Promise.resolve({ message: error, status: 200 })
     }
   }
+
+  async incomingVirtualAccountPendingTransactions(payload: Record<string, any>) {
+    try {
+
+      const { amount, currency, accountId, from } = payload
+      const account = await this.data.wallets.findOne({ accountId })
+
+      if (!account) return Promise.resolve({ message: 'Account does not exists' })
+      const factory = await this.notificationFactory.create({
+        title: "Incoming Deposit",
+        message: `Incoming deposit of ${amount} ${currency} from ${from}`,
+        userId: account.userId
+      })
+
+      await this.data.notifications.create(factory)
+      return { message: "Webhook received successfully", status: 200, data: payload }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'INCOMING PENDING DEPOSIT',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
+
+
 }
 

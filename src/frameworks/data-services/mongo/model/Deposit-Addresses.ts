@@ -1,5 +1,6 @@
 import {
     Prop,
+    raw,
     Schema,
     SchemaFactory
 } from '@nestjs/mongoose';
@@ -38,6 +39,15 @@ export class DepositAddress {
 
     @Prop()
     address: string
+
+    @Prop(raw({
+        derivationKey: { type: String },
+        xpub: { type: String },
+        address: { type: String },
+        currency: { type: String },
+
+    }))
+    metaData: Record<string, any>
 
     @Prop({ enum: STATUS_LIST, default: Status.PENDING })
     status: Status

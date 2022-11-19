@@ -53,6 +53,22 @@ export class VirtualAccount {
     @Prop({ default: false })
     frozen: boolean;
 
+    @Prop({ default: 0 })
+    lastDeposit: number;
+
+    @Prop({ default: 0 })
+    lastWithdrawal: number;
+
+    @Prop({
+        default: 0
+    })
+    balance: number;
+
+    @Prop({
+        default: 0
+    })
+    lockedBalance: number;
+
     @Prop()
     createdAt: Date;
 
