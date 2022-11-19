@@ -98,11 +98,11 @@ export class NonCustodialWalletLib {
             const { username, userId, pin } = payload
 
             const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
-            const { mnemonic, xpub } = await btcSDK.wallet.generateWallet()
+            const { mnemonic, xpub } = await btcSDK.wallet.generateWallet(undefined, NETWORK_CONFIG)
 
             const privateKey = await btcSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, 1, NETWORK_CONFIG)
             const account = await btcSDK.ledger.account.create({
-                currency: 'BTC',
+                currency: Currency.BTC,
                 xpub,
             })
             const encrypted = encryptData({ text: mnemonic, username, userId, pin })
@@ -123,7 +123,7 @@ export class NonCustodialWalletLib {
             const { username, userId, pin } = payload
 
             const bscSdk = TatumBscSDK(API_KEY_CONFIG)
-            const { mnemonic, xpub } = await bscSdk.wallet.generateWallet()
+            const { mnemonic, xpub } = await bscSdk.wallet.generateWallet(undefined, NETWORK_CONFIG)
 
             const privateKey = await bscSdk.wallet.generatePrivateKeyFromMnemonic(mnemonic, 1, NETWORK_CONFIG)
             const account = await bscSdk.ledger.account.create({
