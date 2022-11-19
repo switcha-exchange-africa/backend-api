@@ -455,10 +455,44 @@ export class WebhookServices {
         this.data.virtualAccounts.findOne({ accountId, coin: currency.toUpperCase() })
       ])
 
-      if (transactionAlreadyExists) return Promise.resolve({ message: 'Transaction already exists' })
-      if (!transaction) return Promise.resolve({ message: 'Transaction does not exists or already completed' })
-      if (!virtualAccount) return Promise.resolve({ message: 'Wallet does not exists' })
+      if (transactionAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Withdrawal :- ${env.env} environment`,
+          message: `
+          Transaction already exists
 
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+
+        return Promise.resolve({ message: 'Transaction already exists' })
+      } 
+      if (!transaction){
+        await this.discord.inHouseNotification({
+          title: `Withdrawal :- ${env.env} environment`,
+          message: `
+          Transaction does not exists or already completed
+                              
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'Transaction does not exists or already completed' })
+      } 
+      if (!virtualAccount){
+        await this.discord.inHouseNotification({
+          title: `Withdrawal :- ${env.env} environment`,
+          message: `
+          Wallet does not exists
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'Wallet does not exists' })
+
+      }
 
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
