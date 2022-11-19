@@ -29,10 +29,10 @@ export class AdminCoinController {
     }
   }
 
-  @Post('/add')
   @isAdminAuthenticated('strict')
+  @Post('/add')
   @ByPass('pass')
-  async add(@Req() req: Request, @Body() body: AddCoinDto, @Res() res: Response) {
+  async addCoin(@Req() req: Request, @Body() body: AddCoinDto, @Res() res: Response) {
     try {
 
       const userId = req?.user?._id

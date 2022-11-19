@@ -19,16 +19,16 @@ export class Coin {
   @Prop({ enum: CoinTypeList })
   type: CoinType
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canBuy: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canSell: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canWithdraw: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: false })
   canP2p: boolean;
 
   @Prop({ default: true })
