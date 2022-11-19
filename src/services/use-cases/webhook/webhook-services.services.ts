@@ -305,6 +305,24 @@ export class WebhookServices {
       })
 
       await this.data.notifications.create(factory)
+
+
+      await this.discord.inHouseNotification({
+        title: `Pending External Deposit :- ${env.env} environment`,
+        message: `
+
+        External Deposit
+
+        Recieved ${amount} ${currency} 
+        
+        FROM:-  ${from}
+        
+        TO :- ${to}
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
       return { message: "Webhook received successfully", status: 200, data: payload }
 
     } catch (error) {
@@ -325,8 +343,8 @@ export class WebhookServices {
   async incomingVirtualAccountPendingTransactions(payload: Record<string, any>) {
     try {
 
-      const { amount, currency, accountId, from } = payload
-      const account = await this.data.wallets.findOne({ accountId })
+      const { amount, currency, accountId, from, to } = payload
+      const account = await this.data.virtualAccounts.findOne({ accountId })
 
       if (!account) return Promise.resolve({ message: 'Account does not exists' })
       const factory = await this.notificationFactory.create({
@@ -334,8 +352,31 @@ export class WebhookServices {
         message: `Incoming deposit of ${amount} ${currency} from ${from}`,
         userId: account.userId
       })
+      const user = await this.data.users.findOne({ _id: account.userId })
 
       await this.data.notifications.create(factory)
+
+
+      await this.discord.inHouseNotification({
+        title: `Pending External Deposit :- ${env.env} environment`,
+        message: `
+
+        External Deposit
+
+        Recieved ${amount} ${currency} 
+        
+        FROM:-  ${from}
+        
+        TO :- ${to}
+
+        EMAIL:- ${user.email}
+        
+        ACCOUNT ID :- accountId
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
       return { message: "Webhook received successfully", status: 200, data: payload }
 
     } catch (error) {
