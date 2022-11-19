@@ -359,7 +359,10 @@ export class WebhookServices {
       const user = await this.data.users.findOne({ _id: account.userId })
 
       await this.data.notifications.create(factory)
-
+      await this.data.depositAddresses.update(
+        { address: to, coin: currency.toUpperCase(), userId: account.userId },
+        { status: Status.PROCESSING }
+      )
 
       await this.discord.inHouseNotification({
         title: `Pending External Deposit :- ${env.env} environment`,
