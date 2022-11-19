@@ -365,7 +365,7 @@ export class KycServices {
       )
 
       return Promise.resolve({
-        message: `${status} successfully`,
+        message: `Verification ${status} successfully`,
         status: HttpStatus.OK,
         data,
       });
