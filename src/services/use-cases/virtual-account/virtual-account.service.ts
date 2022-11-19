@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { IGetVirtualAccounts } from "src/core/dtos/virtual-account";
+import { IDepositVirtualAccount, IGetVirtualAccounts } from "src/core/dtos/virtual-account";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { Status } from "src/core/types/status";
@@ -138,8 +138,8 @@ export class VirtualAccountServices {
     }
 
 
-    async deposit(payload: { email: string, accountId: string, coin: string, userId: string }) {
-        const { email, accountId, coin, userId } = payload
+    async deposit(payload: IDepositVirtualAccount) {
+        const { email, id, coin, userId } = payload
         try {
             const coinExists = await this.data.coins.findOne({ coin })
             if (coinExists) {
@@ -150,7 +150,7 @@ export class VirtualAccountServices {
                     message: 'Coin does not exists'
                 })
             }
-            const virtualAccount = await this.data.virtualAccounts.findOne({ accountId, coin, userId })
+            const virtualAccount = await this.data.virtualAccounts.findOne({ _id: id, coin, userId })
             if (!virtualAccount) {
                 return Promise.reject({
                     status: HttpStatus.NOT_FOUND,
@@ -159,7 +159,7 @@ export class VirtualAccountServices {
                     message: `${coin} wallet does not exists`
                 })
             }
-            const hasPendingAddress = await this.data.depositAddresses.findOne({ virtualAccountId: accountId, coin, userId, status: Status.PENDING })
+            const hasPendingAddress = await this.data.depositAddresses.findOne({ virtualAccountId: virtualAccount.accountId, coin, userId, status: Status.PENDING })
             if (hasPendingAddress) {
                 return {
                     status: HttpStatus.OK,
@@ -168,10 +168,10 @@ export class VirtualAccountServices {
                     message: 'Address generated successfully'
                 }
             }
-            const address = await this.lib.generateBtcDepositAddress(accountId)
+            const address = await this.lib.generateBtcDepositAddress(virtualAccount.accountId)
             const factory = await this.depositAddressFactory.create({
                 address,
-                virtualAccountId: accountId,
+                virtualAccountId: virtualAccount.accountId,
                 status: Status.PENDING,
                 coin,
                 userId

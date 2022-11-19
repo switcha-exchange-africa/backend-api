@@ -20,6 +20,7 @@ import { QuickTradeController } from "./quick-trade";
 import { RatesController } from "./rates";
 import { TradeDisputeController } from "./trade-disputes";
 import { TransactionController } from "./transaction";
+import { VirtualAccountController } from "./virtual-account";
 import { WaitListController } from "./waitlist";
 import { WalletController } from "./wallet";
 import { WebPushController } from "./web-push";
@@ -53,5 +54,6 @@ export default [
   FeatureManagementController,
   ActivityController,
   NonCustodialWalletController,
+  VirtualAccountController,
   ...admin
 ]
