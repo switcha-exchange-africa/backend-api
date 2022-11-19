@@ -61,10 +61,57 @@ export class WebhookServices {
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
-      if (!wallet) return Promise.resolve({ message: 'Wallet does not exists' })
-      if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
-      if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })
-      if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
+      if (!wallet){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit V.1 :- ${env.env} environment`,
+          message: `
+          Wallet does not exists
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+
+        return Promise.resolve({ message: 'Wallet does not exists' })
+      }
+      if (referenceAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit V.1 :- ${env.env} environment`,
+          message: `
+          reference already exists
+          
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+
+        return Promise.resolve({ message: 'reference already exists' })
+      } 
+      if (transactionIdAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit V.1 :- ${env.env} environment`,
+          message: `
+          tatumTransactionId already exists
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+
+        return Promise.resolve({ message: 'tatumTransactionId already exists' })
+      }
+      if (transactionHashAlreadyExists){
+  await this.discord.inHouseNotification({
+          title: `Incoming Deposit V.1 :- ${env.env} environment`,
+          message: `
+          Transaction hash already exists
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'Transaction hash already exists' })
+      }
 
       const user = await this.data.users.findOne({ _id: wallet.userId })
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -473,7 +520,7 @@ export class WebhookServices {
           title: `Withdrawal :- ${env.env} environment`,
           message: `
           Transaction does not exists or already completed
-                              
+
           BODY : ${JSON.stringify(payload)}
   `,
           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
