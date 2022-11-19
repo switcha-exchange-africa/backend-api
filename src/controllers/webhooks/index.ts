@@ -72,7 +72,7 @@ export class WebhookController {
         }
     }
 
-    @Get('/tatum-virtual-account-incoming-transaction')
+    @Post('/tatum-virtual-account-incoming-transaction')
     async incomingVirtualAccountTransactions(
         @Req() req: Request,
         @Res() res: Response,
@@ -145,7 +145,7 @@ export class WebhookController {
         }
     }
 
-    @Get('/tatum-virtual-account-pending-transaction')
+    @Post('/tatum-virtual-account-pending-transaction')
     async incomingVirtualAccountPendingTransactions(
         @Req() req: Request,
         @Res() res: Response,
