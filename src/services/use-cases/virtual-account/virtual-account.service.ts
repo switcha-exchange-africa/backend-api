@@ -168,7 +168,7 @@ export class VirtualAccountServices {
                     message: 'Address generated successfully'
                 }
             }
-            const address = await this.lib.generateBtcDepositAddress(virtualAccount.accountId)
+            const address = await this.lib.generateDepositAddress(virtualAccount.accountId, coin)
             const factory = await this.depositAddressFactory.create({
                 address,
                 virtualAccountId: virtualAccount.accountId,
