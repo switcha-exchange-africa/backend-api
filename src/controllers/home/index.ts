@@ -27,7 +27,7 @@ export class HomeController {
 
   @Get('/name')
   name(): string {
-    return `${env.env.toUpperCase()} sdsdsdsd API`;
+    return `${env.env.toUpperCase()} API`;
   }
 
 
