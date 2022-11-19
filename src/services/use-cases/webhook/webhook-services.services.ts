@@ -173,14 +173,16 @@ export class WebhookServices {
    * Request body of the POST request will be JSON object with attributes:
    * @returns 
    */
-   async incomingVirtualAccountTransactions(payload: Record<string, any>) {
+  async incomingVirtualAccountTransactions(payload: Record<string, any>) {
     try {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [account, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
         this.data.virtualAccounts.findOne({ coin: currency.toUpperCase(), accountId }),
         this.data.transactions.findOne({ reference }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
-        this.data.transactions.findOne({ hash: blockHash })
+        this.data.transactions.findOne({ hash: blockHash }),
+        ,
+
       ])
       if (!account) return Promise.resolve({ message: 'Wallet does not exists' })
       if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
@@ -188,6 +190,9 @@ export class WebhookServices {
       if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
 
       const user = await this.data.users.findOne({ _id: account.userId })
+      const depositAddress = await this.data.depositAddresses.findOne({ address: to, coin: currency.toUpperCase(), userId: account.userId })
+      if (!depositAddress) return Promise.resolve({ message: `Deposit address ${to} doesnt exists in our system` })
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const creditedAccount = await this.data.virtualAccounts.update(
@@ -285,7 +290,7 @@ export class WebhookServices {
   }
 
 
-  
+
   async incomingPendingTransactions(payload: Record<string, any>) {
     try {
 
