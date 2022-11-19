@@ -13,6 +13,7 @@ import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION
 import { Wallet } from "src/core/entities/wallet.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
+import { Status } from "src/core/types/status";
 
 Injectable()
 export class WebhookServices {
@@ -244,7 +245,10 @@ export class WebhookServices {
           ])
           await this.data.transactions.create(txCreditFactory, session)
           await this.data.notifications.create(notificationFactory, session)
-
+          await this.data.depositAddresses.update(
+            { address: to, coin: currency.toUpperCase(), userId: account.userId },
+            { status: Status.COMPLETED }
+          )
 
         } catch (error) {
           Logger.error(error);
@@ -370,7 +374,7 @@ export class WebhookServices {
         TO :- ${to}
 
         EMAIL:- ${user.email}
-        
+
         ACCOUNT ID :- accountId
 
         BODY : ${JSON.stringify(payload)}
