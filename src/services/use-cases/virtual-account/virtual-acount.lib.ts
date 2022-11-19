@@ -91,6 +91,12 @@ export class VirtualAccountLib {
                 })
                 return transfer
             }
+            if(coin === Currency.USDT_TRON){
+
+            }
+            if(coin === Currency.BNB){
+                
+            }
         } catch (error) {
             throw new Error(error)
         }

@@ -185,10 +185,54 @@ export class WebhookServices {
         ,
 
       ])
-      if (!account) return Promise.resolve({ message: 'Wallet does not exists' })
-      if (referenceAlreadyExists) return Promise.resolve({ message: 'reference already exists' })
-      if (transactionIdAlreadyExists) return Promise.resolve({ message: 'tatumTransactionId already exists' })
-      if (transactionHashAlreadyExists) return Promise.resolve({ message: 'Transaction hash already exists' })
+      if (!account){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit :- ${env.env} environment`,
+          message: `
+            Account does not exists
+  
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'Wallet does not exists' })
+      } 
+      if (referenceAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit :- ${env.env} environment`,
+          message: `
+          reference already exists
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'reference already exists' })
+      } 
+      if (transactionIdAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit :- ${env.env} environment`,
+          message: `
+          tatumTransactionId already exists            
+          
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'tatumTransactionId already exists' })
+      } 
+      if (transactionHashAlreadyExists){
+        await this.discord.inHouseNotification({
+          title: `Incoming Deposit :- ${env.env} environment`,
+          message: `
+          Transaction hash already exists
+          
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        return Promise.resolve({ message: 'Transaction hash already exists' })
+      } 
 
       const user = await this.data.users.findOne({ _id: account.userId })
       const depositAddress = await this.data.depositAddresses.findOne({ address: to, coin: currency.toUpperCase(), userId: account.userId })
