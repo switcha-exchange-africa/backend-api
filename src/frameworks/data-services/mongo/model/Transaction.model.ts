@@ -27,7 +27,7 @@ export class Transaction {
     type: Types.ObjectId,
     ref: "VirtualAccount",
   })
-  accountId:string
+  accountId: string
 
   @Prop({
     type: Types.ObjectId,

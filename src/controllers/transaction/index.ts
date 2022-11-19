@@ -23,10 +23,10 @@ export class TransactionController {
     try {
 
       const userId = req?.user?._id!;
-      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type } = query
-  
+      const { perpage, page, dateFrom, dateTo, sortBy, orderBy, hash, accountId, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type } = query
+
       const payload: IGetTransactions = {
-        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, hash, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type
+        perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, hash, accountId, customTransactionType, subType, status, walletId, currency, tatumTransactionId, reference, generalTransactionReference, senderAddress, type
       }
       const response = await this.transactionServices.getAllTransactions(payload);
       return res.status(response.status).json(response);

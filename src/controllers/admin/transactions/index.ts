@@ -34,6 +34,7 @@ export class AdminTransactionsController {
         generalTransactionReference,
         senderAddress,
         type,
+        accountId,
         q
       } = query
 
@@ -56,6 +57,7 @@ export class AdminTransactionsController {
         generalTransactionReference,
         senderAddress,
         type,
+        accountId,
         q
       }
       const response = await this.services.getAllTransactions(payload);

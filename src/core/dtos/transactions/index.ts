@@ -14,4 +14,5 @@ export type IGetTransactions = PaginationType & {
   status: string
   customTransactionType: string
   hash: string
+  accountId: string
 }

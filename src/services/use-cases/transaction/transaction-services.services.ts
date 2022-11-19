@@ -27,7 +27,9 @@ export class TransactionServices {
     if (payload.status) key['status'] = payload.status
     if (payload.customTransactionType) key['customTransactionType'] = payload.customTransactionType
     if (payload.hash) key['hash'] = payload.hash
+    if (payload.accountId) key['accountId'] = payload.accountId
 
+    
 
     return key
   }
