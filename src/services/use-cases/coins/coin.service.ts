@@ -1,12 +1,17 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
+import { IAddCoin } from "src/core/dtos/coin";
 import { Coin, CoinType, IGetCoins } from "src/core/entities/Coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
+import { CoinFactoryService } from "./coin-factory.service";
 
 @Injectable()
 export class CoinServices {
-  constructor(private data: IDataServices) { }
+  constructor(
+    private readonly data: IDataServices,
+    private readonly factory: CoinFactoryService
+  ) { }
 
   cleanQueryPayload(payload: IGetCoins) {
     let key = {}
@@ -190,9 +195,11 @@ export class CoinServices {
   }
 
 
-  async addCoin(payload: { coin: string }) {
+  async addCoin(payload: IAddCoin) {
     try {
-      const { coin } = payload
+
+      const { coin, userId } = payload
+
       const coinExists = await this.data.coins.findOne({ coin });
       if (coinExists) {
         return Promise.reject({
@@ -202,14 +209,16 @@ export class CoinServices {
           message: "Coin already enabled"
         })
       }
-      const data = {
-        coin,
-      }
-      return Promise.resolve({
-        message: "Coin Details retrieved succesfully",
+
+      const factory = await this.factory.create({ userId, coin, canSwap: true, canWithdraw: true })
+      const data = await this.data.coins.create(factory)
+
+      return {
+        message: "Coin added succesfully",
         status: HttpStatus.CREATED,
         data,
-      });
+        state: ResponseState.SUCCESS
+      };
 
     } catch (error) {
       Logger.error(error)

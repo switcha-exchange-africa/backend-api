@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
+import { AddCoinDto } from "src/core/dtos/coin";
 import { ByPass } from "src/decorator";
 import { CoinServices } from "src/services/use-cases/coins/coin.service";
 
@@ -27,6 +28,24 @@ export class AdminCoinController {
 
     }
   }
+
+  @Post('/add')
+  @isAdminAuthenticated('strict')
+  @ByPass('pass')
+  async add(@Req() req: Request, @Body() body: AddCoinDto, @Res() res: Response) {
+    try {
+
+      const userId = req?.user?._id
+      const response = await this.services.addCoin({ ...body, userId });
+
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
   @Get('/')
   @isAdminAuthenticated('strict')
   async getAllCoins(@Res() res: Response, @Query() query) {

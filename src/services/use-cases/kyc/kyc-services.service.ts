@@ -295,7 +295,7 @@ export class KycServices {
           this.connection
         )
         return Promise.resolve({
-          message: `${status} successfully`,
+          message: `Verification ${status} successfully`,
           status: HttpStatus.OK,
           data,
         });
@@ -303,7 +303,7 @@ export class KycServices {
       if (status === Status.PROCESSING) {
         await this.data.kyc.update({ _id: id }, { status: Status.DENIED })
         return Promise.resolve({
-          message: `${status} successfully`,
+          message: `Verification ${status} successfully`,
           status: HttpStatus.OK,
           data,
         });
