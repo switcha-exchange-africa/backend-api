@@ -5,5 +5,6 @@ export class DepositAddress {
     virtualAccountId: string;
     coin: string;
     status: Status;
-    address: string
+    address: string;
+    derivationKey: string;
 }

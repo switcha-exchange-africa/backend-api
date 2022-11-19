@@ -141,8 +141,8 @@ export class VirtualAccountServices {
     async deposit(payload: IDepositVirtualAccount) {
         const { email, id, coin, userId } = payload
         try {
-            const coinExists = await this.data.coins.findOne({ coin })
-            if (coinExists) {
+            const coinExists = await this.data.coins.findOne({ coin: coin.toUpperCase() })
+            if (!coinExists) {
                 return Promise.reject({
                     status: HttpStatus.NOT_FOUND,
                     state: ResponseState.ERROR,
@@ -170,11 +170,12 @@ export class VirtualAccountServices {
             }
             const address = await this.lib.generateDepositAddress(virtualAccount.accountId, coin)
             const factory = await this.depositAddressFactory.create({
-                address,
                 virtualAccountId: virtualAccount.accountId,
                 status: Status.PENDING,
                 coin,
-                userId
+                userId,
+                derivationKey: address.derivationKey,
+                address: address.address,
             })
             const data = await this.data.depositAddresses.create(factory)
             return {

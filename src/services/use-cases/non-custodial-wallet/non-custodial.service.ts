@@ -27,7 +27,7 @@ export class NonCustodialWalletServices {
             const [coinExists, user, virtualAccount] = await Promise.all([
                 this.data.coins.findOne({ coin: coin.toUpperCase() }),
                 this.data.users.findOne({ _id: userId }),
-                this.data.virtualAccounts.findOne({ coin: coin.toUpperCase() }),
+                this.data.virtualAccounts.findOne({ coin: coin.toUpperCase(), userId }),
 
             ])
             if (!coinExists) {
@@ -80,7 +80,7 @@ export class NonCustodialWalletServices {
                     xpub: cleanAccount.xpub,
                     mnemonic: encrypted,
                     active: cleanAccount.active,
-                    frozen: cleanAccount.frozen
+                    frozen: cleanAccount.frozen,
                 })
                 const data = await this.data.virtualAccounts.create(virtualAccountFactory)
                 this.emitter.emit("send.webhook.subscription", {
@@ -89,7 +89,7 @@ export class NonCustodialWalletServices {
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
-                    data,
+                    data: {},
                     state: ResponseState.SUCCESS
                 }
             }
@@ -113,7 +113,7 @@ export class NonCustodialWalletServices {
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
-                    data,
+                    data: {},
                     state: ResponseState.SUCCESS
                 }
             }
@@ -137,7 +137,7 @@ export class NonCustodialWalletServices {
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
-                    data,
+                    data: {},
                     state: ResponseState.SUCCESS
                 }
             }
@@ -161,7 +161,7 @@ export class NonCustodialWalletServices {
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
-                    data,
+                    data: {},
                     state: ResponseState.SUCCESS
                 }
             }
@@ -186,7 +186,7 @@ export class NonCustodialWalletServices {
                 return {
                     message: 'Wallet created successfully',
                     status: HttpStatus.CREATED,
-                    data,
+                    data: {},
                     state: ResponseState.SUCCESS
                 }
             }

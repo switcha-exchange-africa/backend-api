@@ -11,7 +11,9 @@ export class DepositAddressFactoryService {
     if (data.coin) address.coin = data.coin;
     if (data.status) address.status = data.status;
     if (data.address) address.address = data.address;
+    if (data.derivationKey) address.derivationKey = data.derivationKey;
 
+    
 
     return address;
   }

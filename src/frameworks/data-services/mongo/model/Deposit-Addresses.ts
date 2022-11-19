@@ -34,7 +34,10 @@ export class DepositAddress {
     coin: string
 
     @Prop()
-    address: string 
+    derivationKey: string
+
+    @Prop()
+    address: string
 
     @Prop({ enum: STATUS_LIST, default: Status.PENDING })
     status: Status
