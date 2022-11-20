@@ -72,6 +72,8 @@ export class Withdrawal {
   amount: number
   originalAmount: number
   fee: number
+  tatumReference: string
+  tatumWithdrawalId: string
 }
 
 

@@ -211,6 +211,8 @@ export class WithdrawalServices {
             subType: WithdrawalSubType.AUTO,
             status: WithdrawalStatus.PENDING,
             amount,
+            tatumWithdrawalId:response.id,
+            tatumReference:response.reference,
             originalAmount: amountBeforeFee,
             fee,
           }

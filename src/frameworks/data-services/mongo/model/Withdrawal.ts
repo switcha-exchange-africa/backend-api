@@ -60,6 +60,12 @@ export class Withdrawal {
   currency: string
 
   @Prop()
+  tatumReference: string
+ 
+  @Prop()
+  tatumWithdrawalId: string
+  
+  @Prop()
   reference: string
 
   @Prop({ enum: WITHDRAWAL_TYPE_LIST })
