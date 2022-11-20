@@ -48,15 +48,17 @@ export class WebhookController {
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
                     .update(JSON.stringify(req.body))
-                    .digest("hex");
+                    .digest("base64");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
                     await this.discordServices.inHouseNotification({
-                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        title: `Incoming  Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
                         SIGNATURE :- ${signature}
 
+                        EMCRYPTED DATA :- ${encryptedData}
+                        
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -86,15 +88,17 @@ export class WebhookController {
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
                     .update(JSON.stringify(req.body))
-                    .digest("hex");
+                    .digest("base64");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
                     await this.discordServices.inHouseNotification({
-                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        title: `Virtual Account incoming Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
                         SIGNATURE :- ${signature}
 
+                        EMCRYPTED DATA :- ${encryptedData}
+                        
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -124,7 +128,7 @@ export class WebhookController {
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
                     .update(JSON.stringify(req.body))
-                    .digest("hex");
+                    .digest("base64");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
                     await this.discordServices.inHouseNotification({
@@ -133,6 +137,8 @@ export class WebhookController {
                         
                         SIGNATURE :- ${signature}
 
+                        EMCRYPTED DATA :- ${encryptedData}
+                        
 
                         ${JSON.stringify(req.body)}
                         
@@ -164,15 +170,17 @@ export class WebhookController {
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
                     .update(JSON.stringify(req.body))
-                    .digest("hex");
+                    .digest("base64");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
                     await this.discordServices.inHouseNotification({
-                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        title: `Virtual Account  Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
-                                                SIGNATURE :- ${signature}
+                        SIGNATURE :- ${signature}
 
+                        EMCRYPTED DATA :- ${encryptedData}
+                        
 
                         ${JSON.stringify(req.body)}
                         
@@ -203,14 +211,16 @@ export class WebhookController {
                 const encryptedData = crypto
                     .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
                     .update(JSON.stringify(req.body))
-                    .digest("hex");
+                    .digest("base64");
                 if (encryptedData !== signature) {
                     Logger.warn('Wrong signature')
                     await this.discordServices.inHouseNotification({
-                        title: `Incoming Pending Deposit:- ${env.env} environment`,
+                        title: `Withdrawal Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
                         SIGNATURE :- ${signature}
+
+                        EMCRYPTED DATA :- ${encryptedData}
 
                         ${JSON.stringify(req.body)}
                         
