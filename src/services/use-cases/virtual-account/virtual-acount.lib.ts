@@ -78,7 +78,7 @@ export class VirtualAccountLib {
                 return transfer
             }
 
-            if (coin === Currency.ETH) {
+            if (coin === Currency.ETH || coin === Currency.USDT || coin === Currency.USDC) {
 
                 const ethSDK = TatumEthSDK(API_KEY_CONFIG)
                 const privateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, 1, NETWORK_CONFIG)
@@ -91,11 +91,30 @@ export class VirtualAccountLib {
                 })
                 return transfer
             }
-            if(coin === Currency.USDT_TRON){
+            if (coin === Currency.USDT_TRON) {
+                const tronSDK = TatumTronSDK(API_KEY_CONFIG)
+                const fromPrivateKey = await tronSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, 0)
 
+                const transfer = await tronSDK.virtualAccount.send({
+                    senderAccountId: accountId,
+                    amount,
+                    fromPrivateKey,
+                    address: destination,
+                })
+                return transfer
             }
-            if(coin === Currency.BNB){
-                
+            if (coin === Currency.BNB || coin === Currency.BSC || coin === Currency.BUSD) {
+
+                const bscSdk = TatumBscSDK(API_KEY_CONFIG)
+                const fromPrivateKey = await bscSdk.wallet.generatePrivateKeyFromMnemonic(mnemonic, 1, NETWORK_CONFIG)
+
+                const transfer = await bscSdk.virtualAccount.send({
+                    senderAccountId: accountId,
+                    amount,
+                    fromPrivateKey,
+                    address: destination,
+                })
+                return transfer
             }
         } catch (error) {
             throw new Error(error)
