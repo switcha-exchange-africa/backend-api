@@ -55,6 +55,8 @@ export class WebhookController {
                         title: `Incoming Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
+                        SIGNATURE :- ${signature}
+
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -91,6 +93,8 @@ export class WebhookController {
                         title: `Incoming Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
+                        SIGNATURE :- ${signature}
+
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -127,6 +131,9 @@ export class WebhookController {
                         title: `Incoming Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
+                        SIGNATURE :- ${signature}
+
+
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -164,6 +171,9 @@ export class WebhookController {
                         title: `Incoming Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
+                                                SIGNATURE :- ${signature}
+
+
                         ${JSON.stringify(req.body)}
                         
                         `,
@@ -200,6 +210,8 @@ export class WebhookController {
                         title: `Incoming Pending Deposit:- ${env.env} environment`,
                         message: `Wrong signature
                         
+                        SIGNATURE :- ${signature}
+
                         ${JSON.stringify(req.body)}
                         
                         `,
