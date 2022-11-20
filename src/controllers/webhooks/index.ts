@@ -62,7 +62,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -102,7 +102,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -143,7 +143,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -185,7 +185,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }
@@ -225,7 +225,7 @@ export class WebhookController {
                         ${JSON.stringify(req.body)}
                         
                         `,
-                        link: !env.isDev ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
                     })
                     return res.status(200).json({ message: "Webhook discarded" })
                 }

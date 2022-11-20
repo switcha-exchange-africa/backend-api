@@ -79,7 +79,7 @@ export class WebhookServices {
           title: `Incoming Deposit V.1 :- ${env.env} environment`,
           message: `
           reference already exists
-          
+
           BODY : ${JSON.stringify(payload)}
   `,
           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
@@ -364,6 +364,9 @@ export class WebhookServices {
         
         TO :- ${to}
 
+        ACCOUNT ID :- ${accountId}
+
+
         BODY : ${JSON.stringify(payload)}
 `,
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
@@ -469,7 +472,7 @@ export class WebhookServices {
 
         EMAIL:- ${user.email}
 
-        ACCOUNT ID :- accountId
+        ACCOUNT ID :- ${accountId}
 
         BODY : ${JSON.stringify(payload)}
 `,
