@@ -1,6 +1,5 @@
 import {
     Controller,
-    Get,
     Logger,
     Post,
     Req,
@@ -36,7 +35,7 @@ export class WebhookController {
         }
     }
 
-    @Get('/tatum-incoming-transaction')
+    @Post('/tatum-incoming-transaction')
     async incomingTransactions(
         @Req() req: Request,
         @Res() res: Response,
@@ -116,7 +115,7 @@ export class WebhookController {
         }
     }
 
-    @Get('/tatum-pending-transaction')
+    @Post('/tatum-pending-transaction')
     async incomingPendingTransactions(
         @Req() req: Request,
         @Res() res: Response,
