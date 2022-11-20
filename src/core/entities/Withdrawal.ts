@@ -13,7 +13,8 @@ export enum WithdrawalType {
 export enum WithdrawalSubType {
   P2P = 'p2p',
   BUY_SELL = 'buy-sell',
-  MANUAL = 'manual'
+  MANUAL = 'manual',
+  AUTO = 'auto',
 }
 
 export enum WithdrawalPaymentMethod {
@@ -36,7 +37,8 @@ export const WITHDRAWAL_STATUS_LIST = [
 export const WITHDRAWAL_SUB_TYPE_LIST = [
   WithdrawalSubType.BUY_SELL,
   WithdrawalSubType.P2P,
-  WithdrawalSubType.MANUAL
+  WithdrawalSubType.MANUAL,
+  WithdrawalSubType.AUTO
 
 ]
 export const WITHDRAWAL_PAYMENT_METHOD_LIST = [

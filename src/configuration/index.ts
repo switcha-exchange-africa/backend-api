@@ -44,21 +44,27 @@ export const TWILIO_PHONE = getEnv('TWILIO_PHONE', true)!
 export const TATUM_API_KEY = getEnv('TATUM_API_KEY')!
 export const ADMIN_CYPHER_SECRET = getEnv('ADMIN_CYPHER_SECRET')!
 export const TATUM_BASE_URL = getEnv('TATUM_BASE_URL')!
+export const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', true);
+export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', true)!
+export const MAILJET_API_SECRET_KEY = getEnv("MAILJET_API_SECRET_KEY", true)
+export const MAILJET_API_PUBLIC_KEY = getEnv("MAILJET_API_PUBLIC_KEY", true)
+
+export const TATUM_WEBHOOK_SECRET = getEnv("TATUM_WEBHOOK_SECRET", true)!
+
+export const TATUM_BTC_MNEMONIC = getEnv("TATUM_BTC_MNEMONIC", true)
+export const TATUM_ETH_MNEMONIC = getEnv("TATUM_ETH_MNEMONIC", true)
+export const TATUM_TRON_MNEMONIC = getEnv("TATUM_TRON_MNEMONIC", true)
+
+export const TATUM_ETH_XPUB_KEY = getEnv("TATUM_ETH_XPUB_KEY", true)
+export const TATUM_TRON_XPUB_KEY = getEnv("TATUM_TRON_XPUB_KEY", true)
+export const TATUM_BTC_XPUB_KEY = getEnv("TATUM_BTC_XPUB_KEY", true)
+
 export const TATUM_USDT_ACCOUNT_ID = getEnv('TATUM_USDT_ACCOUNT_ID')!
 export const TATUM_USDC_ACCOUNT_ID = getEnv('TATUM_USDC_ACCOUNT_ID')!
 export const TATUM_BTC_ACCOUNT_ID = getEnv('TATUM_BTC_ACCOUNT_ID')!
 export const TATUM_USDT_TRON_ACCOUNT_ID = getEnv('TATUM_USDT_TRON_ACCOUNT_ID')!
-export const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', true);
-export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', true)!
 export const TATUM_ETH_ACCOUNT_ID = getEnv("TATUM_ETH_ACCOUNT_ID")
-export const TATUM_WEBHOOK_SECRET = getEnv("TATUM_WEBHOOK_SECRET", true)!
-export const MAILJET_API_SECRET_KEY = getEnv("MAILJET_API_SECRET_KEY", true)
-export const MAILJET_API_PUBLIC_KEY = getEnv("MAILJET_API_PUBLIC_KEY", true)
-export const TATUM_BTC_MNEMONIC = getEnv("TATUM_BTC_MNEMONIC", true)
-export const TATUM_ETH_MNEMONIC = getEnv("TATUM_ETH_MNEMONIC", true)
-export const TATUM_ETH_XPUB_KEY = getEnv("TATUM_ETH_XPUB_KEY", true)
-export const TATUM_TRON_XPUB_KEY = getEnv("TATUM_TRON_XPUB_KEY", true)
-export const TATUM_BTC_XPUB_KEY = getEnv("TATUM_BTC_XPUB_KEY", true)
+
 export const WEB_PUSH_PUBLIC_KEY = getEnv("WEB_PUSH_PUBLIC_KEY", true)
 export const WEB_PUSH_PRIVATE_KEY = getEnv("WEB_PUSH_PRIVATE_KEY", true)
 export const FRONTEND_URL = getEnv("FRONTEND_URL", true)

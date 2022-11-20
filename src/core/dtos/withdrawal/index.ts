@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 export class WithdrawalCreateDto {
   @IsNotEmpty()
   @IsString()
-  public readonly address: string
+  public readonly destination: string
 
   @IsNotEmpty()
   @IsString()

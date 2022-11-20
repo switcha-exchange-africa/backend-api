@@ -1,5 +1,8 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
-import { env, TATUM_BASE_URL, TATUM_CONFIG } from "src/configuration"
+import {
+  env, TATUM_BASE_URL, TATUM_CONFIG,
+  // TATUM_BASE_URL, TATUM_CONFIG
+} from "src/configuration"
 import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { ICreateWithdrawal } from "src/core/dtos/withdrawal"
@@ -8,12 +11,18 @@ import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import { UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
-import { ExchangeRate } from "src/core/entities/Rate"
 import { generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
-import { IGetWithdrawals, Withdrawal, WithdrawalStatus, WithdrawalSubType, WithdrawalType } from "src/core/entities/Withdrawal"
+import {
+  IGetWithdrawals,
+  Withdrawal,
+  WithdrawalStatus,
+  WithdrawalSubType,
+  WithdrawalType,
+  //  WithdrawalSubType, WithdrawalType
+} from "src/core/entities/Withdrawal"
 import { Wallet } from "src/core/entities/wallet.entity"
-import { WithdrawalFactoryService } from "./withdrawal-factory.service"
+// import { WithdrawalFactoryService } from "./withdrawal-factory.service"
 import { NotificationFactoryService } from "../notification/notification-factory.service"
 import { ActivityFactoryService } from "../activity/activity-factory.service"
 import { ActivityAction } from "src/core/dtos/activity"
@@ -23,6 +32,8 @@ import { WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
+import { WithdrawalFactoryService } from "./withdrawal-factory.service"
+// import { WithdrawalLib } from "./withdrawal.lib"
 
 @Injectable()
 export class WithdrawalServices {
@@ -35,7 +46,7 @@ export class WithdrawalServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly discord: INotificationServices,
     private readonly http: IHttpServices,
-    private readonly utilsService: UtilsServices,
+    // private readonly lib: WithdrawalLib,
     @InjectConnection() private readonly connection: mongoose.Connection
 
   ) { }
@@ -62,9 +73,9 @@ export class WithdrawalServices {
     return key
   }
   async createCryptoWithdrawalManual(payload: ICreateWithdrawal) {
-    try {
-      const { coin, address, amount: amountBeforeFee, userId, email } = payload
+    const { coin, destination, amount: amountBeforeFee, userId, email } = payload
 
+    try {
       // check if user has access to this feature
       const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
       if (!userManagement) {
@@ -84,42 +95,51 @@ export class WithdrawalServices {
         })
       }
       // if(amountBeforeFee)
-      const wallet: mongoose.HydratedDocument<Wallet> = await this.data.wallets.findOne({ userId, coin })
+      const wallet = await this.data.wallets.findOne({ userId, coin })
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
-          message: 'Wallet does not exists'
+          message: 'Wallet does not exists',
+          error: null
         })
       }
       if (amountBeforeFee >= wallet.balance) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
-          message: 'Insufficient balance'
+          message: 'Insufficient balance',
+          error: null
         })
       }
 
       const { fee, amount } = await this.utils.calculateWithdrawalFees({ amount: amountBeforeFee, coin })
-      const rate: mongoose.HydratedDocument<ExchangeRate> = await this.data.exchangeRates.findOne({ coin: coin.toUpperCase() }, null, { sort: 'desc' })
-      const generalTransactionReference = generateReference('general')
-      const amountInUsd = Math.abs(_.divide(amountBeforeFee, rate.sellRate))
-      let apiResponse
-      console.log(fee, amount)
-      if (amountInUsd > 200) {
-        apiResponse = await this.http.post(
-          `${TATUM_BASE_URL}/offchain/withdrawal`,
-          {
-
-            senderAccountId: wallet.accountId,
-            address,
-            amount: String(amount),
-            fee: String(fee)
-          },
-          TATUM_CONFIG
-        );
+      if (fee >= amountBeforeFee) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Insufficient balance',
+          error: null
+        })
       }
-      // send request to tatum
+      // const response = await this.lib.withdrawal({
+      //   accountId: wallet.accountId,
+      //   coin,
+      //   amount: String(amount),
+      //   destination
+      // })
+      const response = await this.http.post(
+        `${TATUM_BASE_URL}/offchain/withdrawal`,
+        {
+
+          senderAccountId: wallet.accountId,
+          address: destination,
+          amount: String(amount),
+          fee: String(fee)
+        },
+        TATUM_CONFIG
+      );
+      const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           const debitedWallet = await this.data.wallets.update(
@@ -147,10 +167,7 @@ export class WithdrawalServices {
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
-            rate: {
-              pair: `${coin}usd`,
-              rate: rate.sellRate
-            },
+            metadata: response,
             generalTransactionReference,
             reference: generateReference('debit'),
           };
@@ -165,11 +182,8 @@ export class WithdrawalServices {
             status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
-            rate: {
-              pair: `${coin}USD`,
-              rate: rate.sellRate
-            },
             generalTransactionReference,
+            metadata: response,
             reference: generateReference('debit'),
           };
           const [transactionFactory, feeTransactionFactory] = await Promise.all([
@@ -188,13 +202,13 @@ export class WithdrawalServices {
             feeTransactionId: feeTransactionData._id,
             walletId: String(wallet?._id),
             destination: {
-              address,
+              address: destination,
               coin,
             },
             currency: coin,
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
-            subType: WithdrawalSubType.MANUAL,
+            subType: WithdrawalSubType.AUTO,
             status: WithdrawalStatus.PENDING,
             amount,
             originalAmount: amountBeforeFee,
@@ -226,14 +240,14 @@ export class WithdrawalServices {
           throw new Error(error);
         }
       }
-      await Promise.all([
-        databaseHelper.executeTransactionWithStartTransaction(
-          atomicTransaction,
-          this.connection
-        ),
-        this.discord.inHouseNotification({
-          title: `Withdraw Crypto :- ${env.env} environment`,
-          message: `
+
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      await this.discord.inHouseNotification({
+        title: `Withdraw Crypto :- ${env.env} environment`,
+        message: `
 
           Withdraw Crypto
 
@@ -242,40 +256,49 @@ export class WithdrawalServices {
               Fee: ${fee}
 
               Amount before deduction: ${amountBeforeFee}
-              
+
               Amount after deduction : ${amount}
 
               Message: Bought ${amount} ${coin} 
 
 
       `,
-          link: env.isProd ? WITHDRAWAL_CHANNEL_LINK_PRODUCTION : WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT,
-        })
-      ])
+        link: env.isProd ? WITHDRAWAL_CHANNEL_LINK_PRODUCTION : WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT,
+      })
+      return {
+        message: "Withdrawals created successfully",
+        status: HttpStatus.CREATED,
+        data: response,
+        state: ResponseState.SUCCESS
+      };
+
+      // send request to tatum
+
+
 
 
       // deduct wallet
       // withdrawal payload
       // transaction
       //store fee
-      return Promise.resolve({
-        message: "Withdrawals created successfully",
-        status: HttpStatus.CREATED,
-        data: {
-          apiResponse
-        },
-      });
+      // return Promise.resolve({
+      //   message: "Withdrawals created successfully",
+      //   status: HttpStatus.CREATED,
+      //   data: {
+      //     apiResponse
+      //   },
+      // });
 
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'CRYPTO WITHDRAWAL',
         error,
-        email: payload.email,
+        email,
         message: error.message
       }
 
-      this.utilsService.errorReporter(errorPayload)
+      this.utils.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
