@@ -91,7 +91,7 @@ export class VirtualAccountLib {
                 })
                 return transfer
             }
-            if (coin === Currency.USDT_TRON) {
+            if (coin === Currency.USDT_TRON || coin === Currency.TRON) {
                 const tronSDK = TatumTronSDK(API_KEY_CONFIG)
                 const fromPrivateKey = await tronSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, 0)
 
