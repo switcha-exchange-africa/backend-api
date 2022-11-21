@@ -4,7 +4,7 @@ import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGet
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
-import { FeatureManagement, IsLevelThree } from "src/decorator";
+import { FeatureManagement } from "src/decorator";
 import { FeatureEnum } from "src/core/dtos/activity";
 
 @Controller()
@@ -14,7 +14,7 @@ export class P2pController {
   ) { }
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_AD)
   @Post('/p2p/ads')
   async createAds(
@@ -35,7 +35,7 @@ export class P2pController {
   }
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @Post('/p2p/bank')
   async createAdsBank(
     @Req() req: Request,
@@ -114,7 +114,7 @@ export class P2pController {
 
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @Post('/p2p/bank/:id')
   async disableAdsBank(
     @Res() res: Response,
@@ -207,7 +207,7 @@ export class P2pController {
   }
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order')
   async createP2pOrder(
@@ -345,7 +345,7 @@ export class P2pController {
   }
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order/:id')
   async confirmP2pOrder(
@@ -372,7 +372,7 @@ export class P2pController {
   }
 
   @isAuthenticated('strict')
-  @IsLevelThree('three')
+  // @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
   @Post('/p2p/order/:id/notify-merchant')    
   async notifyMerchantP2pOrder(

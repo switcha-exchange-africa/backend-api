@@ -10,7 +10,7 @@ import { QuickTradeServices } from "src/services/use-cases/trade/quick-trade/qui
 import { IQuickTradeBuyV2, QuickTradeBuySellV2Dto } from "src/core/dtos/trade/quick-trade.dto";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureEnum } from "src/core/dtos/activity";
-import { FeatureManagement, IsLevelTwo } from "src/decorator";
+import { FeatureManagement } from "src/decorator";
 
 @Controller('/trade/quick-trade')
 export class QuickTradeController {
@@ -95,7 +95,7 @@ export class QuickTradeController {
 
   @FeatureManagement(FeatureEnum.QUICK_TRADE)
   @isAuthenticated('strict')
-  @IsLevelTwo('two')
+  // @IsLevelTwo('two')
   @Post('/')
   async trade(
     @Req() req: Request,
