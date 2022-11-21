@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
 import { Response } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { FundWalletDto, IFundWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { WalletServices } from "src/services/use-cases/wallet/wallet-services.services";
 
 @Controller('admin/wallets')
@@ -50,4 +50,23 @@ export class AdminWalletsController {
     }
   }
 
+  @isAdminAuthenticated('strict')
+  @Post('/:id/fund')
+  async fundWallet(@Res() res: Response, @Body() body: FundWalletDto, @Param() param: FindByIdDto) {
+    try {
+
+      const { id } = param;
+      const payload: IFundWallet = {
+        walletId: id,
+        ...body
+      }
+
+      const response = await this.services.fundWallet(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }

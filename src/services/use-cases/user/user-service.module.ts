@@ -10,6 +10,8 @@ import { UserServices } from './user-services.services';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import { UtilsServicesModule } from '../utils/utils.module';
 import { TwoFaFactoryService } from "./user-factory.service";
+import { TransactionFactoryService } from '../transaction/transaction-factory.services';
+import { NotificationFactoryService } from '../notification/notification-factory.service';
 
 @Module({
   imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
@@ -23,7 +25,9 @@ import { TwoFaFactoryService } from "./user-factory.service";
     UserFeatureManagementFactoryService,
     ActivityFactoryService,
     MutateUserFactoryService,
-    TwoFaFactoryService
+    TwoFaFactoryService,
+    TransactionFactoryService,
+    NotificationFactoryService
   ],
   exports: [
     UserFactoryService,

@@ -168,7 +168,6 @@ export class WebhookServices {
 
 
         } catch (error) {
-          Logger.error(error);
           throw new Error(error);
         }
       };

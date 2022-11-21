@@ -13,14 +13,22 @@ import {
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
 import { BLOCKCHAIN_CHAIN, Wallet } from "src/core/entities/wallet.entity";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
-import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { IFundWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { CoinType } from "src/core/types/coin";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
-import { WALLET_CHANNEL_LINK_DEVELOPMENT, WALLET_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
+import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, WALLET_CHANNEL_LINK_DEVELOPMENT, WALLET_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { InjectConnection } from "@nestjs/mongoose";
+import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
+import { BadRequestsException } from "../user/exceptions";
+import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { Status } from "src/core/types/status";
+import { generateReference } from "src/lib/utils";
+import { TransactionFactoryService } from "../transaction/transaction-factory.services";
+import { NotificationFactoryService } from "../notification/notification-factory.service";
 
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -74,12 +82,16 @@ const generateTatumWalletPayload = (coin: CoinType) => {
 @Injectable()
 export class WalletServices {
   constructor(
-    private http: IHttpServices,
-    private data: IDataServices,
-    private walletFactory: WalletFactoryService,
-    private readonly discordServices: INotificationServices,
+    private readonly http: IHttpServices,
+    private readonly data: IDataServices,
+    private readonly walletFactory: WalletFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly emitter: EventEmitter2,
+    private readonly discord: INotificationServices,
+    private readonly txFactoryServices: TransactionFactoryService,
+    private readonly notificationFactory: NotificationFactoryService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
+
 
   ) { }
 
@@ -138,7 +150,7 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
-        await this.discordServices.inHouseNotification({
+        await this.discord.inHouseNotification({
           title: `Wallet Channel :- ${env.env} environment`,
           message: `NGN wallet generated for ${fullName}:- ${email}`,
           link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
@@ -164,7 +176,7 @@ export class WalletServices {
         };
         const factory = await this.walletFactory.create(walletPayload);
         const data = await this.data.wallets.create(factory);
-        await this.discordServices.inHouseNotification({
+        await this.discord.inHouseNotification({
           title: `Wallet Channel :- ${env.env} environment`,
           message: `USD wallet generated for ${fullName}:- ${email}`,
           link: env.isProd ? WALLET_CHANNEL_LINK_PRODUCTION : WALLET_CHANNEL_LINK_DEVELOPMENT,
@@ -208,7 +220,7 @@ export class WalletServices {
       });
 
       const data = await this.data.wallets.create(factory);
-      await this.discordServices.inHouseNotification({
+      await this.discord.inHouseNotification({
         title: `Wallet Channel :- ${env.env} environment`,
         message: `
         ${coin} wallet generated for ${fullName}:- ${email}
@@ -445,7 +457,116 @@ export class WalletServices {
       })
     }
   }
+  async fundWallet(payload: IFundWallet) {
+    try {
+      const { walletId, amount, coin } = payload
+      const wallet = await this.data.wallets.findOne({ _id: walletId, coin })
+      if (!wallet) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Wallet does not exists',
+          error: null
+        })
+      }
+      const user = await this.data.users.findOne({ _id: wallet.userId })
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null
+        })
+      }
 
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const creditedWallet = await this.data.wallets.update(
+            {
+              _id: wallet._id,
+            },
+            {
+              $inc: {
+                balance: amount,
+              },
+              lastDeposit: amount
+            },
+            session
+          );
+          if (!creditedWallet) {
+            Logger.error("Error Occurred");
+            throw new BadRequestsException("Error Occurred");
+          }
+
+          const txCreditPayload = {
+            userId: String(user._id),
+            walletId: String(wallet?._id),
+            currency: coin,
+            amount,
+            signedAmount: amount,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `Wallet funded`,
+            status: Status.COMPLETED,
+            balanceAfter: creditedWallet?.balance,
+            balanceBefore: wallet?.balance,
+            subType: TRANSACTION_SUBTYPE.CREDIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.MANUAL_DEPOSIT,
+            reference: generateReference('credit'),
+          };
+
+          const notificationPayload = {
+            userId: wallet.userId,
+            title: "Deposit",
+            message: `Wallet funded`,
+          }
+
+          const [notificationFactory, txCreditFactory] = await Promise.all([
+            this.notificationFactory.create(notificationPayload),
+            this.txFactoryServices.create(txCreditPayload)
+          ])
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.notifications.create(notificationFactory, session)
+
+        } catch (error) {
+          throw new Error(error);
+        }
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+
+      this.discord.inHouseNotification({
+        title: `Admin Fund Wallet :- ${env.env} environment`,
+        message: `
+
+            Fund wallet
+
+            Wallet ID: ${walletId}
+
+            Funded ${amount} ${coin}
+
+
+    `,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      return {
+        status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS,
+        data: {},
+        message: 'Wallet funded successfully'
+      }
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
   // async fund(body: FundDto, userId) {
   //   try {
   //     const { amount } = body;
