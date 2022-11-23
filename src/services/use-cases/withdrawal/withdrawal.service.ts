@@ -28,7 +28,7 @@ import { ActivityFactoryService } from "../activity/activity-factory.service"
 import { ActivityAction } from "src/core/dtos/activity"
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper"
 import { InjectConnection } from "@nestjs/mongoose"
-import { WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
@@ -95,12 +95,34 @@ export class WithdrawalServices {
         })
       }
       // if(amountBeforeFee)
-      const wallet = await this.data.wallets.findOne({ userId, coin })
+      const [wallet, feeWallet] = await Promise.all([
+        this.data.wallets.findOne({ userId, coin }),
+        this.data.feeWallets.findOne({ coin }),
+      ])
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
           message: 'Wallet does not exists',
+          error: null
+        })
+      }
+      if (!feeWallet) {
+        await this.discord.inHouseNotification({
+          title: `Withdraw Crypto :- ${env.env} environment`,
+          message: `
+  
+            Fee Wallet Not Set Up Yet
+
+            Coin: ${coin}
+  
+        `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'An error occured, please contact support',
           error: null
         })
       }
@@ -154,6 +176,46 @@ export class WithdrawalServices {
             },
             session
           );
+          const creditedFeeWallet = await this.data.feeWallets.update(
+            {
+              _id: feeWallet._id,
+            },
+            {
+              $inc: {
+                balance: fee,
+              },
+            },
+            session
+          );
+          if (!debitedWallet) {
+            await this.discord.inHouseNotification({
+              title: `Withdraw Crypto :- ${env.env} environment`,
+              message: `
+      
+                Debiting user failed
+    
+                Coin: ${coin}
+      
+            `,
+              link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+            })
+            throw new Error('An error occured, please contact support')
+          }
+          if (!creditedFeeWallet) {
+            await this.discord.inHouseNotification({
+              title: `Withdraw Crypto :- ${env.env} environment`,
+              message: `
+      
+                Fee Wallet Not Set Up Yet
+    
+                Coin: ${coin}
+      
+            `,
+              link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+            })
+            throw new Error('An error occured, please contact support')
+          }
+
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(wallet?._id),
@@ -178,12 +240,14 @@ export class WithdrawalServices {
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
-            description: `Charged ${fee}${coin}`,
+            description: `Charged ${fee} ${coin}`,
             status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
             metadata: response,
+            balanceBefore: feeWallet.balance,
+            balanceAfter: creditedFeeWallet.balance,
             reference: generateReference('debit'),
           };
           const [transactionFactory, feeTransactionFactory] = await Promise.all([
@@ -211,8 +275,8 @@ export class WithdrawalServices {
             subType: WithdrawalSubType.AUTO,
             status: WithdrawalStatus.PENDING,
             amount,
-            tatumWithdrawalId:response.id,
-            tatumReference:response.reference,
+            tatumWithdrawalId: response.id,
+            tatumReference: response.reference,
             originalAmount: amountBeforeFee,
             fee,
           }

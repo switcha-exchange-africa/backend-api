@@ -26,13 +26,11 @@ export class AuthGuard implements CanActivate {
 
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
-      console.log("decoded")
-      console.log(decoded)
+      
       const user = await this.data.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
       request.user = decoded;
-      console.log(user)
-      console.log("EMAIL VERIFIED", user.emailVerified)
+    
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
 
