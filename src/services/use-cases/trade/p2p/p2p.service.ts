@@ -50,7 +50,7 @@ export class P2pServices {
     private readonly notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly emitter: EventEmitter2,
-    @InjectConnection() private readonly connection: mongoose.Connection,
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection,
     @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
 
   ) { }

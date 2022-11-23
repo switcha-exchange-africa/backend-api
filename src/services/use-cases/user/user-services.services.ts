@@ -14,7 +14,8 @@ export class UserServices {
   constructor(
     private readonly data: IDataServices,
     private readonly mutateUserFactory: MutateUserFactoryService,
-    @InjectConnection() private readonly connection: mongoose.Connection,
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
+    
 
   ) { }
   cleanUserQueryPayload(payload: IGetUsers) {

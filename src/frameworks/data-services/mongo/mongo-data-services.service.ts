@@ -34,6 +34,7 @@ import { MutateUser, MutateUserDocument } from './model/MutateUser';
 import { TwoFa, TwoFaDocument } from './model/TwoFa';
 import { VirtualAccount, VirtualAccountDocument } from './model/Virtual-Account';
 import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresses';
+// import { Gondor } from './model/Gondor';
 
 
 
@@ -71,6 +72,7 @@ export class MongoDataServices
   twoFa: MongoGenericRepository<TwoFa>
   virtualAccounts: MongoGenericRepository<VirtualAccount>
   depositAddresses: MongoGenericRepository<DepositAddress>
+  // gondor: MongoGenericRepository<Gondor>
 
 
   constructor(

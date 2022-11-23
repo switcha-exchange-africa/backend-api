@@ -32,7 +32,7 @@ export class BuySellServices {
     private readonly utils: UtilsServices,
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
   async buy(body: BuySellDto, userId: string): Promise<ResponsesType<any>> {

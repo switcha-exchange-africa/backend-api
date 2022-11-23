@@ -90,7 +90,7 @@ export class WalletServices {
     private readonly discord: INotificationServices,
     private readonly txFactoryServices: TransactionFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
-    @InjectConnection() private readonly connection: mongoose.Connection,
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
 
   ) { }

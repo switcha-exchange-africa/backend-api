@@ -1,7 +1,7 @@
 import { Transaction, TransactionSchema } from "./model/Transaction.model";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { MONGO_DB_URL } from "src/configuration";
+import { GONDOR_DB_URL, MONGO_DB_URL } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
 import { User, UserSchema } from "./model/User";
 import { Wallet, WalletSchema } from "./model/Wallet";
@@ -34,9 +34,16 @@ import { MutateUser, MutateUserSchema } from './model/MutateUser';
 import { TwoFa, TwoFaSchema } from './model/TwoFa';
 import { VirtualAccount, VirtualAccountSchema } from "./model/Virtual-Account";
 import { DepositAddress, DepositAddressSchema } from "./model/Deposit-Addresses";
+import { Gondor, GondorSchema } from "./model/Gondor";
 
 @Module({
   imports: [
+    MongooseModule.forRoot(MONGO_DB_URL, {
+      connectionName: 'switcha',
+    }),
+    MongooseModule.forRoot(GONDOR_DB_URL, {
+      connectionName: 'gondor',
+    }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Wallet.name, schema: WalletSchema },
@@ -69,13 +76,12 @@ import { DepositAddress, DepositAddressSchema } from "./model/Deposit-Addresses"
       { name: TwoFa.name, schema: TwoFaSchema },
       { name: VirtualAccount.name, schema: VirtualAccountSchema },
       { name: DepositAddress.name, schema: DepositAddressSchema },
+    ], 'switcha'),
+    MongooseModule.forFeature([
+      { name: Gondor.name, schema: GondorSchema }
+    ], 'gondor')
 
 
-
-
-
-    ]),
-    MongooseModule.forRoot(MONGO_DB_URL),
   ],
   providers: [
     {

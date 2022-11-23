@@ -20,7 +20,7 @@ export class FaucetServices {
     private faucetFactoryServices: FaucetFactoryServices,
     private txFactoryServices: TransactionFactoryService,
 
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
   async create(body: {

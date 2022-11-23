@@ -23,7 +23,7 @@ export class WebhookServices {
     private notificationFactory: NotificationFactoryService,
     private discord: INotificationServices,
     private readonly utilsService: UtilsServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
 

@@ -19,7 +19,7 @@ export class TransferServices {
   constructor(
     private data: IDataServices,
     private txFactoryServices: TransactionFactoryService,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
   async transfer(body: TransferDto, userId: string) {

@@ -47,7 +47,7 @@ export class WithdrawalServices {
     private readonly discord: INotificationServices,
     private readonly http: IHttpServices,
     // private readonly lib: WithdrawalLib,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
 

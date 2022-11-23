@@ -35,7 +35,7 @@ export class SwapServices {
     private readonly utils: UtilsServices,
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
   private TATUM_CONFIG = {

@@ -19,7 +19,7 @@ export class KycServices {
     private readonly factory: KycFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
-    @InjectConnection() private readonly connection: mongoose.Connection,
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
 

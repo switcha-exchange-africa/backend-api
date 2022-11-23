@@ -20,7 +20,7 @@ export class OrderExpiryTaskConsumer {
     private readonly data: IDataServices,
     private readonly notificationFactory: NotificationFactoryService,
     private readonly discordServices: INotificationServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
 
   ) { }

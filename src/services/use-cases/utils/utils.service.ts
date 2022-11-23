@@ -28,7 +28,7 @@ export class UtilsServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly inMemoryServices: IInMemoryServices,
     private discord: INotificationServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
 
   ) { }

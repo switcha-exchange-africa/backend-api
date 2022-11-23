@@ -16,7 +16,7 @@ import { FeatureEnum } from "src/core/dtos/activity";
 export class SeedServices {
   constructor(
     private data: IDataServices,
-    @InjectConnection() private readonly connection: mongoose.Connection
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
 
