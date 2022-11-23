@@ -88,7 +88,6 @@ export class QuickTradeSellDto {
 
   @IsNumber()
   @IsPositive()
-  @IsPositive()
   public unitPrice: number
 
 

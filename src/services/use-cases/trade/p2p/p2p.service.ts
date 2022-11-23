@@ -468,16 +468,25 @@ export class P2pServices {
 
   async createAdsBank(payload: ICreateP2pAdBank) {
     try {
-      // const { accountNumber, userId } = payload
-      // const bankExists = await this.data.p2pAdBanks.findOne({ userId, accountNumber })
-      // if (bankExists) {
-      //   return Promise.reject({
-      //     status: HttpStatus.CONFLICT,
-      //     state: ResponseState.ERROR,
-      //     message: 'Bank already exists',
-      //     error: null
-      //   })
-      // }
+      const { type, name, userId } = payload
+      const bankExists = await this.data.p2pAdBanks.findOne({ name, type, userId })
+      if (bankExists) {
+        return Promise.reject({
+          status: HttpStatus.CONFLICT,
+          state: ResponseState.ERROR,
+          message: 'Bank already added',
+          error: null
+        })
+      }
+      const allBanks = await this.data.p2pAdBanks.find({ userId, type })
+      if (allBanks >= 5) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Maximum amount of bank is 5',
+          error: null
+        })
+      }
       const factory = await this.p2pAdsBankFactory.create(payload)
       const data = await this.data.p2pAdBanks.create(factory)
 
@@ -1278,7 +1287,7 @@ export class P2pServices {
           const merchantTransactionPayload = {
             userId: String(merchant._id),
             walletId: String(merchantWallet._id),
-            currency: coin ,
+            currency: coin,
             amount: order.quantity,
             signedAmount: -order.quantity,
             type: TRANSACTION_TYPE.DEBIT,
@@ -1313,7 +1322,7 @@ export class P2pServices {
           }
           const feeTransactionPayload = {
             feeWalletId: String(merchantWallet._id),
-            currency: ad.coin ,
+            currency: ad.coin,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,

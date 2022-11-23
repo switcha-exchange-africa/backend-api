@@ -76,10 +76,11 @@ export class CreateExchangeRateDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   buyRate: number
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsPositive()
   sellRate: number
 
 }

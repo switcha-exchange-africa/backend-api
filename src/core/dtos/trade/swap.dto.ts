@@ -14,6 +14,7 @@ export class SwapDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   amount: number;
 
   @IsNotEmpty()

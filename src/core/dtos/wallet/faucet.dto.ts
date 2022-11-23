@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { CoinType } from "src/core/types/coin";
 
 export class FaucetDto {
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
   amount: number;
 
   @IsNotEmpty()
@@ -14,16 +15,19 @@ export class FaucetDto {
 
   @IsOptional()
   @IsNumber()
+  @IsPositive()
   balance: number;
 
   @IsString()
   @IsOptional()
+  
   userId: string;
 }
 
 export class CreateFaucetDto {
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
   amount: number;
 
   @IsNotEmpty()
@@ -33,7 +37,7 @@ export class CreateFaucetDto {
   description: string;
 }
 
-export class FundFaucetDto{
+export class FundFaucetDto {
 
   @IsNotEmpty()
   coin: CoinType
@@ -41,7 +45,8 @@ export class FundFaucetDto{
   @IsNotEmpty()
   walletId: string
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
   amount: number
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 import { CoinType } from "src/core/types/coin";
 
 export class TransferDto {
@@ -14,6 +14,8 @@ export class TransferDto {
   @IsString()
   recipientAddress: string;
 
+
   @IsNumber()
+  @IsPositive()
   amount: number;
 }

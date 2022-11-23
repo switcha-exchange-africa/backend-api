@@ -1,11 +1,13 @@
 import {
   IsNotEmpty,
   IsNumber,
+  IsPositive,
 } from "class-validator";
 
 export class FundDto {
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
   amount: number;
 
   

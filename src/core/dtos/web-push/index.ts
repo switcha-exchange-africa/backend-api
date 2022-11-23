@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsPositive, IsString } from "class-validator";
 import { WebPushKey } from "src/core/entities/WebPush";
 
 export class WebPushKeyDto {
@@ -20,8 +20,9 @@ export class WebPushDto {
   @IsString()
   public readonly endpoint: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   public readonly expirationTime: number;
 
   @IsNotEmpty()
