@@ -26,11 +26,13 @@ export class AuthGuard implements CanActivate {
 
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
-
-      const user = await this.data.users.findOne({ id: decoded._id })
+      console.log("decoded")
+      console.log(decoded)
+      const user = await this.data.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
       request.user = decoded;
-
+      console.log(user)
+      console.log("EMAIL VERIFIED", user.emailVerified)
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
 
@@ -65,7 +67,7 @@ export class AdminAuthGuard implements CanActivate {
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
 
-      const user = await this.data.admins.findOne({ id: decoded._id })
+      const user = await this.data.admins.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
       request.user = decoded;
 
