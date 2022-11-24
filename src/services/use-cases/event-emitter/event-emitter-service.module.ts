@@ -9,6 +9,7 @@ import { SmsSentListener } from "./listener/sms.listener";
 import { BullModule } from '@nestjs/bull';
 import { UtilsServicesModule } from "src/services/use-cases/utils/utils.module";
 import { env } from "src/configuration";
+import { GondorListener } from "./listener/gondor.listener";
 // import { CustomLoggerListener } from "./listener/custom-logger.listener";
 // import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
@@ -26,7 +27,7 @@ import { env } from "src/configuration";
     }),
     DataServicesModule,
     WalletServicesModule,
-    
+
     BullModule.registerQueue(
       { name: `${env.env}.wallet` },
       { name: `${env.env}.wallet.webhook.subscription` }
@@ -38,6 +39,7 @@ import { env } from "src/configuration";
     SmsSentListener,
     WalletCreateListener,
     WalletFactoryService,
+    GondorListener
     // CustomLoggerListener,
     // CustomLoggerFactoryServices,
   ],
