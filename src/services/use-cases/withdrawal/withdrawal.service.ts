@@ -235,7 +235,7 @@ export class WithdrawalServices {
           };
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
-            walletId: String(wallet?._id),
+            feeWalletId: String(wallet?._id),
             currency: coin,
             amount: fee,
             signedAmount: -fee,
