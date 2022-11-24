@@ -7,7 +7,7 @@ export class Gondor {
     statusCode: string;
     actionType: string;
     platform: string;
-    headers: string;
+    headers: object;
     originalUrl: string;
     logMessage: string;
     operation: string;

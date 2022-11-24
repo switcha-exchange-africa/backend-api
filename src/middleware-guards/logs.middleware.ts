@@ -59,7 +59,7 @@ class LogsMiddleware implements NestMiddleware {
           sourceIp,
           actionType: method as ActionType,
           userId: user ? String(user._id) : null,
-          headers: JSON.stringify(headers),
+          headers: headers,
           isAnonymous: !checkUser,
           originalUrl,
           statusCode: String(statusCode),
@@ -68,7 +68,7 @@ class LogsMiddleware implements NestMiddleware {
           logMessage: '',
           operation: operation || 'not-set',
           operationId: '',
-          userEmail: user.email ? user.email : null,
+          userEmail: user ? user.email : null,
           app: 'switcha'
         };
 

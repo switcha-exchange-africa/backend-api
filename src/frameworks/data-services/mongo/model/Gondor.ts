@@ -17,7 +17,7 @@ export class Gondor {
 
     @Prop()
     userEmail: string;
-    
+
     @Prop()
     app: string;
 
@@ -39,9 +39,8 @@ export class Gondor {
     @Prop()
     platform: string;
 
-
-    @Prop()
-    headers: string;
+    @Prop({ type: Object })
+    headers: Object
 
     @Prop()
     originalUrl: string;
