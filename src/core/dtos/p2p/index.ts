@@ -231,8 +231,8 @@ export type IP2pConfirmOrder = P2pConfirmOrderDto & {
 }
 
 export type IGetP2pOrders = PaginationType & {
-  merchantId: string;
-  clientId: string;
+  merchantId?: string;
+  clientId?: string;
   adId: string;
   clientWalletId: string
   type: string;
