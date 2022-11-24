@@ -6,7 +6,6 @@ import { OptionalQuery } from "src/core/types/database";
 import { Gondor, GondorDocument } from "src/frameworks/data-services/mongo/model/Gondor";
 import { GondorEvent } from "../event/gondor.event";
 
-@Injectable()
 class GondorFactoryServices {
     create(data: OptionalQuery<GondorEvent>) {
         const gondor = new GondorEvent();
@@ -35,14 +34,14 @@ class GondorFactoryServices {
 export class GondorListener {
     constructor(
         @InjectModel(Gondor.name) private readonly gondorModel: Model<GondorDocument>,
-        private readonly gondorFactory: GondorFactoryServices
     ) { }
 
 
     @OnEvent('save.to.gondor', { async: true })
     async saveToGondor(event: FilterQuery<Gondor>) {
         try {
-            const factory = this.gondorFactory.create(event)
+            const factory = new GondorFactoryServices().create(event)
+            console.log("FACTORY", factory)
             await this.gondorModel.create(factory)
             Logger.log('@[gondor]', 'Saved to gondor')
             return
@@ -50,6 +49,6 @@ export class GondorListener {
             Logger.error(error)
         }
     }
-    
+
 
 }

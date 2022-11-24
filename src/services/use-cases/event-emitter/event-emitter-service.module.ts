@@ -10,6 +10,8 @@ import { BullModule } from '@nestjs/bull';
 import { UtilsServicesModule } from "src/services/use-cases/utils/utils.module";
 import { env } from "src/configuration";
 import { GondorListener } from "./listener/gondor.listener";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Gondor, GondorSchema } from "src/frameworks/data-services/mongo/model/Gondor";
 // import { CustomLoggerListener } from "./listener/custom-logger.listener";
 // import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
@@ -32,7 +34,11 @@ import { GondorListener } from "./listener/gondor.listener";
       { name: `${env.env}.wallet` },
       { name: `${env.env}.wallet.webhook.subscription` }
     ),
-    UtilsServicesModule
+    UtilsServicesModule,
+    MongooseModule.forFeature([
+      { name: Gondor.name, schema: GondorSchema }
+    ], 'gondor')
+
   ],
   providers: [
     EmailSentListener,
