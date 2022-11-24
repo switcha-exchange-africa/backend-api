@@ -69,7 +69,7 @@ class LogsMiddleware implements NestMiddleware {
 
 
         const sourceIp = Array.isArray(headers['x-original-forwarded-for']) ? headers['x-original-forwarded-for'].join(',') : headers['x-original-forwarded-for'];
-
+        console.log("SOURCE IP", sourceIp)
         const sourceIpCountryCode = Array.isArray(headers['cf-ipcountry']) ? headers['cf-ipcountry'].join(',') : headers['cf-ipcountry'];
         const platform = Array.isArray(headers['platform']) ? headers['platform'].join(',') : headers['platform'];
 

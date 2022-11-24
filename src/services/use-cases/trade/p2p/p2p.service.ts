@@ -317,6 +317,11 @@ export class P2pServices {
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.type) key['type'] = payload.type
     if (payload.coin) key['coin'] = payload.coin
+    if (payload.status) key['status'] = payload.status
+    if (payload.paymentTimeLimit) key['paymentTimeLimit'] = payload.paymentTimeLimit
+    if (payload.cash) key['status'] = payload.cash
+
+    
     if (payload.isSwitchaMerchant) key['isSwitchaMerchant'] = payload.isSwitchaMerchant
     return key
   }

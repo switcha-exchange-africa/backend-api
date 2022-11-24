@@ -152,11 +152,18 @@ export class P2pController {
         isPublished,
         coin,
         userId,
-        isSwitchaMerchant
+        isSwitchaMerchant,
+        status,
+        cash,
+        paymentTimeLimit
       } = query
       const payload: IGetP2pAds = {
         perpage, userId, page, dateFrom, dateTo, sortBy, orderBy, type,
-        isPublished, coin, isSwitchaMerchant, email: user.email
+        isPublished, coin, isSwitchaMerchant,
+        email: user.email,
+        status,
+        cash,
+        paymentTimeLimit
       }
 
       const response = await this.services.getAllAds(payload);
@@ -374,7 +381,7 @@ export class P2pController {
   @isAuthenticated('strict')
   // @IsLevelThree('three')
   @FeatureManagement(FeatureEnum.P2P_ORDER)
-  @Post('/p2p/order/:id/notify-merchant')    
+  @Post('/p2p/order/:id/notify-merchant')
   async notifyMerchantP2pOrder(
     @Req() req: Request,
     @Res() res: Response,

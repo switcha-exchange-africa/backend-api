@@ -186,8 +186,12 @@ export type IGetP2pAds = PaginationType & {
   isPublished: boolean
   isSwitchaMerchant: boolean
   email?: string
+  status: string
+  paymentTimeLimit: string
+  cash: string
 
 }
+
 export type IGetP2pBanks = PaginationType & {
   accountNumber: string
   isActive: boolean
