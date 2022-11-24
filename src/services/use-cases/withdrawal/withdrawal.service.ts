@@ -157,7 +157,7 @@ export class WithdrawalServices {
           senderAccountId: wallet.accountId,
           address: destination,
           amount: String(amount),
-          fee: String(fee)
+          fee: "0.00042"
         },
         TATUM_CONFIG
       );
@@ -284,7 +284,7 @@ export class WithdrawalServices {
             this.withdrawalFactory.create(withdrawalPayload),
             this.notificationFactory.create({
               userId,
-              title: 'Withdraw crypto',
+              title: 'Withdraw Crypto',
               message: `Withdrawal request of ${amount} ${coin}`
             }),
             this.activityFactory.create({
