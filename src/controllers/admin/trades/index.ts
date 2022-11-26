@@ -31,6 +31,8 @@ export class AdminTradesController {
         orderId,
         bankId,
         method,
+        coin,
+        cash,
         q
       } = query
       const payload: IGetP2pOrders = {
@@ -49,6 +51,8 @@ export class AdminTradesController {
         orderId,
         bankId,
         method,
+        coin,
+        cash,
         q
       }
       const response = await this.services.getP2pOrders(payload);

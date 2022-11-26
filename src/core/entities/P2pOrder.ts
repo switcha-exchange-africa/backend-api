@@ -14,6 +14,8 @@ export class P2pOrder {
   clientBankName: string
   orderId: string
   method: string
+  coin: string
+  cash: string
   price: number
   totalAmount: number
   clientWalletId: string

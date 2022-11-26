@@ -263,6 +263,8 @@ export class P2pController {
         orderId,
         bankId,
         method,
+        coin,
+        cash,
         q
       } = query
       const merchantId = req?.user?._id;
@@ -282,6 +284,8 @@ export class P2pController {
         orderId,
         bankId,
         method,
+        coin,
+        cash,
         email: req?.user?.email,
         q
       }
@@ -317,6 +321,8 @@ export class P2pController {
         orderId,
         bankId,
         method,
+        coin,
+        cash,
         q
       } = query
       const clientId = req?.user?._id;
@@ -338,7 +344,9 @@ export class P2pController {
         bankId,
         method,
         email: req?.user?.email,
-        q
+        q,
+        coin,
+        cash
       }
       const response = await this.services.getP2pOrders(payload);
       return res.status(response.status).json(response);

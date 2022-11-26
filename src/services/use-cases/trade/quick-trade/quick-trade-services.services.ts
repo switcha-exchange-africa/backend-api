@@ -158,7 +158,7 @@ export class QuickTradeServices {
                 lastDeposit: amount
               }, session),
               this.data.notifications.create(sellerNotificationFactory, session),
-              this.data.transactions.update({ _id: sellerPendingTransaction._id }, { 
+              this.data.transactions.update({ _id: sellerPendingTransaction._id }, {
                 status: Status.COMPLETED,
               }, session)
             ])
@@ -495,7 +495,7 @@ export class QuickTradeServices {
                 lastDeposit: amount
               }, session),
               this.data.notifications.create(buyerNotificationFactory, session),
-              this.data.transactions.update({ _id: buyerPendingTransaction._id }, { 
+              this.data.transactions.update({ _id: buyerPendingTransaction._id }, {
                 status: Status.COMPLETED,
               }, session)
             ])
@@ -965,6 +965,8 @@ export class QuickTradeServices {
             clientAccountName,
             clientAccountNumber,
             clientBankName,
+            coin: ad.coin,
+            cash: ad.cash,
             method,
             price: ad.price,
             clientWalletId: clientWallet ? String(clientWallet._id) : null,

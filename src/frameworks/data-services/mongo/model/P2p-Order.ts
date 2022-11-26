@@ -41,6 +41,12 @@ export class P2pOrder {
   })
   clientWalletId: string
 
+  @Prop()
+  coin: string
+
+  @Prop()
+  cash: string
+
   @Prop({ enum: P2pOrderTypeList })
   type: P2pOrderType;
 

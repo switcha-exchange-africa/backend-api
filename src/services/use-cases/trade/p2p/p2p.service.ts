@@ -321,7 +321,7 @@ export class P2pServices {
     if (payload.paymentTimeLimit) key['paymentTimeLimit'] = payload.paymentTimeLimit
     if (payload.cash) key['status'] = payload.cash
 
-    
+
     if (payload.isSwitchaMerchant) key['isSwitchaMerchant'] = payload.isSwitchaMerchant
     return key
   }
@@ -371,6 +371,9 @@ export class P2pServices {
     if (payload.orderId) key['orderId'] = payload.orderId
     if (payload.bankId) key['bankId'] = payload.bankId
     if (payload.method) key['method'] = payload.method
+    if (payload.coin) key['coin'] = payload.coin
+    if (payload.cash) key['cash'] = payload.cash
+
 
 
     return key
@@ -730,6 +733,8 @@ export class P2pServices {
             adId,
             type,
             quantity,
+            coin: ad.coin,
+            cash: ad.cash,
             bankId,
             status: Status.PENDING,
             clientAccountName,
