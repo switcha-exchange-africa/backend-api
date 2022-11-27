@@ -665,6 +665,14 @@ export class P2pServices {
           error: null
         })
       }
+      if (ad.userId === clientId) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Can't interact with your own trade`,
+          error: null
+        })
+      }
       const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
       if (quantity > ad.totalAmount) {
         return Promise.reject({

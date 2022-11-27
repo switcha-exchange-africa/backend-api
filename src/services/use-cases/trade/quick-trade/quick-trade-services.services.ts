@@ -918,6 +918,14 @@ export class QuickTradeServices {
           error: null
         })
       }
+      if (ad.userId === userId) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Can't interact with your own trade`,
+          error: null
+        })
+      }
       const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
       if (!merchant || merchant.lock) {
         return Promise.reject({
