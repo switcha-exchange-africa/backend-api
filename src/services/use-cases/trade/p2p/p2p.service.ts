@@ -64,7 +64,7 @@ export class P2pServices {
       const getFee = await this.data.fees.findOne({ feature, amountType: 'percentage' })
 
       const feePercent = _.divide(getFee.amountInPercentage, 100)
-      const fee = _.floor(_.multiply(feePercent, amount), 3)
+      const fee = _.floor(_.multiply(feePercent, amount), 8)
 
       const amountAfterFee = Math.abs(Number(_.subtract(amount, fee)))
       return { fee, amountAfterFee }

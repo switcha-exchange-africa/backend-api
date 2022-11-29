@@ -82,7 +82,7 @@ export class UtilsServices {
         if (!sourceExchangeRate) throw new Error(`Exchange rate not set for source currency ${source}`)
 
         console.log(sourceExchangeRate)
-        const destinationAmount = _.floor(_.multiply(sourceExchangeRate.sellRate, amount), 3)
+        const destinationAmount = _.floor(_.multiply(sourceExchangeRate.sellRate, amount), 8)
         return { rate: sourceExchangeRate.sellRate, destinationAmount }
 
       }
@@ -99,7 +99,7 @@ export class UtilsServices {
       console.log(destinationExchangeRate)
 
       const conversionRate = _.divide(sourceExchangeRate.buyRate, destinationExchangeRate.buyRate)
-      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 3)
+      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 8)
 
       return { rate: conversionRate, destinationAmount }
 
@@ -112,7 +112,7 @@ export class UtilsServices {
     try {
       const { sourceRate, destinationRate, amount } = payload
       const conversionRate = _.divide(sourceRate, destinationRate)
-      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 3)
+      const destinationAmount = _.floor(_.multiply(conversionRate, amount), 8)
 
       return { rate: conversionRate, destinationAmount }
 
@@ -136,8 +136,8 @@ export class UtilsServices {
       if (!getFee) return { fee: 0, deduction: amount }
 
       if (getFee.amountType === IFeeAmountType.PERCENTAGE) {
-        const fee = _.floor(_.multiply(amount, _.divide(getFee.amountInPercentage, 100)), 3)
-        const deduction = _.floor(_.subtract(amount, fee), 3)
+        const fee = _.floor(_.multiply(amount, _.divide(getFee.amountInPercentage, 100)), 8)
+        const deduction = _.floor(_.subtract(amount, fee), 8)
         return { deduction, fee }
       }
 
