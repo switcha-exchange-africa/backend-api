@@ -52,6 +52,8 @@ export class UserFeatureManagementFactoryService {
     if (data.canP2PBuy) manage.canP2PBuy = data.canP2PBuy;
     if (data.canP2PSell) manage.canP2PSell = data.canP2PSell;
     if (data.canWithdraw) manage.canWithdraw = data.canWithdraw;
+    if (data.canP2PCreateBuyAd) manage.canP2PCreateBuyAd = data.canP2PCreateBuyAd;
+    if (data.canP2PCreateSellAd) manage.canP2PCreateSellAd = data.canP2PCreateSellAd;
 
     return manage;
   }

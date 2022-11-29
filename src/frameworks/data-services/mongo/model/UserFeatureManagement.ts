@@ -31,6 +31,12 @@ export class UserFeatureManagement {
   canP2PSell: boolean;
 
   @Prop({ default: false })
+  canP2PCreateBuyAd: boolean;
+
+  @Prop({ default: false })
+  canP2PCreateSellAd: boolean;
+
+  @Prop({ default: false })
   canWithdraw: boolean;
 
   @Prop()

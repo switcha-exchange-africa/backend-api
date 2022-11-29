@@ -125,7 +125,7 @@ export class P2pServices {
           error: null
         })
       }
-      if (type === 'buy' && !userManagement.canP2PBuy) {
+      if (type === 'buy' && !userManagement.canP2PCreateBuyAd) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
           state: ResponseState.ERROR,
@@ -134,7 +134,7 @@ export class P2pServices {
         })
       }
 
-      if (type === 'sell' && !userManagement.canP2PSell) {
+      if (type === 'sell' && !userManagement.canP2PCreateSellAd) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
           state: ResponseState.ERROR,
