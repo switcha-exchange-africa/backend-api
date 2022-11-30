@@ -966,7 +966,7 @@ export class QuickTradeServices {
             merchantId: String(merchant._id),
             clientId: userId,
             adId: String(ad._id),
-            type: P2pOrderType.BUY,
+            type,
             quantity: amount,
             // bankId,
             status: Status.PENDING,
