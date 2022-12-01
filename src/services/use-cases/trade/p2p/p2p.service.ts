@@ -1629,35 +1629,70 @@ export class P2pServices {
         })
       }
 
-      const merchant = await this.data.users.findOne({ _id: order.merchantId })
+      if (order.status === Status.PROCESSING) {
+        return Promise.reject({
+          message: "Seller already notified",
+          state: ResponseState.ERROR,
+          error: null,
+          status: HttpStatus.BAD_REQUEST
+        })
+      }
 
+      const merchant = await this.data.users.findOne({ _id: order.merchantId })
+      const client = await this.data.users.findOne({ _id: order.clientId })
       // send push notification 
       // send email
       // send sms
       await this.data.p2pOrders.update({ _id: order._id }, { status: Status.PROCESSING })
+      if (order.type === 'buy') {
 
-      await Promise.all([
-        this.discord.inHouseNotification({
-          title: `Notify Merchant:- ${env.env} environment`,
-          message: `
-        ${fullName} :- ${email} has completed payment and has notified ${merchant.firstName} ${merchant.lastName} :- ${merchant.email}
-        
-  `,
-          link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
-        }),
-        this.emitter.emit("send.email.mailjet", {
-          fromEmail: 'support@switcha.africa',
-          fromName: "Support",
-          toEmail: merchant.email,
-          toName: `${merchant.firstName} ${merchant.lastName}`,
-          templateId: EmailTemplates.NOTIFY_MERCHANT,
-          subject: `Payment has been made. #${order.orderId}`,
-          variables: {
-            id: order.orderId,
-            username
-          }
-        })
-      ])
+        await Promise.all([
+          this.discord.inHouseNotification({
+            title: `Notify Merchant:- ${env.env} environment`,
+            message: `
+    ${fullName} :- ${email} has completed payment and has notified ${merchant.firstName} ${merchant.lastName} :- ${merchant.email}
+    
+`,
+            link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+          }),
+          this.emitter.emit("send.email.mailjet", {
+            fromEmail: 'support@switcha.africa',
+            fromName: "Support",
+            toEmail: merchant.email,
+            toName: `${merchant.firstName} ${merchant.lastName}`,
+            templateId: EmailTemplates.NOTIFY_MERCHANT,
+            subject: `Payment has been made. #${order.orderId}`,
+            variables: {
+              id: order.orderId,
+              username
+            }
+          })
+        ])
+      } else {
+
+        await Promise.all([
+          this.discord.inHouseNotification({
+            title: `Notify Merchant:- ${env.env} environment`,
+            message: `
+    ${fullName} :- ${email} has completed payment and has notified ${client.firstName} ${client.lastName} :- ${client.email}
+    
+`,
+            link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
+          }),
+          this.emitter.emit("send.email.mailjet", {
+            fromEmail: 'support@switcha.africa',
+            fromName: "Support",
+            toEmail: client.email,
+            toName: `${client.firstName} ${client.lastName}`,
+            templateId: EmailTemplates.NOTIFY_MERCHANT,
+            subject: `Payment has been made. #${order.orderId}`,
+            variables: {
+              id: order.orderId,
+              username
+            }
+          })
+        ])
+      }
       return Promise.resolve({
         message: 'Merchant notified successfully',
         status: HttpStatus.OK,
