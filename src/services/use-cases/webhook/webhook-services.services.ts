@@ -534,8 +534,14 @@ export class WebhookServices {
             },
             session
           )
-
-
+          await this.data.transactions.update(
+            { _id: withdrawal.feeWalletTransactionId },
+            {
+              status: Status.COMPLETED,
+            },
+            session
+          )
+          
         }
         await databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
@@ -546,7 +552,7 @@ export class WebhookServices {
           message: `
           
           ACTION: CUSTODIAL WALLET
-          
+
           External Withdrawal Web
   
           Withdraw ${amount} ${currency} 
