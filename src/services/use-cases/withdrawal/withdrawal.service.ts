@@ -242,7 +242,7 @@ export class WithdrawalServices {
           };
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
-            feeWalletId: String(wallet?._id),
+            walletId: String(wallet?._id),
             currency: coin,
             amount: fee,
             signedAmount: -fee,
@@ -257,20 +257,36 @@ export class WithdrawalServices {
             balanceAfter: creditedFeeWallet.balance,
             reference: generateReference('debit'),
           };
-          const [transactionFactory, feeTransactionFactory] = await Promise.all([
+          const txFeeWalletPayload: OptionalQuery<Transaction> = {
+            feeWalletId: String(feeWallet?._id),
+            currency: coin,
+            amount: fee,
+            signedAmount: -fee,
+            type: TRANSACTION_TYPE.DEBIT,
+            description: `Charged ${fee} ${coin}`,
+            status: Status.PENDING,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
+            generalTransactionReference,
+            metadata: response,
+            reference: generateReference('debit'),
+          };
+          const [transactionFactory, feeTransactionFactory, feeWalletTransactionFactory] = await Promise.all([
             this.transactionFactory.create(txDebitPayload),
             this.transactionFactory.create(txFeePayload),
 
+            this.transactionFactory.create(txFeeWalletPayload),
+
           ])
-          const [transactionData, feeTransactionData] = await Promise.all([
-            this.data.transactions.create(transactionFactory, session),
-            this.data.transactions.create(feeTransactionFactory, session)
-          ])
+          const transactionData = await this.data.transactions.create(transactionFactory, session)
+          const feeTransactionData = await this.data.transactions.create(feeTransactionFactory, session)
+          const feeWalletTransaction = await this.data.transactions.create(feeWalletTransactionFactory, session)
 
           const withdrawalPayload: OptionalQuery<Withdrawal> = {
             userId,
             transactionId: transactionData._id,
             feeTransactionId: feeTransactionData._id,
+            feeWalletTransactionId: feeWalletTransaction._id,
             walletId: String(wallet?._id),
             destination: {
               address: destination,

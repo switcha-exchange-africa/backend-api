@@ -1101,8 +1101,26 @@ export class P2pServices {
             reference: generateReference('credit'),
           }
 
-          const feeTransactionPayload = {
+          const feeWalletTransactionPayload = {
             feeWalletId: String(buyerWallet._id),
+            currency: ad.coin,
+            amount: fee,
+            signedAmount: fee,
+            type: TRANSACTION_TYPE.CREDIT,
+            description: `P2p Order:- Charged ${fee} ${ad.coin}`,
+            status: Status.COMPLETED,
+            balanceAfter: creditedFeeWallet.balance,
+            balanceBefore: feeWallet?.balance,
+            subType: TRANSACTION_SUBTYPE.FEE,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.P2P,
+            generalTransactionReference,
+            p2pAdId: String(ad._id),
+            p2pOrderId: String(order._id),
+            reference: generateReference('credit'),
+          }
+
+          const feeTransactionPayload = {
+            userId: merchantTransactionPayload.userId,
             currency: ad.coin,
             amount: fee,
             signedAmount: fee,
@@ -1130,21 +1148,31 @@ export class P2pServices {
             message: merchantTransactionPayload.description
           }
 
-          const [clientTransactionFactory, merchantTransactionFactory, feeTransactionFactory, clientNotificationFactory, merchantNotificationFactory] = await Promise.all([
+          const [
+            clientTransactionFactory,
+            merchantTransactionFactory,
+            feeWalletTransactionFactory,
+            clientNotificationFactory,
+            merchantNotificationFactory,
+            feeTransactionFactory
+          ] = await Promise.all([
             this.transactionFactory.create(clientTransactionPayload),
             this.transactionFactory.create(merchantTransactionPayload),
-            this.transactionFactory.create(feeTransactionPayload),
+            this.transactionFactory.create(feeWalletTransactionPayload),
             this.notificationFactory.create(clientNotificationPayload),
             this.notificationFactory.create(merchantNotificationPayload),
+            this.transactionFactory.create(feeTransactionPayload),
+
+
           ])
 
 
           await this.data.transactions.create(clientTransactionFactory, session)
           await this.data.transactions.create(merchantTransactionFactory, session)
-          await this.data.transactions.create(feeTransactionFactory, session)
+          await this.data.transactions.create(feeWalletTransactionFactory, session)
           await this.data.notifications.create(clientNotificationFactory, session)
           await this.data.notifications.create(merchantNotificationFactory, session)
-
+          await this.data.transactions.create(feeTransactionFactory, session)
           await this.data.users.update({ _id: clientTransactionPayload.userId }, {
             $inc: {
               noOfP2pOrderCompleted: 1,
@@ -1338,8 +1366,8 @@ export class P2pServices {
             p2pOrderId: String(order._id),
             reference: generateReference('credit'),
           }
-          const feeTransactionPayload = {
-            feeWalletId: String(merchantWallet._id),
+          const feeWalletTransactionPayload = {
+            feeWalletId: String(feeWallet._id),
             currency: ad.coin,
             amount: fee,
             signedAmount: fee,
@@ -1355,6 +1383,23 @@ export class P2pServices {
             p2pOrderId: String(order._id),
             reference: generateReference('credit'),
           }
+          // const feeTransactionPayload = {
+          //   feeWalletId: String(feeWallet._id),
+          //   currency: ad.coin,
+          //   amount: fee,
+          //   signedAmount: fee,
+          //   type: TRANSACTION_TYPE.CREDIT,
+          //   description: `P2p Order:- Charged ${fee} ${ad.coin}`,
+          //   status: Status.COMPLETED,
+          //   balanceAfter: creditedFeeWallet.balance,
+          //   balanceBefore: feeWallet?.balance,
+          //   subType: TRANSACTION_SUBTYPE.FEE,
+          //   customTransactionType: CUSTOM_TRANSACTION_TYPE.P2P,
+          //   generalTransactionReference,
+          //   p2pAdId: String(ad._id),
+          //   p2pOrderId: String(order._id),
+          //   reference: generateReference('credit'),
+          // }
 
           const buyerNotificationPayload: INotification = {
             userId: String(buyer._id),
@@ -1367,10 +1412,10 @@ export class P2pServices {
             message: merchantTransactionPayload.description
           }
 
-          const [merchantTransactionFactory, buyerTransactionFactory, feeTransactionFactory, buyerNotificationFactory, merchantNotificationFactory] = await Promise.all([
+          const [merchantTransactionFactory, buyerTransactionFactory, feeWalletTransactionFactory, buyerNotificationFactory, merchantNotificationFactory] = await Promise.all([
             this.transactionFactory.create(merchantTransactionPayload),
             this.transactionFactory.create(buyerTransactionPayload),
-            this.transactionFactory.create(feeTransactionPayload),
+            this.transactionFactory.create(feeWalletTransactionPayload),
             this.notificationFactory.create(buyerNotificationPayload),
             this.notificationFactory.create(merchantNotificationPayload),
           ])
@@ -1378,7 +1423,7 @@ export class P2pServices {
 
           await this.data.transactions.create(merchantTransactionFactory, session)
           await this.data.transactions.create(buyerTransactionFactory, session)
-          await this.data.transactions.create(feeTransactionFactory, session)
+          await this.data.transactions.create(feeWalletTransactionFactory, session)
           await this.data.notifications.create(buyerNotificationFactory, session)
           await this.data.notifications.create(merchantNotificationFactory, session)
           await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session)

@@ -30,11 +30,18 @@ export class Withdrawal {
     ref: "Transaction",
   })
   transactionId: string;
+
   @Prop({
     type: Types.ObjectId,
     ref: "Transaction",
   })
   feeTransactionId: string
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: "Transaction",
+  })
+  feeWalletTransactionId: string
 
   @Prop({
     type: Types.ObjectId,

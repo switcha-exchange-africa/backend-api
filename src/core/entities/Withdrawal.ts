@@ -65,6 +65,7 @@ export class Withdrawal {
   userId: string;
   transactionId: string;
   feeTransactionId: string;
+  feeWalletTransactionId: string;
   walletId: string;
   bankId: string
   processedBy: string

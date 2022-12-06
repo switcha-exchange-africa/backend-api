@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
+import { env } from "src/configuration";
 import { OptionalQuery } from "src/core/types/database";
 import { Gondor, GondorDocument } from "src/frameworks/data-services/mongo/model/Gondor";
 import { GondorEvent } from "../event/gondor.event";
@@ -41,7 +42,7 @@ export class GondorListener {
     async saveToGondor(event: FilterQuery<Gondor>) {
         try {
             const factory = new GondorFactoryServices().create(event)
-            await this.gondorModel.create(factory)
+            if (env.isProd) await this.gondorModel.create(factory)
             Logger.log('@[gondor]', 'Saved to gondor')
             return
         } catch (error) {
