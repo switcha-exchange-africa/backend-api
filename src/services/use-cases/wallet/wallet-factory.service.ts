@@ -17,6 +17,9 @@ export class WalletFactoryService {
     if (data.destinationTag) wallet.destinationTag = data.destinationTag;
     if (data.memo) wallet.memo = data.memo;
     if (data.tatumMessage) wallet.tatumMessage = data.tatumMessage;
+    if (data.xpub) wallet.xpub = data.xpub
+    if (data.derivationKey) wallet.derivationKey = data.derivationKey
+
     wallet.createdAt = new Date();
     wallet.updatedAt = new Date();
     wallet.status = WALLET_STATUS.ACTIVE;

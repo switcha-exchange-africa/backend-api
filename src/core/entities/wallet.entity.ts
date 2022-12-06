@@ -61,6 +61,8 @@ export class Wallet {
   destinationTag: string;
   memo: string;
   tatumMessage: string;
+  xpub: string
+  derivationKey: string
 }
 
 export enum CryptoPairType {

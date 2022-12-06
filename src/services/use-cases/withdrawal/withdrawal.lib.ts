@@ -1,65 +1,92 @@
 import { Injectable } from "@nestjs/common"
-import { TatumBtcSDK } from "@tatumio/btc"
-import { TatumEthSDK } from "@tatumio/eth"
-import { TatumTronSDK } from "@tatumio/tron"
-import { env } from "process"
-import { TATUM_API_KEY, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration"
+import { TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration"
 import { Currency } from '@tatumio/api-client'
-
-const API_KEY_CONFIG = {
-    apiKey: TATUM_API_KEY
-}
-const NETWORK_CONFIG = { testnet: !env.isProd }
+import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 
 @Injectable()
 export class WithdrawalLib {
-    constructor() { }
+    constructor(
+        private readonly http: IHttpServices,
+
+    ) { }
     async withdrawal(payload: {
         accountId: string,
         coin: string,
         amount: string,
-        destination: string
+        destination: string,
+        index: number
     }) {
         try {
-            const { accountId, coin, amount, destination } = payload
+            const { accountId, coin, amount, destination, index } = payload
             if (coin === Currency.BTC) {
-                const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
-                const transfer = await btcSDK.virtualAccount.send({
-                    senderAccountId: accountId,
-                    amount: amount,
-                    mnemonic: TATUM_BTC_MNEMONIC,
-                    xpub: TATUM_BTC_XPUB_KEY,
-                    address: destination,
-                    fee: '0.00001',
-                })
 
+                const transfer = await this.http.post(
+                    `${TATUM_BASE_URL}/offchain/bitcoin/transfer`,
+                    {
+
+                        senderAccountId: accountId,
+                        address: destination,
+                        index,
+                        mnemonic: TATUM_BTC_MNEMONIC,
+                        amount: String(amount),
+                        fee: '0.00001',
+                        xpub: TATUM_BTC_XPUB_KEY
+                    },
+                    TATUM_CONFIG
+                )
                 return transfer
             }
 
-            if (coin === Currency.ETH || coin === Currency.USDT || coin === Currency.USDC) {
+            if (coin === Currency.ETH) {
 
-                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
-                const privateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_ETH_MNEMONIC, 1, NETWORK_CONFIG)
-                console.log(TATUM_ETH_MNEMONIC)
-                console.log(privateKey)
-                const transfer = await ethSDK.virtualAccount.send({
-                    senderAccountId: accountId,
-                    amount,
-                    privateKey,
-                    address: destination,
-                })
+                const transfer = await this.http.post(
+                    `${TATUM_BASE_URL}/offchain/ethereum/transfer`,
+                    {
+
+                        senderAccountId: accountId,
+                        address: destination,
+                        index,
+                        mnemonic: TATUM_ETH_MNEMONIC,
+                        amount: String(amount),
+                        fee: "0.00042"
+                    },
+                    TATUM_CONFIG
+                )
                 return transfer
             }
+            if (coin === Currency.USDT || coin === Currency.USDC) {
+
+                const transfer = await this.http.post(
+                    `${TATUM_BASE_URL}/offchain/ethereum/erc20/transfer`,
+                    {
+
+                        senderAccountId: accountId,
+                        address: destination,
+                        index,
+                        mnemonic: TATUM_ETH_MNEMONIC,
+                        amount: String(amount),
+                        fee: "0.00042"
+                    },
+                    TATUM_CONFIG
+                )
+                return transfer
+            }
+
+
             if (coin === Currency.USDT_TRON || coin === Currency.TRON) {
-                const tronSDK = TatumTronSDK(API_KEY_CONFIG)
-                const fromPrivateKey = await tronSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_TRON_MNEMONIC, 0)
 
-                const transfer = await tronSDK.virtualAccount.send({
-                    senderAccountId: accountId,
-                    amount,
-                    fromPrivateKey,
-                    address: destination,
-                })
+                const transfer = await this.http.post(
+                    `${TATUM_BASE_URL}/offchain/tron/transfer`,
+                    {
+
+                        senderAccountId: accountId,
+                        address: destination,
+                        index,
+                        mnemonic: TATUM_TRON_MNEMONIC,
+                        amount: String(amount),
+                    },
+                    TATUM_CONFIG
+                )
                 return transfer
             }
         } catch (error) {

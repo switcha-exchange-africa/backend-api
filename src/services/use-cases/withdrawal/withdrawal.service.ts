@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   env, TATUM_BASE_URL, TATUM_CONFIG,
+  // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
 import { IDataServices, INotificationServices } from "src/core/abstracts"
@@ -33,7 +34,7 @@ import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
 import { WithdrawalFactoryService } from "./withdrawal-factory.service"
-// import { WithdrawalLib } from "./withdrawal.lib"
+import { WithdrawalLib } from "./withdrawal.lib"
 
 @Injectable()
 export class WithdrawalServices {
@@ -46,7 +47,7 @@ export class WithdrawalServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly discord: INotificationServices,
     private readonly http: IHttpServices,
-    // private readonly lib: WithdrawalLib,
+    private readonly lib: WithdrawalLib,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
@@ -144,23 +145,26 @@ export class WithdrawalServices {
           error: null
         })
       }
-      // const response = await this.lib.withdrawal({
-      //   accountId: wallet.accountId,
-      //   coin,
-      //   amount: String(amount),
-      //   destination
-      // })
-      const response = await this.http.post(
-        `${TATUM_BASE_URL}/offchain/withdrawal`,
-        {
+      let getIndex
 
-          senderAccountId: wallet.accountId,
-          address: destination,
-          amount: String(amount),
-          fee: "0.00042"
-        },
-        TATUM_CONFIG
-      );
+      if (!wallet.derivationKey) {
+        const getWalletsFromVirtualAccounts = await this.http.get(`${TATUM_BASE_URL}/offchain/account/${wallet.accountId}/address`, TATUM_CONFIG)
+        for (const element of getWalletsFromVirtualAccounts) {
+          if (element.address === wallet.address) {
+            getIndex = element.derivationKey
+          }
+        }
+      }
+
+      const index = wallet.derivationKey ? wallet.derivationKey : getIndex
+      const response = await this.lib.withdrawal({
+        accountId: wallet.accountId,
+        coin,
+        amount: String(amount),
+        destination,
+        index
+      })
+
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
@@ -191,11 +195,11 @@ export class WithdrawalServices {
             await this.discord.inHouseNotification({
               title: `Withdraw Crypto :- ${env.env} environment`,
               message: `
-      
+
                 Debiting user failed
-    
+
                 Coin: ${coin}
-      
+
             `,
               link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
             })
@@ -205,11 +209,11 @@ export class WithdrawalServices {
             await this.discord.inHouseNotification({
               title: `Withdraw Crypto :- ${env.env} environment`,
               message: `
-      
+
                 Fee Wallet Not Set Up Yet
-    
+
                 Coin: ${coin}
-      
+
             `,
               link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
             })
@@ -276,6 +280,7 @@ export class WithdrawalServices {
             status: WithdrawalStatus.PENDING,
             amount,
             tatumWithdrawalId: response.id,
+            blockchainTransactionId: response.txId,
             tatumReference: response.reference,
             originalAmount: amountBeforeFee,
             metadata: response,

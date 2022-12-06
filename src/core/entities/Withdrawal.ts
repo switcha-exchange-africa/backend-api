@@ -74,6 +74,7 @@ export class Withdrawal {
   fee: number
   tatumReference: string
   tatumWithdrawalId: string
+  blockchainTransactionId: string
 }
 
 

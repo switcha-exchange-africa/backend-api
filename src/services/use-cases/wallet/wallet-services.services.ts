@@ -198,7 +198,7 @@ export class WalletServices {
         },
       };
 
-      const { address, destinationTag, memo, message } = await this.http.post(
+      const { address, destinationTag, memo, message, xpub, derivationKey } = await this.http.post(
         `${TATUM_BASE_URL}/offchain/account/${tatumPayload.accountId}/address`,
         {},
         CONFIG
@@ -211,6 +211,8 @@ export class WalletServices {
         coin,
         isBlocked: false,
         network: null,
+        xpub,
+        derivationKey
       };
       const factory = await this.walletFactory.create({
         ...walletPayload,

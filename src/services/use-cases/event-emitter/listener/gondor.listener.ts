@@ -41,7 +41,6 @@ export class GondorListener {
     async saveToGondor(event: FilterQuery<Gondor>) {
         try {
             const factory = new GondorFactoryServices().create(event)
-            console.log("FACTORY", factory)
             await this.gondorModel.create(factory)
             Logger.log('@[gondor]', 'Saved to gondor')
             return

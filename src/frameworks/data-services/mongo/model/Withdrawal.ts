@@ -64,12 +64,15 @@ export class Withdrawal {
 
   @Prop()
   tatumReference: string
- 
+
   @Prop()
   tatumWithdrawalId: string
-  
+
   @Prop()
   reference: string
+
+  @Prop()
+  blockchainTransactionId: string
 
   @Prop({ enum: WITHDRAWAL_TYPE_LIST })
   type: WithdrawalType

@@ -25,6 +25,9 @@ export class WithdrawalFactoryService {
     if (data.tatumWithdrawalId) withdrawal.tatumWithdrawalId = data.tatumWithdrawalId;
     if (data.tatumReference) withdrawal.tatumReference = data.tatumReference;
     if (data.metadata) withdrawal.metadata = data.metadata;
+    if (data.blockchainTransactionId) withdrawal.blockchainTransactionId = data.blockchainTransactionId;
+
+    
     return withdrawal;
   }
 }

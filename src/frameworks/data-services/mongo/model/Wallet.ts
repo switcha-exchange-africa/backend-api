@@ -38,6 +38,9 @@ export class Wallet {
   @Prop()
   coin: string;
 
+  @Prop()
+  derivationKey: string;
+  
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 
@@ -65,6 +68,9 @@ export class Wallet {
   @Prop()
   memo: string;
 
+  @Prop()
+  xpub: string;
+  
   @Prop()
   tatumMessage: string;
 
