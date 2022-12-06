@@ -278,6 +278,7 @@ export class WithdrawalServices {
             tatumWithdrawalId: response.id,
             tatumReference: response.reference,
             originalAmount: amountBeforeFee,
+            metadata: response,
             fee,
           }
           const [withdrawalFactory, notificationFactory, activityFactory] = await Promise.all([
@@ -325,7 +326,7 @@ export class WithdrawalServices {
 
               Amount after deduction : ${amount}
 
-              Message: Bought ${amount} ${coin} 
+              Message: Withdraw ${amount} ${coin} 
 
 
       `,

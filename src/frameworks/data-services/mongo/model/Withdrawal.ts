@@ -59,6 +59,9 @@ export class Withdrawal {
   @Prop()
   currency: string
 
+  @Prop({ type: Object })
+  metadata: Object
+
   @Prop()
   tatumReference: string
  

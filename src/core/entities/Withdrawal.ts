@@ -61,7 +61,7 @@ export class Withdrawal {
   bankId: string
   processedBy: string
   destination: WithdrawalCryptoDestination
-
+  metadata: object;
   processedReason: string
   currency: string
   reference: string
