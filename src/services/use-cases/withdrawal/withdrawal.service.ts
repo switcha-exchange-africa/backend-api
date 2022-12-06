@@ -156,7 +156,7 @@ export class WithdrawalServices {
         }
       }
 
-      const index = wallet.derivationKey ? wallet.derivationKey : getIndex
+      const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
       const response = await this.lib.withdrawal({
         accountId: wallet.accountId,
         coin,
@@ -168,6 +168,7 @@ export class WithdrawalServices {
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
+          if (!wallet.derivationKey) await this.data.wallets.update({ _id: wallet._id }, { derivationKey: getIndex }, session)
           const debitedWallet = await this.data.wallets.update(
             {
               _id: wallet._id,
