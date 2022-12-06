@@ -541,7 +541,13 @@ export class WebhookServices {
             },
             session
           )
-          
+          await this.data.withdrawals.update(
+            { _id: withdrawal._id },
+            {
+              status: Status.APPROVED,
+            },
+            session
+          )
         }
         await databaseHelper.executeTransactionWithStartTransaction(
           atomicTransaction,
