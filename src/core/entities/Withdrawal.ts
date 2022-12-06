@@ -52,7 +52,15 @@ export type WithdrawalCryptoDestination = {
   tagNumber?: string
   memo?: string
 }
+export enum WithdrawalWalletType {
+  CUSTODIAL = 'custodial',
+  NON_CUSTODIAL = 'non-custodial'
+}
+export const WithdrawalWalletTypeList = [
+  WithdrawalWalletType.CUSTODIAL,
+  WithdrawalWalletType.NON_CUSTODIAL,
 
+]
 export class Withdrawal {
   userId: string;
   transactionId: string;
@@ -62,6 +70,7 @@ export class Withdrawal {
   processedBy: string
   destination: WithdrawalCryptoDestination
   metadata: object;
+  walletWithdrawalType: WithdrawalWalletType
   processedReason: string
   currency: string
   reference: string

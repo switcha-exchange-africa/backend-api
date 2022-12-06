@@ -14,6 +14,7 @@ import { Wallet } from "src/core/entities/wallet.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
+import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 
 Injectable()
 export class WebhookServices {
@@ -497,12 +498,77 @@ export class WebhookServices {
   async txBlock(payload: Record<string, any>) {
     try {
       const { txId, reference, accountId, currency, withdrawalId, address, amount } = payload
-
-      const [transactionAlreadyExists, transaction, virtualAccount] = await Promise.all([
+      const [transactionAlreadyExists, transaction, virtualAccount, withdrawal] = await Promise.all([
         this.data.transactions.findOne({ reference }),
         this.data.transactions.findOne({ tatumTransactionId: txId, status: Status.PENDING, withdrawalId }),
-        this.data.virtualAccounts.findOne({ accountId, coin: currency.toUpperCase() })
+        this.data.virtualAccounts.findOne({ accountId, coin: currency.toUpperCase() }),
+        this.data.withdrawals.findOne({ blockchainTransactionId: txId })
       ])
+      if (withdrawal.status === WithdrawalStatus.APPROVED) {
+        await this.discord.inHouseNotification({
+          title: `Withdrawal :- ${env.env} environment`,
+          message: `
+          Withdrawal already completed
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+
+        return Promise.resolve({ message: 'Transaction already exists' })
+      }
+      if (withdrawal.status === WithdrawalStatus.PENDING) {
+        const atomicTransaction = async (session: mongoose.ClientSession) => {
+          await this.data.transactions.update(
+            { _id: withdrawal.transactionId },
+            {
+              status: Status.COMPLETED,
+            },
+            session
+          )
+
+          await this.data.transactions.update(
+            { _id: withdrawal.feeTransactionId },
+            {
+              status: Status.COMPLETED,
+            },
+            session
+          )
+
+
+        }
+        await databaseHelper.executeTransactionWithStartTransaction(
+          atomicTransaction,
+          this.connection
+        )
+        await this.discord.inHouseNotification({
+          title: `Withdrawal :- ${env.env} environment`,
+          message: `
+          
+          ACTION: CUSTODIAL WALLET
+          
+          External Withdrawal Web
+  
+          Withdraw ${amount} ${currency} 
+          
+          
+          TO :- ${address}
+  
+          TX ID/HASH: ${txId}
+  
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        // state last withdrawal
+        // update transaction status and reference
+        // store reference
+        return { message: "Webhook received successfully", status: 200, data: payload }
+
+      }
+
+
+
 
       if (transactionAlreadyExists) {
         await this.discord.inHouseNotification({

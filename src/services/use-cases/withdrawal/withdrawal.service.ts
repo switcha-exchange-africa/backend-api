@@ -20,6 +20,7 @@ import {
   WithdrawalStatus,
   WithdrawalSubType,
   WithdrawalType,
+  WithdrawalWalletType,
   //  WithdrawalSubType, WithdrawalType
 } from "src/core/entities/Withdrawal"
 import { Wallet } from "src/core/entities/wallet.entity"
@@ -169,6 +170,7 @@ export class WithdrawalServices {
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           if (!wallet.derivationKey) await this.data.wallets.update({ _id: wallet._id }, { derivationKey: getIndex }, session)
+
           const debitedWallet = await this.data.wallets.update(
             {
               _id: wallet._id,
@@ -197,11 +199,11 @@ export class WithdrawalServices {
               title: `Withdraw Crypto :- ${env.env} environment`,
               message: `
 
-                Debiting user failed
+            Debiting user failed
 
-                Coin: ${coin}
+            Coin: ${coin}
 
-            `,
+        `,
               link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
             })
             throw new Error('An error occured, please contact support')
@@ -211,11 +213,11 @@ export class WithdrawalServices {
               title: `Withdraw Crypto :- ${env.env} environment`,
               message: `
 
-                Fee Wallet Not Set Up Yet
+            Fee Wallet Not Set Up Yet
 
-                Coin: ${coin}
+            Coin: ${coin}
 
-            `,
+        `,
               link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
             })
             throw new Error('An error occured, please contact support')
@@ -229,7 +231,7 @@ export class WithdrawalServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Withdrawal request of ${amount} ${coin}`,
-            status: Status.COMPLETED,
+            status: Status.PENDING,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -246,7 +248,7 @@ export class WithdrawalServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${coin}`,
-            status: Status.COMPLETED,
+            status: Status.PENDING,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
@@ -274,6 +276,7 @@ export class WithdrawalServices {
               address: destination,
               coin,
             },
+            walletWithdrawalType: WithdrawalWalletType.CUSTODIAL,
             currency: coin,
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
@@ -301,12 +304,12 @@ export class WithdrawalServices {
             }),
           ])
 
-          await Promise.all([
-            this.data.withdrawals.create(withdrawalFactory, session),
-            this.data.notifications.create(notificationFactory, session),
-            this.data.activities.create(activityFactory, session),
-            this.data.wallets.update({ _id: wallet._id }, { lastWithdrawal: amountBeforeFee }, session)
-          ])
+          await this.data.withdrawals.create(withdrawalFactory, session)
+          await this.data.notifications.create(notificationFactory, session)
+          await this.data.activities.create(activityFactory, session)
+          await this.data.wallets.update({ _id: wallet._id }, { lastWithdrawal: amountBeforeFee }, session)
+          await this.data.feeWallets.update({ _id: feeWallet._id }, { lastWithdrawal: amountBeforeFee }, session)
+
 
         } catch (error) {
           Logger.error(error);
