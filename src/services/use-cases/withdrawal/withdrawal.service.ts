@@ -329,7 +329,7 @@ export class WithdrawalServices {
 
         } catch (error) {
           Logger.error(error);
-          throw new Error(error);
+          return Promise.reject(error);
         }
       }
 

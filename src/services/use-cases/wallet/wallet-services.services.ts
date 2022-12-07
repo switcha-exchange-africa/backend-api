@@ -219,6 +219,7 @@ export class WalletServices {
         destinationTag,
         memo,
         tatumMessage: message,
+        xpub
       });
 
       const data = await this.data.wallets.create(factory);

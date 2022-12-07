@@ -69,7 +69,11 @@ export class FeeWallet {
   @Prop()
   tatumMessage: string;
 
+  @Prop()
+  xpub: string;
 
+  @Prop()
+  derivationKey: number;
 
 
 }

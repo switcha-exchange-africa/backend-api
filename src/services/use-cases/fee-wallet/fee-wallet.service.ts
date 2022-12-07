@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { IGetWallets, IUpdateFeeWalletWithAddress } from "src/core/dtos/wallet/wallet.dto";
 import { FeeWallet } from "src/core/entities/FeeWallet";
 import { CoinType } from "src/core/types/coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
@@ -21,7 +21,7 @@ export class FeeWalletServices {
     if (payload.sortBy) key['sortBy'] = payload.sortBy
     if (payload.orderBy) key['orderBy'] = payload.orderBy
     if (payload.reference) key['reference'] = payload.reference
-    
+
     return key
   }
 
@@ -31,41 +31,41 @@ export class FeeWalletServices {
         {
           userId,
           coin: CoinType.BTC,
-          reference:generateReference('general')
+          reference: generateReference('general')
         },
         {
           userId,
           coin: CoinType.USD,
-          reference:generateReference('general')
+          reference: generateReference('general')
         },
         {
           userId,
           coin: CoinType.USDC,
-          reference:generateReference('general')
+          reference: generateReference('general')
 
         },
         {
           userId,
           coin: CoinType.USDT,
-          reference:generateReference('general')
+          reference: generateReference('general')
 
         },
         {
           userId,
           coin: CoinType.USDT_TRON,
-          reference:generateReference('general')
+          reference: generateReference('general')
 
         },
         {
           userId,
           coin: CoinType.ETH,
-          reference:generateReference('general')
+          reference: generateReference('general')
 
         },
         {
           userId,
           coin: CoinType.NGN,
-          reference:generateReference('general')
+          reference: generateReference('general')
 
         },
       ]
@@ -131,6 +131,35 @@ export class FeeWalletServices {
         error: null,
       })
       return { status: HttpStatus.OK, message: "Wallet retrieved successfully", data, state: ResponseState.SUCCESS };
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+
+
+  async updateWalletAddress(payload: IUpdateFeeWalletWithAddress): Promise<ResponsesType<FeeWallet>> {
+    try {
+      
+      const { id, address, xpub, derivationKey } = payload
+      
+      const data = await this.data.feeWallets.findOne({ _id: id });
+      if (!data) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'Wallet does not exist',
+        error: null,
+      })
+      
+      await this.data.feeWallets.update({ _id: id }, { xpub, derivationKey, address })
+      return { status: HttpStatus.OK, message: "Wallet updated successfully", data, state: ResponseState.SUCCESS };
+
     } catch (error) {
       Logger.error(error)
       return Promise.reject({

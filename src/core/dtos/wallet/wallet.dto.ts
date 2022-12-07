@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Min,
 } from "class-validator";
 import { Types } from "mongoose";
 import { BLOCKCHAIN_NETWORK } from "src/core/entities/wallet.entity";
@@ -60,5 +61,26 @@ export class FundWalletDto {
 export type IFundWallet = FundWalletDto & {
   walletId: Types.ObjectId,
 
+
+}
+
+export type IUpdateFeeWalletWithAddress = { id: Types.ObjectId, address: string, xpub: string, derivationKey: number }
+
+
+export class UpdateFeeWalletAddresssDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly address: string
+
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  public readonly derivationKey: number
+
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly xpub: string
 
 }
