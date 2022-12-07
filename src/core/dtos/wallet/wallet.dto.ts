@@ -84,3 +84,29 @@ export class UpdateFeeWalletAddresssDto {
   public readonly xpub: string
 
 }
+
+export class CreateFeeWalletDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly address: string
+
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  public readonly derivationKey: number
+
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly xpub: string
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly coin: string
+
+}
+
+export type ICreateFeeWallet = CreateFeeWalletDto & {
+  userId: string
+}

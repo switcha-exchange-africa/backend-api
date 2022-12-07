@@ -1,15 +1,20 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { IGetWallets, IUpdateFeeWalletWithAddress } from "src/core/dtos/wallet/wallet.dto";
+import { ICreateFeeWallet, IGetWallets, IUpdateFeeWalletWithAddress } from "src/core/dtos/wallet/wallet.dto";
 import { FeeWallet } from "src/core/entities/FeeWallet";
 import { CoinType } from "src/core/types/coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { generateReference } from "src/lib/utils";
+import { FeeWalletFactoryService } from "./fee-wallet-factory.service";
 
 @Injectable()
 export class FeeWalletServices {
-  constructor(private data: IDataServices) { }
+  constructor(
+    private data: IDataServices,
+    private readonly factory: FeeWalletFactoryService,
+
+  ) { }
   cleanQueryPayload(payload: IGetWallets) {
     let key = {}
     if (payload.userId) key['userId'] = payload.userId
@@ -146,9 +151,9 @@ export class FeeWalletServices {
 
   async updateWalletAddress(payload: IUpdateFeeWalletWithAddress): Promise<ResponsesType<FeeWallet>> {
     try {
-      
+
       const { id, address, xpub, derivationKey } = payload
-      
+
       const data = await this.data.feeWallets.findOne({ _id: id });
       if (!data) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
@@ -156,7 +161,7 @@ export class FeeWalletServices {
         message: 'Wallet does not exist',
         error: null,
       })
-      
+
       await this.data.feeWallets.update({ _id: id }, { xpub, derivationKey, address })
       return { status: HttpStatus.OK, message: "Wallet updated successfully", data, state: ResponseState.SUCCESS };
 
@@ -171,4 +176,38 @@ export class FeeWalletServices {
     }
   }
 
+  async createWallet(payload: ICreateFeeWallet) {
+    try {
+      const { coin } = payload
+
+      const wallet = await this.data.feeWallets.findOne({ coin })
+      if (wallet) {
+        return Promise.reject({
+          status: HttpStatus.CONFLICT,
+          state: ResponseState.ERROR,
+          message: 'Wallet already exists',
+          error: null
+        })
+      }
+
+      const factory = await this.factory.create(payload)
+      const data = await this.data.feeWallets.create(factory)
+      
+      return {
+        status: HttpStatus.OK,
+        message: "Wallet created successfully",
+        data,
+        state: ResponseState.SUCCESS,
+      };
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 }

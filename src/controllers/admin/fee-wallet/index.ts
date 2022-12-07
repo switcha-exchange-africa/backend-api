@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestj
 import { Response, Request } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { IUpdateFeeWalletWithAddress, UpdateFeeWalletAddresssDto } from "src/core/dtos/wallet/wallet.dto";
+import { CreateFeeWalletDto, ICreateFeeWallet, IUpdateFeeWalletWithAddress, UpdateFeeWalletAddresssDto } from "src/core/dtos/wallet/wallet.dto";
 import { ByPass } from "src/decorator";
 import { FeeWalletServices } from "src/services/use-cases/fee-wallet/fee-wallet.service";
 
@@ -70,7 +70,7 @@ export class AdminFeeWalletsController {
         ...body,
         id
       }
-      
+
       const response = await this.services.updateWalletAddress(payload);
       return res.status(response.status).json(response);
 
@@ -80,6 +80,24 @@ export class AdminFeeWalletsController {
     }
   }
 
+  @isAdminAuthenticated('strict')
+  @Post('/create-wallet')
+  async createWallet(@Res() res: Response, @Req() req: Request, @Body() body: CreateFeeWalletDto) {
+    try {
+      const userId = req.user._id
+      const payload: ICreateFeeWallet = {
+        ...body,
+        userId
+      }
+
+      const response = await this.services.createWallet(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 
 
 }
