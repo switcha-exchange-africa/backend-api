@@ -239,6 +239,47 @@ export class WebhookController {
         }
     }
 
+
+    @Post('/tatum-address-transaction')
+    async addressTransaction(
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
+        try {
+
+            if (!env.isDev) {
+                const signature = req.headers['x-payload-hash']
+                const encryptedData = crypto
+                    .createHmac("SHA512", TATUM_WEBHOOK_SECRET)
+                    .update(JSON.stringify(req.body))
+                    .digest("base64");
+                if (encryptedData !== signature) {
+                    Logger.warn('Wrong signature')
+                    await this.discordServices.inHouseNotification({
+                        title: `Address Transaction For Fee Wallet:- ${env.env} environment`,
+                        message: `Wrong signature
+                        
+                        SIGNATURE :- ${signature}
+
+                        EMCRYPTED DATA :- ${encryptedData}
+
+                        ${JSON.stringify(req.body)}
+                        
+                        `,
+                        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+                    })
+                    return res.status(200).json({ message: "Webhook discarded" })
+                }
+            }
+
+            const response = await this.services.addressTransaction(req.body)
+            return res.status(200).json(response)
+
+        } catch (error) {
+            return res.status(error.status || 500).json(error);
+
+        }
+    }
 }
 
 

@@ -717,6 +717,37 @@ export class WebhookServices {
       return Promise.resolve({ message: error, status: 200 })
     }
   }
+
+  async addressTransaction(payload: Record<string, any>) {
+    try {
+
+      await this.discord.inHouseNotification({
+        title: `Address Transaction :- ${env.env} environment`,
+        message: `
+        
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      // state last withdrawal
+      // update transaction status and reference
+      // store reference
+      return { message: "Webhook received successfully", status: 200, data: payload }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'TATUM TX BLOCK',
+        error,
+        email: payload.to,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
+      return Promise.resolve({ message: error, status: 200 })
+    }
+  }
 }
 
     // "txId": "0x026f4f05b972c09279111da13dfd20d8df04eff436d7f604cd97b9ffaa690567",
