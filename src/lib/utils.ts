@@ -158,6 +158,26 @@ export const generateReference = (type: string) => {
   return ref;
 };
 
+export const generateReferencePrefix = (type: string) => {
+  let ref = '';
+  const mode = env.isProd ? 'LIVE-' : 'TEST-';
+
+  switch (type) {
+    case 'general':
+      ref = `SWITCHA-REF-${mode}`.toLowerCase();
+      break;
+
+    case 'credit':
+      ref = `SWITCHA-REF-${mode}CREDIT-`.toLowerCase();
+      break;
+
+    case 'debit':
+      ref = `SWITCHA-REF-${mode}DEBIT-`.toLowerCase();
+      break;
+  }
+  return ref;
+};
+
 export const generateGoogleAuthUrl = () => {
   const oauth2Client = new google.auth.OAuth2(
     GOOGLE_CLIENT_ID,

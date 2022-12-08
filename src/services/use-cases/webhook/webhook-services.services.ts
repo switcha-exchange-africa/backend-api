@@ -16,7 +16,7 @@ import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
 import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 import { OptionalQuery } from "src/core/types/database";
-import { generateReference } from "src/lib/utils";
+import { generateReference, generateReferencePrefix } from "src/lib/utils";
 
 Injectable()
 export class WebhookServices {
@@ -60,7 +60,7 @@ export class WebhookServices {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
         this.data.wallets.findOne({ coin: currency.toUpperCase(), address: to, accountId }),
-        this.data.transactions.findOne({ reference }),
+        this.data.transactions.findOne({reference:`${generateReferencePrefix('credit')}${reference}`}),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
@@ -151,7 +151,7 @@ export class WebhookServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
             senderAddress: from,
             hash: blockHash,
-            reference,
+            reference:`${generateReferencePrefix('credit')}${reference}`,
             tatumTransactionId: txId,
             metadata: payload
           };
@@ -228,7 +228,7 @@ export class WebhookServices {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [account, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
         this.data.virtualAccounts.findOne({ coin: currency.toUpperCase(), accountId }),
-        this.data.transactions.findOne({ reference }),
+        this.data.transactions.findOne({ reference:`${generateReferencePrefix('credit')}${reference}`,}),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash }),
         ,
@@ -321,7 +321,7 @@ export class WebhookServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
             senderAddress: from,
             hash: blockHash,
-            reference,
+            reference:`${generateReferencePrefix('credit')}${reference}`,
             tatumTransactionId: txId,
             metadata: payload
           };
