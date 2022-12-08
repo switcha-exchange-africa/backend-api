@@ -90,7 +90,6 @@ export class WithdrawalLib {
                         index,
                         mnemonic: MASTER_TRON_MNEMONIC,
                         amount: String(amount),
-                        fee: "13.798"
                     },
                     TATUM_CONFIG
                 )
@@ -107,7 +106,7 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_TRON_MNEMONIC,
                         amount: String(amount),
-                        fee: "12.798"
+                        fee: "13.798"
                     },
                     TATUM_CONFIG
                 )
