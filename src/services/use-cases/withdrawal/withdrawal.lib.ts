@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { env, TATUM_API_KEY, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration"
+import { env, MASTER_TRON_MNEMONIC, TATUM_API_KEY, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration"
 import { Currency } from '@tatumio/api-client'
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { TatumBscSDK } from "@tatumio/bsc"
@@ -79,8 +79,24 @@ export class WithdrawalLib {
                 return transfer
             }
 
+            if (coin === Currency.TRON) {
 
-            if (coin === Currency.USDT_TRON || coin === Currency.TRON) {
+                const transfer = await this.http.post(
+                    `${TATUM_BASE_URL}/offchain/tron/transfer`,
+                    {
+
+                        senderAccountId: accountId,
+                        address: destination,
+                        index,
+                        mnemonic: MASTER_TRON_MNEMONIC,
+                        amount: String(amount),
+                        fee: "13.798"
+                    },
+                    TATUM_CONFIG
+                )
+                return transfer
+            }
+            if (coin === Currency.USDT_TRON) {
 
                 const transfer = await this.http.post(
                     `${TATUM_BASE_URL}/offchain/tron/transfer`,

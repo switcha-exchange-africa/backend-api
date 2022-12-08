@@ -73,6 +73,7 @@ export const API_URL = getEnv('API_URL', true)
 export const WALLET_ENCRYPTION_PRIVATE_KEY = getEnv('WALLET_ENCRYPTION_PRIVATE_KEY', true)
 export const WALLET_ENCRYPTION_PUBLIC_KEY = getEnv('WALLET_ENCRYPTION_PUBLIC_KEY', true)
 export const WALLET_ENCRYPTION_ALGORITHM = getEnv('WALLET_ENCRYPTION_ALGORITHM', true)
+export const MASTER_TRON_MNEMONIC = getEnv('MASTER_TRON_MNEMONIC', true)
 
 export const LOGS_LEVEL = (): LogLevel[] => {
 
