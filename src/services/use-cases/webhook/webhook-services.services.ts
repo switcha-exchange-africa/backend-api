@@ -64,6 +64,10 @@ export class WebhookServices {
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
+
+      const feeWallet = await this.data.feeWallets.findOne({ address: to })
+      if (feeWallet) return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+
       if (!wallet) {
         await this.discord.inHouseNotification({
           title: `Incoming Deposit V.1 :- ${env.env} environment`,
@@ -234,6 +238,10 @@ export class WebhookServices {
         ,
 
       ])
+
+      const feeWallet = await this.data.feeWallets.findOne({ address: to })
+      if (feeWallet) return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+
       if (!account) {
         await this.discord.inHouseNotification({
           title: `Incoming Deposit :- ${env.env} environment`,
@@ -506,6 +514,10 @@ export class WebhookServices {
         this.data.virtualAccounts.findOne({ accountId, coin: currency.toUpperCase() }),
         this.data.withdrawals.findOne({ blockchainTransactionId: txId })
       ])
+
+      const feeWallet = await this.data.feeWallets.findOne({ address })
+      if (feeWallet) return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+
       if (withdrawal.status === WithdrawalStatus.APPROVED) {
         await this.discord.inHouseNotification({
           title: `Withdrawal :- ${env.env} environment`,
@@ -725,15 +737,6 @@ export class WebhookServices {
       const { address, amount: amountBeforeConversion, counterAddress, txId, mempool } = payload
       const feeWallet = await this.data.feeWallets.findOne({ address })
 
-      const convertedAmount = Number(amountBeforeConversion)
-      const debitDescription = `Withdraw ${convertedAmount} ${feeWallet.coin}`
-      const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
-      const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
-      const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
-      const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
-      const subType = Math.sign(convertedAmount) === 1 ? TRANSACTION_SUBTYPE.CREDIT : TRANSACTION_SUBTYPE.DEBIT
-
-
       if (mempool) {
         await this.discord.inHouseNotification({
           title: `Address Transaction :- ${env.env} environment`,
@@ -749,6 +752,33 @@ export class WebhookServices {
         return { message: "Webhook received successfully", status: 200, data: payload }
 
       }
+
+      if (!feeWallet) {
+        await this.discord.inHouseNotification({
+          title: `Address Transaction :- ${env.env} environment`,
+          message: `
+          
+          Fee wallet does not exists
+          
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        // state last withdrawal
+        // update transaction status and reference
+        // store reference
+        return { message: "Webhook received successfully", status: 200, data: payload }
+
+      }
+
+      const convertedAmount = Number(amountBeforeConversion)
+      const debitDescription = `Withdraw ${convertedAmount} ${feeWallet.coin}`
+      const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
+      const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
+      const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
+      const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
+      const subType = Math.sign(convertedAmount) === 1 ? TRANSACTION_SUBTYPE.CREDIT : TRANSACTION_SUBTYPE.DEBIT
+
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
@@ -815,6 +845,7 @@ export class WebhookServices {
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
       })
       return { message: "Webhook received successfully", status: 200, data: payload }
+
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {

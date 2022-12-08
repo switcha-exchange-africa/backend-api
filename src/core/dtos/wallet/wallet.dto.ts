@@ -107,8 +107,7 @@ export class WithdrawFeeWalletAddresssDto {
 
 
   @IsNotEmpty()
-  @IsNumber()
-  @IsPositive()
+  @IsString()
   public readonly destination: string
 }
 

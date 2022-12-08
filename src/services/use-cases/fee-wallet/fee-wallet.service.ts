@@ -243,13 +243,13 @@ export class FeeWalletServices {
   async withdrawWalletAddress(payload: IWithdrawFromFeeWallet) {
     try {
 
-      const { coin, amount, destination } = payload
-      const wallet = await this.data.feeWallets.findOne({ coin })
-      if (wallet) {
+      const { coin, amount, destination, id } = payload
+      const wallet = await this.data.feeWallets.findOne({ _id: id, coin })
+      if (!wallet) {
         return Promise.reject({
-          status: HttpStatus.CONFLICT,
+          status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
-          message: 'Wallet already exists',
+          message: 'Wallet does not exists',
           error: null
         })
       }
