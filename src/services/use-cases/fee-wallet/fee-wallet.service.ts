@@ -1,19 +1,20 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
 import { IDataServices } from "src/core/abstracts";
-import { ICreateFeeWallet, IGetWallets, IUpdateFeeWalletWithAddress } from "src/core/dtos/wallet/wallet.dto";
+import { ICreateFeeWallet, IGetWallets, IUpdateFeeWalletAccountId, IUpdateFeeWalletWithAddress, IWithdrawFromFeeWallet } from "src/core/dtos/wallet/wallet.dto";
 import { FeeWallet } from "src/core/entities/FeeWallet";
 import { CoinType } from "src/core/types/coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { generateReference } from "src/lib/utils";
+import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
 import { FeeWalletFactoryService } from "./fee-wallet-factory.service";
 
 @Injectable()
 export class FeeWalletServices {
   constructor(
-    private data: IDataServices,
+    private readonly data: IDataServices,
     private readonly factory: FeeWalletFactoryService,
-
+    private readonly withdrawalLib: WithdrawalLib
   ) { }
   cleanQueryPayload(payload: IGetWallets) {
     let key = {}
@@ -175,6 +176,33 @@ export class FeeWalletServices {
       })
     }
   }
+  async updateWalletAccountId(payload: IUpdateFeeWalletAccountId): Promise<ResponsesType<FeeWallet>> {
+    try {
+
+      const { id, accountId } = payload
+
+      const data = await this.data.feeWallets.findOne({ _id: id });
+      if (!data) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'Wallet does not exist',
+        error: null,
+      })
+
+      await this.data.feeWallets.update({ _id: id }, { accountId })
+      return { status: HttpStatus.OK, message: "Wallet updated successfully", data, state: ResponseState.SUCCESS };
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
 
   async createWallet(payload: ICreateFeeWallet) {
     try {
@@ -192,11 +220,51 @@ export class FeeWalletServices {
 
       const factory = await this.factory.create(payload)
       const data = await this.data.feeWallets.create(factory)
-      
+
       return {
         status: HttpStatus.OK,
         message: "Wallet created successfully",
         data,
+        state: ResponseState.SUCCESS,
+      };
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+
+  async withdrawWalletAddress(payload: IWithdrawFromFeeWallet) {
+    try {
+
+      const { coin, amount, destination } = payload
+      const wallet = await this.data.feeWallets.findOne({ coin })
+      if (wallet) {
+        return Promise.reject({
+          status: HttpStatus.CONFLICT,
+          state: ResponseState.ERROR,
+          message: 'Wallet already exists',
+          error: null
+        })
+      }
+      const transfer = await this.withdrawalLib.withdrawal({
+        accountId: wallet.accountId,
+        coin: wallet.coin,
+        amount: String(amount),
+        destination,
+        index: wallet.derivationKey
+      })
+
+      return {
+        status: HttpStatus.OK,
+        message: "Wallet created successfully",
+        data: transfer,
         state: ResponseState.SUCCESS,
       };
 

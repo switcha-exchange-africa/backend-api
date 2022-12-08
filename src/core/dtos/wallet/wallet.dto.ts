@@ -85,6 +85,34 @@ export class UpdateFeeWalletAddresssDto {
 
 }
 
+export class UpdateFeeWalletAccountIdDto {
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly accountId: string
+
+}
+
+export class WithdrawFeeWalletAddresssDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly coin: string
+
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  public readonly amount: number
+
+
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  public readonly destination: string
+}
+
+
 export class CreateFeeWalletDto {
   @IsNotEmpty()
   @IsString()
@@ -110,3 +138,13 @@ export class CreateFeeWalletDto {
 export type ICreateFeeWallet = CreateFeeWalletDto & {
   userId: string
 }
+
+export type IUpdateFeeWalletAccountId = UpdateFeeWalletAccountIdDto & {
+  id: Types.ObjectId
+}
+
+export type IWithdrawFromFeeWallet = WithdrawFeeWalletAddresssDto & {
+  id: Types.ObjectId
+}
+
+

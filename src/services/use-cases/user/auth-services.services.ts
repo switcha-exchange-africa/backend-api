@@ -169,7 +169,7 @@ export class AuthServices {
         this.activityFactory.create({
           action: ActivityAction.SIGNUP,
           description: 'Signed Up',
-          userId: user._id
+          userId: String(user._id)
         })
       ]);
 
@@ -294,7 +294,7 @@ export class AuthServices {
         this.activityFactory.create({
           action: ActivityAction.VERIFY_EMAIL,
           description: 'Verify Email',
-          userId: updatedUser._id
+          userId: String(updatedUser._id)
         })
       ])
 

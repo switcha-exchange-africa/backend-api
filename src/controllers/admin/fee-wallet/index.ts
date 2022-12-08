@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Query, Req, Res } from "@nestj
 import { Response, Request } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { CreateFeeWalletDto, ICreateFeeWallet, IUpdateFeeWalletWithAddress, UpdateFeeWalletAddresssDto } from "src/core/dtos/wallet/wallet.dto";
+import { CreateFeeWalletDto, ICreateFeeWallet, IUpdateFeeWalletAccountId, IUpdateFeeWalletWithAddress, IWithdrawFromFeeWallet, UpdateFeeWalletAccountIdDto, UpdateFeeWalletAddresssDto, WithdrawFeeWalletAddresssDto } from "src/core/dtos/wallet/wallet.dto";
 import { ByPass } from "src/decorator";
 import { FeeWalletServices } from "src/services/use-cases/fee-wallet/fee-wallet.service";
 
@@ -79,6 +79,27 @@ export class AdminFeeWalletsController {
 
     }
   }
+  @isAdminAuthenticated('strict')
+  @Put('/:id/update-accountId')
+  async updateWalletAccountId(@Res() res: Response, @Param() param: FindByIdDto, @Body() body: UpdateFeeWalletAccountIdDto) {
+    try {
+
+      const { id } = param;
+      const payload: IUpdateFeeWalletAccountId = {
+        ...body,
+        id
+      }
+
+      const response = await this.services.updateWalletAccountId(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  
 
   @isAdminAuthenticated('strict')
   @Post('/create-wallet')
@@ -99,5 +120,27 @@ export class AdminFeeWalletsController {
     }
   }
 
+  @isAdminAuthenticated('strict')
+  @Put('/:id/withdraw')
+  async withdrawWalletAddress(@Res() res: Response, @Param() param: FindByIdDto, @Body() body: WithdrawFeeWalletAddresssDto) {
+    try {
+
+      const { id } = param;
+      const payload: IWithdrawFromFeeWallet = {
+        ...body,
+        id
+      }
+
+      const response = await this.services.withdrawWalletAddress(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
 
 }
+
+

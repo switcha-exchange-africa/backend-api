@@ -3,13 +3,14 @@ import { Module } from "@nestjs/common";
 import { FeeWalletFactoryService } from "./fee-wallet-factory.service";
 import { FeeWalletServices } from "./fee-wallet.service";
 import { UtilsServicesModule } from "../utils/utils.module";
+import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
 
 @Module({
   imports: [
     DataServicesModule,
     UtilsServicesModule
   ],
-  providers: [FeeWalletServices, FeeWalletFactoryService],
+  providers: [FeeWalletServices, FeeWalletFactoryService, WithdrawalLib],
   exports: [FeeWalletServices, FeeWalletFactoryService],
 })
-export class FeeWalletServicesModule {}
+export class FeeWalletServicesModule { }
