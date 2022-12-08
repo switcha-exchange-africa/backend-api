@@ -94,6 +94,7 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_TRON_MNEMONIC,
                         amount: String(amount),
+                        fee: "12.798"
                     },
                     TATUM_CONFIG
                 )
@@ -116,9 +117,9 @@ export class WithdrawalLib {
         index: number
     }) {
         try {
-            const { accountId, coin, amount, mnemonic, xpub, destination,index } = payload
+            const { accountId, coin, amount, mnemonic, xpub, destination, index } = payload
             console.log(payload)
-            
+
             if (coin === Currency.BTC) {
                 const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
                 const transfer = await btcSDK.virtualAccount.send({

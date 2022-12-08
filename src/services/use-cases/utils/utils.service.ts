@@ -309,7 +309,7 @@ export class UtilsServices {
 
         ERROR :- ${typeof error === 'string' ? error : JSON.stringify(error)}
 
-        MESSAGE :- ${message}
+        MESSAGE :- ${typeof message === 'string' ? message : JSON.stringify(message)}
         
         USER :- ${email}
       `,

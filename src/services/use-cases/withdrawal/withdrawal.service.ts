@@ -162,7 +162,7 @@ export class WithdrawalServices {
       /**
        * activate wallet for tron/usdt_tron addresses
        */
-      if ((wallet.coin === 'USDT_TRON' || wallet.coin === 'TRON') && !wallet.isActivated) {
+      if (wallet.coin === 'USDT_TRON' || wallet.coin === 'TRON') {
 
         const getFeeTronWallet = await this.data.feeWallets.findOne({ coin: 'TRON' })
         if (!getFeeTronWallet) {
@@ -208,7 +208,7 @@ export class WithdrawalServices {
         const transferTron = await this.lib.withdrawal({
           accountId: getFeeTronWallet.accountId,
           coin: 'TRON',
-          amount: '1',
+          amount: '12.798',
           destination: wallet.address,
           index: getFeeTronWallet.derivationKey
         })
@@ -471,7 +471,7 @@ export class WithdrawalServices {
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
-        message: error.message,
+        message: 'An error occured, please contact support',
         error: error
       })
     }
