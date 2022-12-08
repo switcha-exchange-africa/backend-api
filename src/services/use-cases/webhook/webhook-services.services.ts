@@ -60,7 +60,7 @@ export class WebhookServices {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [wallet, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
         this.data.wallets.findOne({ coin: currency.toUpperCase(), address: to, accountId }),
-        this.data.transactions.findOne({reference:`${generateReferencePrefix('credit')}${reference}`}),
+        this.data.transactions.findOne({ reference: `${generateReferencePrefix('credit')}${reference}` }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash })
       ])
@@ -151,7 +151,7 @@ export class WebhookServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
             senderAddress: from,
             hash: blockHash,
-            reference:`${generateReferencePrefix('credit')}${reference}`,
+            reference: `${generateReferencePrefix('credit')}${reference}`,
             tatumTransactionId: txId,
             metadata: payload
           };
@@ -228,7 +228,7 @@ export class WebhookServices {
       const { amount, currency, reference, txId, from, to, blockHash, accountId } = payload
       const [account, referenceAlreadyExists, transactionIdAlreadyExists, transactionHashAlreadyExists] = await Promise.all([
         this.data.virtualAccounts.findOne({ coin: currency.toUpperCase(), accountId }),
-        this.data.transactions.findOne({ reference:`${generateReferencePrefix('credit')}${reference}`,}),
+        this.data.transactions.findOne({ reference: `${generateReferencePrefix('credit')}${reference}`, }),
         this.data.transactions.findOne({ tatumTransactionId: txId }),
         this.data.transactions.findOne({ hash: blockHash }),
         ,
@@ -321,7 +321,7 @@ export class WebhookServices {
             customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
             senderAddress: from,
             hash: blockHash,
-            reference:`${generateReferencePrefix('credit')}${reference}`,
+            reference: `${generateReferencePrefix('credit')}${reference}`,
             tatumTransactionId: txId,
             metadata: payload
           };
@@ -726,7 +726,7 @@ export class WebhookServices {
       const feeWallet = await this.data.feeWallets.findOne({ address })
 
       const convertedAmount = Number(amountBeforeConversion)
-      const debitDescription = ''
+      const debitDescription = `Withdraw ${convertedAmount} ${feeWallet.coin}`
       const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
