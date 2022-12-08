@@ -407,7 +407,7 @@ export class WithdrawalServices {
 
         } catch (error) {
           Logger.error(error);
-          return Promise.reject(error);
+          throw new Error(error);
         }
       }
 
