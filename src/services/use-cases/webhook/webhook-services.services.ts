@@ -807,7 +807,7 @@ export class WebhookServices {
 
         External Deposit
 
-        Recieved ${description} 
+        Message:- ${description} 
         
 
         BODY : ${JSON.stringify(payload)}
