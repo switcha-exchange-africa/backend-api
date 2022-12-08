@@ -205,10 +205,11 @@ export class WithdrawalServices {
           })
         }
         // send tron to activate wallet
+        const tronAmount = '12.798'
         const transferTron = await this.lib.withdrawal({
           accountId: getFeeTronWallet.accountId,
           coin: 'TRON',
-          amount: '12.798',
+          amount: tronAmount,
           destination: wallet.address,
           index: getFeeTronWallet.derivationKey
         })
@@ -220,7 +221,7 @@ export class WithdrawalServices {
           
           Transfer successful!!
 
-          1 TRX sent to ${wallet.address}
+          ${tronAmount} TRX sent to ${wallet.address}
 
           user: ${email}
 
@@ -424,6 +425,8 @@ export class WithdrawalServices {
 
               Fee: ${fee}
 
+              Destination: ${destination}
+              
               Amount before deduction: ${amountBeforeFee}
 
               Amount after deduction : ${amount}
