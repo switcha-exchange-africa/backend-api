@@ -63,6 +63,7 @@ export class Wallet {
   tatumMessage: string;
   xpub: string
   derivationKey: string
+  isActivated: boolean
 }
 
 export enum CryptoPairType {

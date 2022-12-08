@@ -132,6 +132,8 @@ export const WALLET_CHANNEL_LINK_DEVELOPMENT = 'https://discord.com/api/webhooks
 export const WALLET_CHANNEL_LINK_PRODUCTION = 'https://discord.com/api/webhooks/1033441841393192992/MahfXAh8IcMi0Ce1E5ii3UNzzHc2TH5bxtanTzJzifsU2ZF0okGym4yA81LML8XMQYZt'
 
 
+export const TRON_ADDRESS_MONITOR_CHANNEL = 'https://discord.com/api/webhooks/1050242296660119622/Gc3BcSzAJA6Q-m1kqu6tMqrzpNSCs2ammdL0sLB2EKzHue_-thSK9UU-_g8AKUybOG2E'
+
 export interface UserIDDocumentType {
   documentType: string;
   url: string;

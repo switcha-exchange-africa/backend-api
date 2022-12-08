@@ -30,7 +30,7 @@ import { ActivityFactoryService } from "../activity/activity-factory.service"
 import { ActivityAction } from "src/core/dtos/activity"
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper"
 import { InjectConnection } from "@nestjs/mongoose"
-import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, TRON_ADDRESS_MONITOR_CHANNEL, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
@@ -158,6 +158,83 @@ export class WithdrawalServices {
       }
 
       const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
+
+      /**
+       * activate wallet for tron/usdt_tron addresses
+       */
+      if ((wallet.coin === 'USDT_TRON' || wallet.coin === 'TRON') && !wallet.isActivated) {
+
+        const getFeeTronWallet = await this.data.feeWallets.findOne({ coin: 'TRON' })
+        if (!getFeeTronWallet) {
+          await this.discord.inHouseNotification({
+            title: `Tron network withdrawal :- ${env.env} environment`,
+            message: `
+            
+            Tron wallet not yet set, please set it up on production
+    
+          `,
+            link: TRON_ADDRESS_MONITOR_CHANNEL,
+          })
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `TRON/TRC-10/TRC-20 withdrawals not supported yet, please contact support`,
+            error: null
+          })
+        }
+
+        if (getFeeTronWallet.balance < amount) {
+
+          await this.discord.inHouseNotification({
+            title: `Tron network withdrawal :- ${env.env} environment`,
+            message: `
+            
+            Tron master wallet balance is low
+
+            Balance:- ${getFeeTronWallet.balance}
+    
+          `,
+            link: TRON_ADDRESS_MONITOR_CHANNEL,
+          })
+
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `TRON/TRC-10/TRC-20 withdrawals disabled, please contact support`,
+            error: null
+          })
+        }
+        // send tron to activate wallet
+        const transferTron = await this.lib.withdrawal({
+          accountId: getFeeTronWallet.accountId,
+          coin: 'TRON',
+          amount: '1',
+          destination: wallet.address,
+          index: getFeeTronWallet.derivationKey
+        })
+
+        await this.data.wallets.update({ _id: wallet._id }, { isActivated: true })
+        await this.discord.inHouseNotification({
+          title: `Tron network withdrawal :- ${env.env} environment`,
+          message: `
+          
+          Transfer successful!!
+
+          1 TRX sent to ${wallet.address}
+
+          user: ${email}
+
+          Transaction Details:- ${JSON.stringify(transferTron)}
+  
+        `,
+          link: TRON_ADDRESS_MONITOR_CHANNEL,
+        })
+      }
+
+
+      /**
+  * activate wallet for tron/usdt_tron addresses
+  */
       const response = await this.lib.withdrawal({
         accountId: wallet.accountId,
         coin,

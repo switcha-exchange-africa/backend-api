@@ -40,7 +40,7 @@ export class Wallet {
 
   @Prop()
   derivationKey: string;
-  
+
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 
@@ -62,6 +62,9 @@ export class Wallet {
   @Prop()
   isBlocked: boolean;
 
+  @Prop({ default: false })
+  isActivated: boolean;
+
   @Prop()
   destinationTag: string;
 
@@ -70,7 +73,7 @@ export class Wallet {
 
   @Prop()
   xpub: string;
-  
+
   @Prop()
   tatumMessage: string;
 
