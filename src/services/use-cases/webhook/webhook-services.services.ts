@@ -723,10 +723,7 @@ export class WebhookServices {
   async addressTransaction(payload: Record<string, any>) {
     try {
       const { address, amount: amountBeforeConversion, counterAddress, txId, mempool } = payload
-      const [feeWallet, transaction] = await Promise.all([
-        this.data.feeWallets.findOne({ address }),
-        this.data.transactions.findOne({ tatumTransactionId: txId }),
-      ])
+      const feeWallet = await this.data.feeWallets.findOne({ address })
 
       const convertedAmount = Number(amountBeforeConversion)
       const debitDescription = ''
@@ -752,23 +749,7 @@ export class WebhookServices {
         return { message: "Webhook received successfully", status: 200, data: payload }
 
       }
-      if (transaction.status === Status.COMPLETED) {
-        await this.discord.inHouseNotification({
-          title: `Address Transaction :- ${env.env} environment`,
-          message: `
-          
-          Transaction already completed
 
-          BODY : ${JSON.stringify(payload)}
-  `,
-          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
-        })
-        // state last withdrawal
-        // update transaction status and reference
-        // store reference
-        return { message: "Webhook received successfully", status: 200, data: payload }
-
-      }
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
           {
