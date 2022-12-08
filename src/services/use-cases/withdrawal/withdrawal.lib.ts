@@ -39,7 +39,6 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_BTC_MNEMONIC,
                         amount: String(amount),
-                        fee: '0.00001',
                         xpub: TATUM_BTC_XPUB_KEY
                     },
                     TATUM_CONFIG
@@ -58,7 +57,6 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_ETH_MNEMONIC,
                         amount: String(amount),
-                        fee: "0.00042"
                     },
                     TATUM_CONFIG
                 )
@@ -75,7 +73,6 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_ETH_MNEMONIC,
                         amount: String(amount),
-                        fee: "0.00042"
                     },
                     TATUM_CONFIG
                 )
