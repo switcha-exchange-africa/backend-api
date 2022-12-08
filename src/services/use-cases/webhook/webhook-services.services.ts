@@ -733,12 +733,11 @@ export class WebhookServices {
       const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
-      // const balanceAfter = Math.sign(convertedAmount) === 1 ? _.add()
+      const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
+      const subType = Math.sign(convertedAmount) === 1 ? TRANSACTION_SUBTYPE.CREDIT : TRANSACTION_SUBTYPE.DEBIT
+
 
       if (mempool) {
-
-
-
         await this.discord.inHouseNotification({
           title: `Address Transaction :- ${env.env} environment`,
           message: `
@@ -772,18 +771,26 @@ export class WebhookServices {
       }
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
-          { _id: feeWallet._id },
+          {
+            _id: feeWallet._id,
+          },
           {
             $inc: {
-              balance: convertedAmount
-            }
-          }, session
+              balance: convertedAmount,
+            },
+            lastDeposit: convertedAmount
+          },
+          session
         ) : await this.data.feeWallets.update(
-          { _id: feeWallet._id },
+          {
+            _id: feeWallet._id
+          },
           {
             $inc: {
               balance: -convertedAmount
-            }
+            },
+            lastWithdrawal: convertedAmount
+
           }, session
         )
 
@@ -794,11 +801,11 @@ export class WebhookServices {
           signedAmount: Math.sign(convertedAmount) === 1 ? convertedAmount : -convertedAmount,
           type,
           description: description,
-          status: Status.PENDING,
+          status: Status.COMPLETED,
           balanceAfter: processWallet?.balance,
           balanceBefore: feeWallet?.balance,
-          subType: TRANSACTION_SUBTYPE.CREDIT,
-          customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
+          subType: subType,
+          customTransactionType: customTransactionType,
           senderAddress: counterAddress,
           reference: generateReference('credit'),
           tatumTransactionId: txId,
