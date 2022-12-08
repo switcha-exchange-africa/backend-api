@@ -6,7 +6,7 @@ import { InjectConnection } from "@nestjs/mongoose";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
-import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
+import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
@@ -15,6 +15,8 @@ import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
 import { WithdrawalStatus } from "src/core/entities/Withdrawal";
+import { OptionalQuery } from "src/core/types/database";
+import { generateReference } from "src/lib/utils";
 
 Injectable()
 export class WebhookServices {
@@ -720,24 +722,115 @@ export class WebhookServices {
 
   async addressTransaction(payload: Record<string, any>) {
     try {
+      const { address, amount: amountBeforeConversion, counterAddress, txId, mempool } = payload
+      const [feeWallet, transaction] = await Promise.all([
+        this.data.feeWallets.findOne({ address }),
+        this.data.transactions.findOne({ tatumTransactionId: txId }),
+      ])
+
+      const convertedAmount = Number(amountBeforeConversion)
+      const debitDescription = ''
+      const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
+      const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
+      const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
+      // const balanceAfter = Math.sign(convertedAmount) === 1 ? _.add()
+
+      if (mempool) {
+
+
+
+        await this.discord.inHouseNotification({
+          title: `Address Transaction :- ${env.env} environment`,
+          message: `
+          Transaction still in Mempool
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        // state last withdrawal
+        // update transaction status and reference
+        // store reference
+        return { message: "Webhook received successfully", status: 200, data: payload }
+
+      }
+      if (transaction.status === Status.COMPLETED) {
+        await this.discord.inHouseNotification({
+          title: `Address Transaction :- ${env.env} environment`,
+          message: `
+          
+          Transaction already completed
+
+          BODY : ${JSON.stringify(payload)}
+  `,
+          link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+        })
+        // state last withdrawal
+        // update transaction status and reference
+        // store reference
+        return { message: "Webhook received successfully", status: 200, data: payload }
+
+      }
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
+          { _id: feeWallet._id },
+          {
+            $inc: {
+              balance: convertedAmount
+            }
+          }, session
+        ) : await this.data.feeWallets.update(
+          { _id: feeWallet._id },
+          {
+            $inc: {
+              balance: -convertedAmount
+            }
+          }, session
+        )
+
+        const txCreditPayload: OptionalQuery<Transaction> = {
+          feeWalletId: String(feeWallet._id),
+          currency: feeWallet.coin,
+          amount: convertedAmount,
+          signedAmount: Math.sign(convertedAmount) === 1 ? convertedAmount : -convertedAmount,
+          type,
+          description: description,
+          status: Status.PENDING,
+          balanceAfter: processWallet?.balance,
+          balanceBefore: feeWallet?.balance,
+          subType: TRANSACTION_SUBTYPE.CREDIT,
+          customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT,
+          senderAddress: counterAddress,
+          reference: generateReference('credit'),
+          tatumTransactionId: txId,
+          metadata: payload
+        };
+
+        const factory = await this.txFactoryServices.create(txCreditPayload)
+        await this.data.transactions.create(factory, session)
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
 
       await this.discord.inHouseNotification({
-        title: `Address Transaction :- ${env.env} environment`,
+        title: `External Deposit To Fee Wallet:- ${env.env} environment`,
         message: `
+
+        External Deposit
+
+        Recieved ${description} 
         
+
         BODY : ${JSON.stringify(payload)}
 `,
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
       })
-      // state last withdrawal
-      // update transaction status and reference
-      // store reference
       return { message: "Webhook received successfully", status: 200, data: payload }
-
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
-        action: 'TATUM TX BLOCK',
+        action: 'TATUM ADDRESS  NOTIFICATION',
         error,
         email: payload.to,
         message: error.message
