@@ -204,34 +204,44 @@ export class WithdrawalServices {
             error: null
           })
         }
+        const getTrxBalance = await this.http.get(
+          `${TATUM_BASE_URL}/tron/account/${wallet.address}`,
+
+          TATUM_CONFIG
+        )
+        const divisor = 1000000
+        const trxBalance = getTrxBalance.balance / divisor
         // send tron to activate wallet
         const tronAmount = '12.798'
-        const transferTron = await this.lib.withdrawal({
-          accountId: getFeeTronWallet.accountId,
-          coin: 'TRON',
-          amount: tronAmount,
-          destination: wallet.address,
-          index: getFeeTronWallet.derivationKey
-        })
+        if (trxBalance < Number(tronAmount)) {
+          const transferTron = await this.lib.withdrawal({
+            accountId: getFeeTronWallet.accountId,
+            coin: 'TRON',
+            amount: tronAmount,
+            destination: wallet.address,
+            index: getFeeTronWallet.derivationKey
+          })
 
-        await this.data.wallets.update({ _id: wallet._id }, { isActivated: true })
-        await this.discord.inHouseNotification({
-          title: `Tron network withdrawal :- ${env.env} environment`,
-          message: `
-          
-          Transfer successful!!
-
-          ${tronAmount} TRX sent to ${wallet.address}
-
-          user: ${email}
-
-          Transaction Details:- ${JSON.stringify(transferTron)}
+          await this.data.wallets.update({ _id: wallet._id }, { isActivated: true })
+          await this.discord.inHouseNotification({
+            title: `Tron network withdrawal :- ${env.env} environment`,
+            message: `
+            
+            Transfer successful!!
   
-        `,
-          link: TRON_ADDRESS_MONITOR_CHANNEL,
-        })
-      }
+            ${tronAmount} TRX sent to ${wallet.address}
+  
+            user: ${email}
+  
+            Transaction Details:- ${JSON.stringify(transferTron)}
+    
+          `,
+            link: TRON_ADDRESS_MONITOR_CHANNEL,
+          })
+        }
 
+
+      }
 
       /**
   * activate wallet for tron/usdt_tron addresses
