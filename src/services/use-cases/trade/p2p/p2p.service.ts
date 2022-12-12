@@ -461,9 +461,9 @@ export class P2pServices {
         })
       }
       const adUser = ad.userId as unknown as User
-      
+
       if (String(adUser._id) !== userId) {
-       
+
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
@@ -759,7 +759,7 @@ export class P2pServices {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
-          message: 'Quantity is more  or less than limit',
+          message: 'Quantity is more or less than limits',
           error: null
         })
       }
