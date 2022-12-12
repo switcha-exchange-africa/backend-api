@@ -161,7 +161,7 @@ export class UtilsServices {
           password: MAILJET_API_SECRET_KEY,
         },
       }
-      if (!env.isProd) {
+      if (env.isProd) {
         const response = await this.http.post(
           'https://api.mailjet.com/v3.1/send',
           {
@@ -214,6 +214,18 @@ export class UtilsServices {
       throw new Error(error)
     }
   }
+  formatCoin(coin: string) {
+    try {
+      if (coin.toUpperCase() === 'USDT_TRON') return 'USDT-TRON'
+      if (coin.toUpperCase() === 'CUSD') return 'cUSD'
+      if (coin.toUpperCase() === 'CEUR') return 'cEUR'
+      return coin.toUpperCase()
+
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
 
   cleanUpPayloadForTatumWithdrawal(payload: { coin: string, accountId: string, address: string, amount: number }) {
     try {

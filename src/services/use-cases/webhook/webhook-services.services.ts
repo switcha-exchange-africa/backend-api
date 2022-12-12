@@ -147,7 +147,7 @@ export class WebhookServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Recieved ${amount} ${currency} from ${from}`,
+            description: `Recieved ${amount} ${this.utilsService.formatCoin(currency)} from ${from}`,
             status: Status.COMPLETED,
             balanceAfter: creditedWallet?.balance,
             balanceBefore: wallet?.balance,
@@ -163,7 +163,7 @@ export class WebhookServices {
           const notificationPayload = {
             userId: wallet.userId,
             title: "Deposit",
-            message: `Recieved ${amount} ${currency} from ${from} `,
+            message: `Recieved ${amount} ${this.utilsService.formatCoin(currency)} from ${from} `,
           }
 
           const [notificationFactory, txCreditFactory] = await Promise.all([
@@ -321,7 +321,7 @@ export class WebhookServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.CREDIT,
-            description: `Recieved ${amount} ${currency} from ${from}`,
+            description: `Recieved ${amount} ${this.utilsService.formatCoin(currency)} from ${from}`,
             status: Status.COMPLETED,
             balanceAfter: creditedAccount?.balance,
             balanceBefore: account?.balance,
@@ -337,7 +337,7 @@ export class WebhookServices {
           const notificationPayload = {
             userId: account.userId,
             title: "Deposit",
-            message: `Recieved ${amount} ${currency} from ${from} `,
+            message: `Recieved ${amount} ${this.utilsService.formatCoin(currency)} from ${from} `,
           }
 
           const [notificationFactory, txCreditFactory] = await Promise.all([
@@ -516,7 +516,14 @@ export class WebhookServices {
       ])
 
       const feeWallet = await this.data.feeWallets.findOne({ address })
-      if (feeWallet) return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+      if (feeWallet) {
+        Logger.error('Stop webhook, Fee wallet')
+        return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+      }
+      if (!withdrawal) {
+        Logger.error('Stop webhook, No Withdrawal')
+        return Promise.resolve({ message: 'Stop webhook, No Withdrawal' })
+      }
 
       if (withdrawal.status === WithdrawalStatus.APPROVED) {
         await this.discord.inHouseNotification({
@@ -680,7 +687,7 @@ export class WebhookServices {
 
           const notificationFactory = await this.notificationFactory.create({
             title: "Withdrawal Completed",
-            message: `Withdrawal  of ${amount} ${currency} to ${address} was successful`,
+            message: `Withdrawal  of ${amount} ${this.utilsService.formatCoin(currency)} to ${address} was successful`,
             userId: virtualAccount.userId
           })
 
@@ -772,8 +779,8 @@ export class WebhookServices {
       }
 
       const convertedAmount = Number(amountBeforeConversion)
-      const debitDescription = `Withdraw ${convertedAmount} ${feeWallet.coin}`
-      const creditDescription = `Recieved ${convertedAmount} ${feeWallet.coin}`
+      const debitDescription = `Withdraw ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
+      const creditDescription = `Recieved ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
       const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
