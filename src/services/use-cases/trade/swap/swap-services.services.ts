@@ -34,7 +34,6 @@ export class SwapServices {
     private discord: INotificationServices,
     private readonly utils: UtilsServices,
     private readonly activityFactory: ActivityFactoryService,
-    private readonly utilsService: UtilsServices,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
@@ -203,7 +202,7 @@ export class SwapServices {
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: destinationAmount,
             signedAmount: destinationAmount,
             type: TRANSACTION_TYPE.CREDIT,
@@ -224,7 +223,7 @@ export class SwapServices {
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(sourceWallet?._id),
-            currency: sourceCoin ,
+            currency: sourceCoin,
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -244,7 +243,7 @@ export class SwapServices {
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
@@ -262,7 +261,7 @@ export class SwapServices {
 
           const txFeeWalletPayload = {
             feeWalletId: String(destinationFeeWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
@@ -344,7 +343,7 @@ export class SwapServices {
         message: error.message
       }
 
-      this.utilsService.errorReporter(errorPayload)
+      this.utils.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
@@ -433,7 +432,7 @@ export class SwapServices {
       const destinationUrl = `${TATUM_BASE_URL}/tatum/rate/${destinationCoin}?basePair=USD`;
       const { value: sourceRate } = await this.http.get(sourceUrl, this.TATUM_CONFIG)
       const { value: destinationRate } = await this.http.get(destinationUrl, this.TATUM_CONFIG)
-      const { destinationAmount, rate } = await this.utilsService.swapV2({ sourceRate, destinationRate, amount })
+      const { destinationAmount, rate } = await this.utils.swapV2({ sourceRate, destinationRate, amount })
 
       const { fee, deduction } = await this.utils.calculateFees({ operation: ActivityAction.BUY, amount: destinationAmount })
 
@@ -502,11 +501,11 @@ export class SwapServices {
           const txCreditPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: deduction,
             signedAmount: deduction,
             type: TRANSACTION_TYPE.CREDIT,
-            description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
+            description: ` Swapped ${amount} ${this.utils.formatCoin(sourceCoin)} to ${deduction} ${this.utils.formatCoin(destinationCoin)}`,
             status: Status.COMPLETED,
             balanceAfter: creditDestinationWallet?.balance,
             balanceBefore: destinationWallet?.balance,
@@ -523,7 +522,7 @@ export class SwapServices {
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(sourceWallet?._id),
-            currency: sourceCoin ,
+            currency: sourceCoin,
             amount: amount,
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
@@ -543,7 +542,7 @@ export class SwapServices {
           const txFeePayload: OptionalQuery<Transaction> = {
             userId,
             walletId: String(destinationWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: fee,
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
@@ -561,7 +560,7 @@ export class SwapServices {
 
           const txFeeWalletPayload = {
             feeWalletId: String(feeWallet?._id),
-            currency: destinationCoin ,
+            currency: destinationCoin,
             amount: fee,
             signedAmount: fee,
             type: TRANSACTION_TYPE.CREDIT,
@@ -611,16 +610,16 @@ export class SwapServices {
       const activity: IActivity = {
         userId,
         action: ActivityAction.SWAP,
-        description: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`,
+        description: ` Swapped ${amount} ${this.utils.formatCoin(sourceCoin)} to ${deduction} ${this.utils.formatCoin(destinationCoin)}`,
         amount,
         coin: sourceCoin
       }
       const notification: INotification = {
         userId,
         title: `Swap`,
-        message: ` Swapped ${amount} ${sourceCoin} to ${deduction} ${destinationCoin}`
+        message: ` Swapped ${amount} ${this.utils.formatCoin(sourceCoin)} to ${deduction} ${this.utils.formatCoin(destinationCoin)}`
       }
-      await this.utilsService.storeActivitySendNotification({ activity, notification })
+      await this.utils.storeActivitySendNotification({ activity, notification })
 
       await Promise.all([
 
@@ -658,7 +657,7 @@ export class SwapServices {
         message: error.message
       }
 
-      this.utilsService.errorReporter(errorPayload)
+      this.utils.errorReporter(errorPayload)
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
