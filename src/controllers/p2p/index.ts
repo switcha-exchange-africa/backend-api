@@ -196,14 +196,18 @@ export class P2pController {
   @Put('/p2p/ads/:id')
   @isAuthenticated('strict')
   async editAds(
+    @Req() req: Request,
     @Res() res: Response,
     @Param() params: FindByIdDto,
     @Body() body: UpdateP2pCreateAdDto
   ) {
     try {
+      const user = req?.user
+      const userId = user._id
+      const email = user.email
 
       const { id } = params
-      const payload: IUpdateP2pAds = { id, ...body }
+      const payload: IUpdateP2pAds = { id, ...body, userId, email }
 
       const response = await this.services.editAds(payload);
       return res.status(response.status).json(response);

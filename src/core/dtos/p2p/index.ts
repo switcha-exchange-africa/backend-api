@@ -204,6 +204,8 @@ export type IGetP2pBanks = PaginationType & {
 export class UpdateP2pCreateAdDto extends PartialType(P2pCreateAdDto) { }
 export type IUpdateP2pAds = UpdateP2pCreateAdDto & {
   id: Types.ObjectId
+  userId: string
+  email: string
 }
 
 export type ICreateP2pAdBank = P2pAdCreateBankDto & {

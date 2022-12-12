@@ -448,9 +448,53 @@ export class P2pServices {
   }
 
   async editAds(payload: IUpdateP2pAds) {
-    const { type } = payload
+    const { type, email, totalAmount, minLimit, maxLimit, userId } = payload
     try {
 
+      const ad = await this.data.p2pAds.findOne({ _id: payload.id })
+      if (!ad) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Ad does not exists',
+          error: null
+        })
+      }
+      const adUser = ad.userId as unknown as User
+      
+      if (String(adUser._id) !== userId) {
+       
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Can't perform this action`,
+          error: null
+        })
+      }
+      if (minLimit > totalAmount) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your minimum limit cannot be greater than your total amount`,
+          error: null
+        })
+      }
+      if (minLimit > maxLimit) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your minimum limit cannot be greater than your max limit`,
+          error: null
+        })
+      }
+      if (maxLimit > totalAmount) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Your max limit cannot be greater than your total amount`,
+          error: null
+        })
+      }
       const counterPartConditions = { kyc: payload.kyc, moreThanDot1Btc: payload.moreThanDot1Btc, registeredZeroDaysAgo: payload.registeredZeroDaysAgo }
       const p2p = await this.data.p2pAds.update({ _id: payload.id }, { ...payload, counterPartConditions })
 
@@ -472,6 +516,7 @@ export class P2pServices {
       const errorPayload: IErrorReporter = {
         action: 'EDIT P2P ADS',
         error,
+        email,
         message: error.message
       }
 
@@ -926,10 +971,12 @@ export class P2pServices {
           error: null
         })
       }
-      const [ad, merchant, client] = await Promise.all([
+      const [ad, merchant, client, user] = await Promise.all([
         this.data.p2pAds.findOne({ _id: order.adId }),
         this.data.users.findOne({ _id: order.merchantId }),
         this.data.users.findOne({ _id: order.clientId }),
+        this.data.users.findOne({ _id: userId }),
+
       ])
 
       if (ad.type === P2pAdsType.BUY && order.clientId !== userId) {
@@ -957,6 +1004,17 @@ export class P2pServices {
         // send code to user phone number
         const verificationCode = randomFixedInteger(6)
         const hashedCode = await hash(String(verificationCode))
+        this.emitter.emit("send.email.mailjet", {
+          fromEmail: 'support@switcha.africa',
+          fromName: "Support",
+          toEmail: email,
+          toName: `${user.firstName} ${user.lastName}`,
+          templateId: EmailTemplates.P2P_OTP,
+          subject: `Otp Code. #${order.orderId}`,
+          variables: {
+            code: verificationCode,
+          }
+        })
         await Promise.all([
           this.discordServices.inHouseNotification({
             title: `P2p Order Confirm Release Verification code :- ${env.env} environment`,
