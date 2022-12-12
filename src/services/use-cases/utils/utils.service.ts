@@ -77,11 +77,9 @@ export class UtilsServices {
       }
 
       if (this.isStableCoin(destination as CoinType)) {
-        console.log("HE YEAH")
         const sourceExchangeRate = await this.data.exchangeRates.findOne({ coin: source.toUpperCase() }, null, { sort: 'desc' })
         if (!sourceExchangeRate) throw new Error(`Exchange rate not set for source currency ${source}`)
 
-        console.log(sourceExchangeRate)
         const destinationAmount = _.floor(_.multiply(sourceExchangeRate.sellRate, amount), 8)
         return { rate: sourceExchangeRate.sellRate, destinationAmount }
 
@@ -94,9 +92,6 @@ export class UtilsServices {
 
       if (!sourceExchangeRate) throw new Error(`Exchange rate not set for source currency ${source}`)
       if (!destinationExchangeRate) throw new Error(`Exchange rate not set for destination currency ${destination}`)
-
-      console.log(sourceExchangeRate)
-      console.log(destinationExchangeRate)
 
       const conversionRate = _.divide(sourceExchangeRate.buyRate, destinationExchangeRate.buyRate)
       const destinationAmount = _.floor(_.multiply(conversionRate, amount), 8)
@@ -166,7 +161,7 @@ export class UtilsServices {
           password: MAILJET_API_SECRET_KEY,
         },
       }
-      if (env.isProd) {
+      if (!env.isProd) {
         const response = await this.http.post(
           'https://api.mailjet.com/v3.1/send',
           {
@@ -199,7 +194,6 @@ export class UtilsServices {
       return 'Email Sent'
 
     } catch (error) {
-      console.error(error)
       throw new Error(error)
     }
   }

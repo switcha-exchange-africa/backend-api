@@ -5,6 +5,7 @@ import { env } from "src/configuration";
 import { RedisServiceModule } from "src/frameworks/in-memory-database/redis/redis-service.module";
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { DataServicesModule } from "src/services/data-services/data-services.module";
+import { ActivityFactoryService } from "../../activity/activity-factory.service";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { UtilsServicesModule } from "../../utils/utils.module";
@@ -28,6 +29,7 @@ import { P2pServices } from "./p2p.service";
     P2pOrderFactoryService,
     TransactionFactoryService,
     NotificationFactoryService,
+    ActivityFactoryService,
     P2pServices
   ],
   exports: [

@@ -34,6 +34,7 @@ import { NotificationFactoryService } from "../../notification/notification-fact
 import { IErrorReporter } from "src/core/types/error";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { EmailTemplates } from "src/core/types/email";
+import { ActivityFactoryService } from "../../activity/activity-factory.service";
 @Injectable()
 export class P2pServices {
 
@@ -50,6 +51,7 @@ export class P2pServices {
     private readonly notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly emitter: EventEmitter2,
+    private readonly activityFactory: ActivityFactoryService,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection,
     @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
 
@@ -156,7 +158,7 @@ export class P2pServices {
       const activity: IActivity = {
         userId,
         action: type === P2pAdsType.SELL ? ActivityAction.P2P_SELL_AD : ActivityAction.P2P_BUY_AD,
-        description: `Created P2P ${type} Ad`,
+        description: `Created P2P ${type === P2pAdsType.SELL ? 'Sell' : 'Buy'} Ad`,
         amount: totalAmount,
         coin
       }
@@ -446,10 +448,19 @@ export class P2pServices {
   }
 
   async editAds(payload: IUpdateP2pAds) {
+    const { type } = payload
     try {
-      const counterPartConditions = { kyc: payload.kyc, moreThanDot1Btc: payload.moreThanDot1Btc, registeredZeroDaysAgo: payload.registeredZeroDaysAgo }
 
-      await this.data.p2pAds.update({ _id: payload.id }, { ...payload, counterPartConditions })
+      const counterPartConditions = { kyc: payload.kyc, moreThanDot1Btc: payload.moreThanDot1Btc, registeredZeroDaysAgo: payload.registeredZeroDaysAgo }
+      const p2p = await this.data.p2pAds.update({ _id: payload.id }, { ...payload, counterPartConditions })
+
+      const activityFactory = this.activityFactory.create({
+        action: type === 'buy' ? ActivityAction.P2P_BUY_AD : ActivityAction.P2P_SELL_AD,
+        description: 'Edited P2p Ad',
+        userId: String(p2p.userId)
+      })
+      await this.data.activities.create(activityFactory)
+
       return {
         message: `${payload.type} ads updated successfully`,
         data: {},
@@ -497,6 +508,14 @@ export class P2pServices {
       }
       const factory = await this.p2pAdsBankFactory.create(payload)
       const data = await this.data.p2pAdBanks.create(factory)
+
+
+      const activityFactory = await this.activityFactory.create({
+        action: ActivityAction.ADD_BANK,
+        description: 'Added P2p Ad Bank',
+        userId: String(userId)
+      })
+      await this.data.activities.create(activityFactory)
 
       return {
         message: `Bank added successfully`,
@@ -673,6 +692,14 @@ export class P2pServices {
           error: null
         })
       }
+      if ((ad.type as string).toLowerCase() === (type as string).toLowerCase()) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `Can't match trade`,
+          error: null
+        })
+      }
       const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
       if (quantity > ad.totalAmount) {
         return Promise.reject({
@@ -840,7 +867,7 @@ export class P2pServices {
           toEmail: email,
           toName: `${firstName} ${lastName}`,
           templateId: EmailTemplates.ORDER_CREATED_CLIENT,
-          subject: `An order has been created for your Ad. #${order.orderId}`,
+          subject: `Your order has been placed. #${order.orderId}`,
           variables: {
             id: order.orderId,
             amount: quantity, cash: ad.cash, coin: ad.coin,
@@ -1154,7 +1181,10 @@ export class P2pServices {
             feeWalletTransactionFactory,
             clientNotificationFactory,
             merchantNotificationFactory,
-            feeTransactionFactory
+            feeTransactionFactory,
+            clientActivityFactory,
+            merchantActivityFactory,
+
           ] = await Promise.all([
             this.transactionFactory.create(clientTransactionPayload),
             this.transactionFactory.create(merchantTransactionPayload),
@@ -1162,7 +1192,16 @@ export class P2pServices {
             this.notificationFactory.create(clientNotificationPayload),
             this.notificationFactory.create(merchantNotificationPayload),
             this.transactionFactory.create(feeTransactionPayload),
-
+            this.activityFactory.create({
+              action: order.type === 'buy' ? ActivityAction.BUY : ActivityAction.SELL,
+              description: 'Completed P2p Order',
+              userId: String(client._id)
+            }),
+            this.activityFactory.create({
+              action: order.type === 'buy' ? ActivityAction.BUY : ActivityAction.SELL,
+              description: 'Completed P2p Order',
+              userId: String(buyerWallet.userId)
+            }),
 
           ])
 
@@ -1173,6 +1212,9 @@ export class P2pServices {
           await this.data.notifications.create(clientNotificationFactory, session)
           await this.data.notifications.create(merchantNotificationFactory, session)
           await this.data.transactions.create(feeTransactionFactory, session)
+          await this.data.activities.create(clientActivityFactory, session)
+          await this.data.activities.create(merchantActivityFactory, session)
+
           await this.data.users.update({ _id: clientTransactionPayload.userId }, {
             $inc: {
               noOfP2pOrderCompleted: 1,
@@ -1412,12 +1454,31 @@ export class P2pServices {
             message: merchantTransactionPayload.description
           }
 
-          const [merchantTransactionFactory, buyerTransactionFactory, feeWalletTransactionFactory, buyerNotificationFactory, merchantNotificationFactory] = await Promise.all([
+          const [
+            merchantTransactionFactory,
+            buyerTransactionFactory,
+            feeWalletTransactionFactory,
+            buyerNotificationFactory,
+            merchantNotificationFactory,
+            merchantActivityFactory,
+            buyerActivityFactory,
+
+          ] = await Promise.all([
             this.transactionFactory.create(merchantTransactionPayload),
             this.transactionFactory.create(buyerTransactionPayload),
             this.transactionFactory.create(feeWalletTransactionPayload),
             this.notificationFactory.create(buyerNotificationPayload),
             this.notificationFactory.create(merchantNotificationPayload),
+            this.activityFactory.create({
+              action: order.type === 'buy' ? ActivityAction.BUY : ActivityAction.SELL,
+              description: 'Completed P2p Order',
+              userId: String(buyer._id)
+            }),
+            this.activityFactory.create({
+              action: order.type === 'buy' ? ActivityAction.BUY : ActivityAction.SELL,
+              description: 'Completed P2p Order',
+              userId: String(merchantWallet.userId)
+            }),
           ])
 
 
@@ -1426,11 +1487,12 @@ export class P2pServices {
           await this.data.transactions.create(feeWalletTransactionFactory, session)
           await this.data.notifications.create(buyerNotificationFactory, session)
           await this.data.notifications.create(merchantNotificationFactory, session)
+          await this.data.activities.create(merchantActivityFactory, session)
+          await this.data.activities.create(buyerActivityFactory, session)
           await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session)
           deductAdTotalAmount.balance === 0 ?
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
-
 
           await this.data.users.update({ _id: buyerTransactionPayload.userId }, {
             $inc: {

@@ -22,7 +22,7 @@ export class SeedServices {
 
   async seed(userId: string): Promise<ResponsesType<FeeWallet[]>> {
     try {
-      if (!env.isProd) {
+      if (env.isProd) {
         return {
           status: HttpStatus.OK,
           message: "Data seeded successfully",

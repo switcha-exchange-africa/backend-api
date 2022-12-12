@@ -21,9 +21,10 @@ export enum ActivityAction {
   QUICK_TRADE_SELL = 'quick-trade-sell',
   P2P_SELL_AD = 'p2p-sell-ad',
   P2P_BUY_AD = 'p2p-buy-ad',
-
+  RECOVER_PASSWORD = 'recover-password',
+  RESET_PASSWORD = 'reset-password',
+  ADD_BANK = 'add-bank'
 }
-
 
 export enum FeatureEnum {
   SIGNUP = 'signup',

@@ -1,6 +1,6 @@
 import { Controller, Post, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express"
-import { isAuthenticated } from "src/core/decorators";
+import { isAdminAuthenticated } from "src/core/decorators";
 import { ByPass } from "src/decorator";
 import { SeedServices } from "src/services/use-cases/seed/seed.service";
 
@@ -11,7 +11,7 @@ export class AdminSeedController {
 
 
   @Post('/')
-  @isAuthenticated('strict')
+  @isAdminAuthenticated('strict')
   @ByPass('pass')
   async seed(@Req() req: Request, @Res() res: Response) {
     try {

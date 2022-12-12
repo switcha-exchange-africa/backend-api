@@ -18,6 +18,9 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { EmailTemplates } from 'src/core/types/email'
 import { UtilsServices } from '../utils/utils.service';
 import { IErrorReporter } from 'src/core/types/error';
+import mongoose from 'mongoose';
+import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
+import { InjectConnection } from "@nestjs/mongoose";
 
 const SIGNUP_ATTEMPT_KEY = 'failed-signup-attempt'
 const LOGIN_ATTEMPT_KEY = 'login-signup-attempt'
@@ -33,6 +36,8 @@ export class AuthServices {
     private readonly userFeatureManagementFactory: UserFeatureManagementFactoryService,
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
+    @InjectConnection('switcha') private readonly connection: mongoose.Connection,
+
   ) { }
 
   async waitlist(payload: IWaitList) {
@@ -194,6 +199,8 @@ export class AuthServices {
         }),
       ])
 
+      // signup activity
+
       return {
         status: HttpStatus.CREATED,
         message: "User signed up successfully",
@@ -230,28 +237,34 @@ export class AuthServices {
       const authUser = req?.user!;
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`
-      if (authUser.emailVerified) return {
-        message: 'User email already verified',
-        status: HttpStatus.ACCEPTED,
-        data: authUser,
-        state: ResponseState.SUCCESS
+      if (authUser.emailVerified) {
+        return {
+          message: 'User email already verified',
+          status: HttpStatus.ACCEPTED,
+          data: authUser,
+          state: ResponseState.SUCCESS
+        }
       }
 
       const savedCode = await this.inMemoryServices.get(redisKey);
-      if (isEmpty(savedCode)) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      if (isEmpty(savedCode)) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Code is incorrect, invalid or has expired',
+          error: null,
+        })
+      }
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      if (!correctCode) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      if (!correctCode) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Code is incorrect, invalid or has expired',
+          error: null,
+        })
+      }
 
       const updatedUser = await this.data.users.update({ _id: authUser?._id }, {
         $set: {
@@ -285,8 +298,8 @@ export class AuthServices {
           canBuy: true,
           canSell: true,
           canSwap: true,
-          canP2PBuy: false,
-          canP2PSell: false,
+          canP2PBuy: true,
+          canP2PSell: true,
           canWithdraw: false,
           canP2PCreateBuyAd: false,
           canP2PCreateSellAd: false
@@ -297,11 +310,20 @@ export class AuthServices {
           userId: String(updatedUser._id)
         })
       ])
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          await this.data.userFeatureManagement.create(userManagementFactory, session)
+          await this.data.activities.create(activityFactory, session)
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error)
+        }
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
 
-      await Promise.all([
-        this.data.userFeatureManagement.create(userManagementFactory),
-        this.data.activities.create(activityFactory)
-      ])
 
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
       return {
@@ -363,12 +385,14 @@ export class AuthServices {
       const emailCode = randomFixedInteger(6)
       // Remove email code for this user
       const [user,] = await Promise.all([this.data.users.findOne({ email: authUser?.email }), this.inMemoryServices.del(redisKey)])
-      if (!user) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: 'User does not exists',
-        error: null
-      })
+      if (!user){
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null
+        })
+      } 
 
 
       // hash verification code in redis
@@ -415,12 +439,14 @@ export class AuthServices {
       const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`
 
       const [userRequestReset, user] = await Promise.all([this.inMemoryServices.get(resetPasswordRedisKey), this.data.users.findOne({ email: String(email) })]);
-      if (!userRequestReset) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Invalid or expired reset token',
-        error: null
-      })
+      if (!userRequestReset){
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Invalid or expired reset token',
+          error: null
+        })
+      } 
       if (!user) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -456,6 +482,13 @@ export class AuthServices {
             password: hashedPassword
           }
         })
+      const activityFactory = await this.activityFactory.create({
+        action: ActivityAction.RECOVER_PASSWORD,
+        description: 'Reset Password',
+        userId: String(user._id)
+      })
+      await this.data.activities.create(activityFactory)
+
       return {
         status: HttpStatus.OK,
         data: 'Password updated successfully',
@@ -553,6 +586,14 @@ export class AuthServices {
           message: `Recovery code for ${user.email} is ${phoneCode}`,
           link: DISCORD_VERIFICATION_CHANNEL_LINK,
         })
+
+        const activityFactory = await this.activityFactory.create({
+          action: ActivityAction.RECOVER_PASSWORD,
+          description: 'Recover Password',
+          userId: String(user._id)
+        })
+        await this.data.activities.create(activityFactory)
+
         return {
           status: HttpStatus.ACCEPTED,
           message: 'Provide the code sent to your email',
@@ -661,24 +702,30 @@ export class AuthServices {
         })
       }
 
-      if (user.lock) return Promise.reject({
-        status: HttpStatus.FORBIDDEN,
-        state: ResponseState.ERROR,
-        message: 'Account is temporary locked',
-        error: null
-      })
-      if (user.isDisabled) return Promise.reject({
-        status: HttpStatus.FORBIDDEN,
-        state: ResponseState.ERROR,
-        message: 'Account is disabled',
-        error: null
-      })
-      if (!user.password) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Please reset your password',
-        error: null
-      })
+      if (user.lock) {
+        return Promise.reject({
+          status: HttpStatus.FORBIDDEN,
+          state: ResponseState.ERROR,
+          message: 'Account is temporary locked',
+          error: null
+        })
+      }
+      if (user.isDisabled) {
+        return Promise.reject({
+          status: HttpStatus.FORBIDDEN,
+          state: ResponseState.ERROR,
+          message: 'Account is disabled',
+          error: null
+        })
+      }
+      if (!user.password) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Please reset your password',
+          error: null
+        })
+      }
       const correctPassword: boolean = await compareHash(password, user?.password!);
       if (!correctPassword) {
         const { state, retries } = await this.utilsService.shouldLimitUser({
@@ -751,6 +798,13 @@ export class AuthServices {
         emailVerified: updatedUser.emailVerified
       }
       const token = await jwtLib.jwtSign(jwtPayload);
+
+      const activityFactory = await this.activityFactory.create({
+        action: ActivityAction.SIGNIN,
+        description: 'Signin',
+        userId: String(user._id)
+      })
+      await this.data.activities.create(activityFactory)
 
       return {
         status: HttpStatus.OK,
