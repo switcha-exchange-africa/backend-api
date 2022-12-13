@@ -35,6 +35,7 @@ import { TwoFa, TwoFaDocument } from './model/TwoFa';
 import { VirtualAccount, VirtualAccountDocument } from './model/Virtual-Account';
 import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresses';
 // import { Gondor } from './model/Gondor';
+import { LockedBalance, LockedBalanceDocument } from "./model/Locked-Balances";
 
 
 
@@ -72,6 +73,9 @@ export class MongoDataServices
   twoFa: MongoGenericRepository<TwoFa>
   virtualAccounts: MongoGenericRepository<VirtualAccount>
   depositAddresses: MongoGenericRepository<DepositAddress>
+  lockedBalances: MongoGenericRepository<LockedBalance>
+
+
   // gondor: MongoGenericRepository<Gondor>
 
 
@@ -172,6 +176,9 @@ export class MongoDataServices
     private DepositAddressRepository: Model<DepositAddressDocument>,
 
 
+    @InjectModel(LockedBalance.name)
+    private LockedBalanceRepository: Model<LockedBalanceDocument>,
+
   ) { }
 
 
@@ -207,6 +214,7 @@ export class MongoDataServices
     this.twoFa = new MongoGenericRepository<TwoFa>(this.TwoFaRepository)
     this.virtualAccounts = new MongoGenericRepository<VirtualAccount>(this.VirtualAccountRepository)
     this.depositAddresses = new MongoGenericRepository<DepositAddress>(this.DepositAddressRepository)
+    this.lockedBalances = new MongoGenericRepository<LockedBalance>(this.LockedBalanceRepository)
 
 
 
