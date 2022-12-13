@@ -8,7 +8,7 @@ import * as mongoose from "mongoose";
 import { NotificationFactoryService } from 'src/services/use-cases/notification/notification-factory.service';
 import { InjectConnection } from '@nestjs/mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
-import { P2pAdsType } from 'src/core/entities/P2pAds';
+// import { P2pAdsType } from 'src/core/entities/P2pAds';
 import { env } from 'src/configuration';
 import { P2P_CHANNEL_LINK_DEVELOPMENT, P2P_CHANNEL_LINK_PRODUCTION } from 'src/lib/constants';
 
@@ -89,17 +89,17 @@ export class OrderExpiryTaskConsumer {
           // await Promise.all([
 
           // ])
-          if (ad.type === P2pAdsType.BUY) {
-            // check if seller has wallet and enough coin
-            await this.data.wallets.update(
-              { userId: order.clientId, coin: ad.coin }, {
-              $inc: {
-                balance: order.quantity,
-                lockedBalance: -order.quantity
-              }
-            }, session)
+          // if (ad.type === P2pAdsType.BUY) {
+          //   // check if seller has wallet and enough coin
+          //   await this.data.wallets.update(
+          //     { userId: order.clientId, coin: ad.coin }, {
+          //     $inc: {
+          //       balance: order.quantity,
+          //       lockedBalance: -order.quantity
+          //     }
+          //   }, session)
 
-          }
+          // }
 
 
 
