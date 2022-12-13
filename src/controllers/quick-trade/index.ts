@@ -1,13 +1,15 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   Req,
   Res,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { QuickTradeServices } from "src/services/use-cases/trade/quick-trade/quick-trade-services.services";
-import { IQuickTradeBuyV2, QuickTradeBuySellV2Dto } from "src/core/dtos/trade/quick-trade.dto";
+import { IQuickTradeBuyV2, IQuickTradeRate, QuickTradeBuySellV2Dto, QuickTradeRateDto } from "src/core/dtos/trade/quick-trade.dto";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureEnum } from "src/core/dtos/activity";
 import { FeatureManagement } from "src/decorator";
@@ -125,8 +127,31 @@ export class QuickTradeController {
   }
 
 
+  @FeatureManagement(FeatureEnum.QUICK_TRADE)
+  @isAuthenticated('strict')
+  // @IsLevelTwo('two')
+  @Get('/rate')
+  async tradeRate(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: QuickTradeRateDto
+  ) {
+    try {
+      const { amount, cash, coin, type } = query
+      const payload: IQuickTradeRate = {
+        amount, cash, coin, type, email: req?.user.email
+      }
 
+      const response = await this.quickTradeServices.tradeRate(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }
+
 
 
 

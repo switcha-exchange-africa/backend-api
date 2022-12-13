@@ -7,7 +7,7 @@ import * as mongoose from "mongoose";
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
-import { IQuickTradeBuy, IQuickTradeBuyV2, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
+import { IQuickTradeBuy, IQuickTradeBuyV2, IQuickTradeRate, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
@@ -1124,6 +1124,51 @@ export class QuickTradeServices {
         action: 'QUICK TRADE SELL CRYPTO',
         error,
         email: payload.email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async tradeRate(payload: IQuickTradeRate) {
+    const { amount, cash, coin, type, email } = payload
+
+    try {
+
+      const ads = await this.data.p2pAds.find({
+        type: type === 'buy' ? 'sell' : 'buy',
+        cash,
+        coin,
+        status: { $ne: Status.FILLED },
+        minLimit: { $lte: amount },
+        totalAmount: { $gte: amount },
+        // amount
+        maxLimit: { $gt: amount },
+        isPublished: true,
+        isSwitchaMerchant: true
+      }, { select: 'price' })
+
+      const prices = ads.map((ad) => ad.price)
+      const data = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+      return Promise.resolve({
+        message: "Rate retrieved succesfully",
+        status: HttpStatus.OK,
+        data: { data, prices },
+      })
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'QUICK TRADE RATE',
+        error,
+        email,
         message: error.message
       }
 

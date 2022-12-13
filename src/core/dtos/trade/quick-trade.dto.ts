@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { CoinType } from "src/core/types/coin";
 import { P2pOrderType } from "../p2p";
@@ -76,6 +77,31 @@ export class QuickTradeBuySellV2Dto {
 
 }
 
+export class QuickTradeRateDto {
+
+
+  @IsNotEmpty()
+  @Type(() => Number)
+  @IsPositive()
+  public readonly amount: number;
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly cash: string
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly coin: string
+
+
+  @IsNotEmpty()
+  @IsEnum(P2pOrderType)
+  public readonly type: P2pOrderType
+}
+
+export type IQuickTradeRate = QuickTradeRateDto & {
+  email: string
+}
 
 export type IQuickTradeBuyV2 = QuickTradeBuySellV2Dto & {
   userId: string
