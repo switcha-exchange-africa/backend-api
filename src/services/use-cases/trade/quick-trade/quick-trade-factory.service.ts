@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
+import { LockedBalance } from "src/core/entities/Locked-Balance";
 import { QuickTrade, QuickTradeContract } from "src/core/entities/QuickTrade";
 import { OptionalQuery } from "src/core/types/database";
+import { Status } from "src/core/types/status";
 
 @Injectable()
 export class QuickTradeFactoryService {
@@ -36,5 +38,21 @@ export class QuickTradeContractFactoryService {
     contract.createdAt = new Date();
     contract.updatedAt = new Date();
     return contract;
+  }
+}
+
+
+@Injectable()
+export class LockedBalanceFactoryService {
+  create(data: OptionalQuery<LockedBalance>) {
+    const locked = new LockedBalance();
+    if (data.amount) locked.amount = data.amount;
+    if (data.userId) locked.userId = data.userId;
+    if (data.walletId) locked.walletId = data.walletId;
+    if (data.orderId) locked.orderId = data.orderId;
+    if (data.action) locked.action = data.action;
+    data.status =  Status.PENDING
+
+    return locked;
   }
 }

@@ -1,3 +1,4 @@
+import { Status } from "../types/status";
 
 export class LockedBalance {    
     amount: number;
@@ -5,7 +6,6 @@ export class LockedBalance {
     walletId: string;
     orderId: string;
     action: string;
-    createdAt: Date;
-    updatedAt: Date;
+    status: Status
 
 }

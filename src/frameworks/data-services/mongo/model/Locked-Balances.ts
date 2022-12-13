@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Document } from "mongoose";
+import { STATUS_LIST, Status } from "src/core/types/status";
 
 export type LockedBalanceDocument = LockedBalance & Document;
 
@@ -33,6 +34,8 @@ export class LockedBalance {
     })
     orderId: string;
 
+    @Prop({ enum: STATUS_LIST, default: Status.PENDING })
+    status: Status
 
     @Prop()
     action: string;

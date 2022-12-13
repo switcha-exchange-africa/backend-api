@@ -35,6 +35,7 @@ import { IErrorReporter } from "src/core/types/error";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { EmailTemplates } from "src/core/types/email";
 import { ActivityFactoryService } from "../../activity/activity-factory.service";
+import { LockedBalanceFactoryService } from "../quick-trade/quick-trade-factory.service";
 @Injectable()
 export class P2pServices {
 
@@ -52,6 +53,7 @@ export class P2pServices {
     private readonly utilsService: UtilsServices,
     private readonly emitter: EventEmitter2,
     private readonly activityFactory: ActivityFactoryService,
+    private readonly lockedBalanceFactory: LockedBalanceFactoryService,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection,
     @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
 
@@ -845,6 +847,16 @@ export class P2pServices {
           }, session) // deduct quantity from ad
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
+            const lockBalanceFactory = await this.lockedBalanceFactory.create({
+              amount: quantity,
+              userId: clientWallet.userId,
+              walletId: String(clientWallet._id),
+              orderId: String(order._id),
+              action: type === P2pOrderType.SELL ? ActivityAction.QUICK_TRADE_SELL : ActivityAction.QUICK_TRADE_BUY
+
+            })
+            await this.data.lockedBalances.create(lockBalanceFactory, session)
+
             await this.data.wallets.update(
               { userId: clientId, coin: ad.coin }, {
               $inc: {

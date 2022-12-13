@@ -9,7 +9,7 @@ import { ResponseState, ResponsesType } from "src/core/types/response";
 import { NotificationFactoryService } from "../../notification/notification-factory.service";
 import { IQuickTradeBuy, IQuickTradeBuyV2, IQuickTradeRate, IQuickTradeSell } from "src/core/dtos/trade/quick-trade.dto";
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
-import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
+import { LockedBalanceFactoryService, QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
 import { generateReference } from "src/lib/utils";
 import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
@@ -36,17 +36,18 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 export class QuickTradeServices {
 
   constructor(
-    private data: IDataServices,
-    private quickTradeFactory: QuickTradeFactoryService,
-    private quickTradeContractFactory: QuickTradeContractFactoryService,
-    private transactionFactory: TransactionFactoryService,
-    private discord: INotificationServices,
-    private notificationFactory: NotificationFactoryService,
+    private readonly data: IDataServices,
+    private readonly quickTradeFactory: QuickTradeFactoryService,
+    private readonly quickTradeContractFactory: QuickTradeContractFactoryService,
+    private readonly transactionFactory: TransactionFactoryService,
+    private readonly discord: INotificationServices,
+    private readonly notificationFactory: NotificationFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly orderFactory: P2pOrderFactoryService,
     private readonly emitter: EventEmitter2,
-    private http: IHttpServices,
-    @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
+    private readonly lockedBalanceFactory: LockedBalanceFactoryService,
+    private readonly http: IHttpServices,
+    @InjectQueue(`${env.env}.order.expiry`) private readonly orderQueue: Queue,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
@@ -1007,6 +1008,16 @@ export class QuickTradeServices {
           }, session)
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
+            const lockBalanceFactory = await this.lockedBalanceFactory.create({
+              amount,
+              userId,
+              walletId: String(clientWallet._id),
+              orderId: String(order._id),
+              action: type === P2pOrderType.SELL ? ActivityAction.QUICK_TRADE_SELL : ActivityAction.QUICK_TRADE_BUY
+
+            })
+            await this.data.lockedBalances.create(lockBalanceFactory, session)
+            
             await this.data.wallets.update(
               { userId, coin: ad.coin }, {
               $inc: {

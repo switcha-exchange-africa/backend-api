@@ -11,7 +11,8 @@ export enum Status {
   FILLED = 'filled',
   RESOLVED = 'resolved',
   DISPUTE = 'dispute',
-  FAILED = 'failed'
+  FAILED = 'failed',
+  REFUNDED = 'refunded'
 }
 export const STATUS_LIST = [
   Status.PENDING,
@@ -25,5 +26,6 @@ export const STATUS_LIST = [
   Status.FILLED,
   Status.RESOLVED,
   Status.DISPUTE,
-  Status.FAILED
+  Status.FAILED,
+  Status.REFUNDED
 ]

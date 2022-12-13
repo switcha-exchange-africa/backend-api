@@ -9,7 +9,7 @@ import { NotificationFactoryService } from "../../notification/notification-fact
 import { TransactionFactoryService } from "../../transaction/transaction-factory.services";
 import { UtilsServicesModule } from "../../utils/utils.module";
 import { P2pOrderFactoryService } from "../p2p/p2p-factory.service";
-import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
+import { LockedBalanceFactoryService, QuickTradeContractFactoryService, QuickTradeFactoryService } from "./quick-trade-factory.service";
 import { QuickTradeServices } from "./quick-trade-services.services";
 
 
@@ -21,7 +21,7 @@ import { QuickTradeServices } from "./quick-trade-services.services";
         UtilsServicesModule,
         RedisServiceModule,
         BullModule.registerQueue(
-          { name: `${env.env}.order.expiry` },
+            { name: `${env.env}.order.expiry` },
         ),
     ],
     providers: [
@@ -30,6 +30,7 @@ import { QuickTradeServices } from "./quick-trade-services.services";
         NotificationFactoryService,
         QuickTradeFactoryService,
         QuickTradeContractFactoryService,
+        LockedBalanceFactoryService,
         P2pOrderFactoryService,
     ],
     exports: [QuickTradeServices, TransactionFactoryService]

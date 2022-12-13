@@ -11,6 +11,7 @@ import { TransactionFactoryService } from "../../transaction/transaction-factory
 import { UtilsServicesModule } from "../../utils/utils.module";
 import { P2pAdBankFactoryService, P2pFactoryService, P2pOrderFactoryService } from "./p2p-factory.service";
 import { P2pServices } from "./p2p.service";
+import { LockedBalanceFactoryService } from "../quick-trade/quick-trade-factory.service";
 
 
 @Module({
@@ -30,6 +31,7 @@ import { P2pServices } from "./p2p.service";
     TransactionFactoryService,
     NotificationFactoryService,
     ActivityFactoryService,
+    LockedBalanceFactoryService,
     P2pServices
   ],
   exports: [
