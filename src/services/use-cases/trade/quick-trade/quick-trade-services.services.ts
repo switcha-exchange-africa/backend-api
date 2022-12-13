@@ -13,7 +13,7 @@ import { QuickTradeContractFactoryService, QuickTradeFactoryService } from "./qu
 import { QuickTrade, QuickTradeContract, QuickTradeContractStatus, QuickTradeStatus, QuickTradeType } from "src/core/entities/QuickTrade";
 import { generateReference } from "src/lib/utils";
 import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
-import { env } from "src/configuration";
+import { env, TATUM_API_KEY, TATUM_BASE_URL } from "src/configuration";
 import { QUICK_TRADE_CHANNEL_LINK_DEVELOPMENT, QUICK_TRADE_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
 import { User } from "src/core/entities/user.entity";
 import * as _ from 'lodash';
@@ -30,6 +30,7 @@ import { Queue } from "bull";
 import { InjectQueue } from "@nestjs/bull";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { EmailTemplates } from "src/core/types/email";
+import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 
 @Injectable()
 export class QuickTradeServices {
@@ -44,11 +45,16 @@ export class QuickTradeServices {
     private readonly utilsService: UtilsServices,
     private readonly orderFactory: P2pOrderFactoryService,
     private readonly emitter: EventEmitter2,
+    private http: IHttpServices,
     @InjectQueue(`${env.env}.order.expiry`) private orderQueue: Queue,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
-
+  private TATUM_CONFIG = {
+    headers: {
+      "X-API-Key": TATUM_API_KEY,
+    },
+  };
   async buyAd(payload: IQuickTradeBuy): Promise<ResponsesType<QuickTrade>> {
     try {
       const { userId, buy, payingCoin, unitPrice, amount, fullName } = payload
@@ -1157,11 +1163,19 @@ export class QuickTradeServices {
 
       const prices = ads.map((ad) => ad.price)
       const data = prices.reduce((a, b) => a + b, 0) / prices.length;
-
+      if (!data) {
+        const url = `${TATUM_BASE_URL}/tatum/rate/${coin}?basePair=${cash}`;
+        const rate = await this.http.get(url, this.TATUM_CONFIG)
+        return Promise.resolve({
+          message: "Rate retrieved succesfully",
+          status: HttpStatus.OK,
+          data: rate.value
+        })
+      }
       return Promise.resolve({
         message: "Rate retrieved succesfully",
         status: HttpStatus.OK,
-        data: { data, prices },
+        data,
       })
     } catch (error) {
       Logger.error(error)
