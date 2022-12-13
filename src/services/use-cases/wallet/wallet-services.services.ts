@@ -570,6 +570,115 @@ export class WalletServices {
       })
     }
   }
+  async withdrawWallet(payload: IFundWallet) {
+    try {
+      const { walletId, amount, coin } = payload
+      const wallet = await this.data.wallets.findOne({ _id: walletId, coin })
+      if (!wallet) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Wallet does not exists',
+          error: null
+        })
+      }
+      const user = await this.data.users.findOne({ _id: wallet.userId })
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'User does not exists',
+          error: null
+        })
+      }
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          const debitedWallet = await this.data.wallets.update(
+            {
+              _id: wallet._id,
+            },
+            {
+              $inc: {
+                balance: -amount,
+              },
+              lastWithdrawal: amount
+            },
+            session
+          );
+          if (!debitedWallet) {
+            Logger.error("Error Occurred");
+            throw new BadRequestsException("Error Occurred");
+          }
+
+          const txCreditPayload = {
+            userId: String(user._id),
+            walletId: String(wallet?._id),
+            currency: coin,
+            amount,
+            signedAmount: amount,
+            type: TRANSACTION_TYPE.DEBIT,
+            description:  `${amount} ${this.utilsService.formatCoin(coin)} deducted from your wallet`,
+            status: Status.COMPLETED,
+            balanceAfter: debitedWallet?.balance,
+            balanceBefore: wallet?.balance,
+            subType: TRANSACTION_SUBTYPE.DEBIT,
+            customTransactionType: CUSTOM_TRANSACTION_TYPE.MANUAL_DEPOSIT,
+            reference: generateReference('debit'),
+          };
+
+          const notificationPayload = {
+            userId: wallet.userId,
+            title: "Withdrawal",
+            message: `${amount} ${this.utilsService.formatCoin(coin)} deducted from your wallet`,
+          }
+
+          const [notificationFactory, txCreditFactory] = await Promise.all([
+            this.notificationFactory.create(notificationPayload),
+            this.txFactoryServices.create(txCreditPayload)
+          ])
+          await this.data.transactions.create(txCreditFactory, session)
+          await this.data.notifications.create(notificationFactory, session)
+
+        } catch (error) {
+          throw new Error(error);
+        }
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+
+      this.discord.inHouseNotification({
+        title: `Admin Withdraw Wallet :- ${env.env} environment`,
+        message: `
+
+        Withdraw wallet
+
+            Wallet ID: ${walletId}
+
+            ${amount} ${coin} deducted from your wallet
+
+    `,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      return {
+        status: HttpStatus.CREATED,
+        state: ResponseState.SUCCESS,
+        data: {},
+        message: 'Wallet funded successfully'
+      }
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
   // async fund(body: FundDto, userId) {
   //   try {
   //     const { amount } = body;

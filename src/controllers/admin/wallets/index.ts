@@ -69,4 +69,24 @@ export class AdminWalletsController {
 
     }
   }
+
+  @isAdminAuthenticated('strict')
+  @Post('/:id/withdraw')
+  async withdrawWallet(@Res() res: Response, @Body() body: FundWalletDto, @Param() param: FindByIdDto) {
+    try {
+
+      const { id } = param;
+      const payload: IFundWallet = {
+        walletId: id,
+        ...body
+      }
+
+      const response = await this.services.withdrawWallet(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }
