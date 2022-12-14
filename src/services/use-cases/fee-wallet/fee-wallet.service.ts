@@ -1,11 +1,12 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Types } from "mongoose";
+import { TATUM_PRIVATE_KEY_USER_NAME, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_PIN } from "src/configuration";
 import { IDataServices } from "src/core/abstracts";
-import { ICreateFeeWallet, IGetWallets, IUpdateFeeWalletAccountId, IUpdateFeeWalletWithAddress, IWithdrawFromFeeWallet } from "src/core/dtos/wallet/wallet.dto";
+import { ICreateFeeWallet, IGetWallets, IUpdateFeeWalletAccountId, IUpdateFeeWalletPrivatekey, IUpdateFeeWalletWithAddress, IWithdrawFromFeeWallet } from "src/core/dtos/wallet/wallet.dto";
 import { FeeWallet } from "src/core/entities/FeeWallet";
 import { CoinType } from "src/core/types/coin";
 import { ResponseState, ResponsesType } from "src/core/types/response";
-import { generateReference } from "src/lib/utils";
+import { encryptData, generateReference } from "src/lib/utils";
 import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
 import { FeeWalletFactoryService } from "./fee-wallet-factory.service";
 
@@ -203,6 +204,43 @@ export class FeeWalletServices {
     }
   }
 
+  async updatePrivateKey(payload: IUpdateFeeWalletPrivatekey): Promise<ResponsesType<FeeWallet>> {
+    try {
+
+      const { id, privateKey } = payload
+
+      const data = await this.data.feeWallets.findOne({ _id: id });
+      if (!data) return Promise.reject({
+        status: HttpStatus.NOT_FOUND,
+        state: ResponseState.ERROR,
+        message: 'Wallet does not exist',
+        error: null,
+      })
+      const encrypt = encryptData({
+        text: privateKey,
+        username: TATUM_PRIVATE_KEY_USER_NAME,
+        userId: TATUM_PRIVATE_KEY_USER_ID,
+        pin: TATUM_PRIVATE_KEY_PIN
+      })
+
+      await this.data.feeWallets.update({ _id: id }, { privateKey: encrypt })
+      return {
+        status: HttpStatus.OK,
+        message: "Wallet updated successfully",
+        data: {},
+        state: ResponseState.SUCCESS
+      };
+
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 
   async createWallet(payload: ICreateFeeWallet) {
     try {

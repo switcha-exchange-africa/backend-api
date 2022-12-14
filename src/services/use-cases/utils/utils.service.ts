@@ -38,6 +38,7 @@ export const BEP_20_TOKENS = [
   "CAKE",
   "BUSD_BSC"
 ]
+export const TRC_20_TOKENS = ['USDT_TRON']
 
 @Injectable()
 export class UtilsServices {

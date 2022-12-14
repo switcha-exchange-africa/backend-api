@@ -93,6 +93,18 @@ export class UpdateFeeWalletAccountIdDto {
 
 }
 
+export class UpdateFeeWalletPrivateKey {
+
+  @IsNotEmpty()
+  @IsString()
+  public readonly privateKey: string
+
+}
+
+export type IUpdateFeeWalletPrivatekey = UpdateFeeWalletPrivateKey & {
+  id: Types.ObjectId
+}
+
 export class WithdrawFeeWalletAddresssDto {
   @IsNotEmpty()
   @IsString()

@@ -52,6 +52,9 @@ export class FeeWallet {
   reference: string
 
   @Prop()
+  privateKey: string
+
+  @Prop()
   createdAt: Date;
 
   @Prop()

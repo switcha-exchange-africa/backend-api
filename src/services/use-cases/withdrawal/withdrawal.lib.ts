@@ -6,7 +6,7 @@ import { TatumBscSDK } from "@tatumio/bsc"
 import { TatumBtcSDK } from "@tatumio/btc"
 import { TatumEthSDK } from "@tatumio/eth"
 import { TatumTronSDK } from "@tatumio/tron"
-import { BEP_20_TOKENS, ERC_20_TOKENS } from "../utils/utils.service"
+import { BEP_20_TOKENS, ERC_20_TOKENS, TRC_20_TOKENS } from "../utils/utils.service"
 
 const API_KEY_CONFIG = {
     apiKey: TATUM_API_KEY
@@ -226,10 +226,11 @@ export class WithdrawalLib {
         privateKey: string,
         fee?: string,
         changeAddress?: string,
-        ethFee?: { gasLimit: string; gasPrice: string; }
+        ethFee?: { gasLimit: string; gasPrice: string; },
+        contractAddress?: string
     }) {
         try {
-            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress } = payload
+            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress } = payload
 
             if (coin === Currency.ETH) {
 
@@ -289,6 +290,30 @@ export class WithdrawalLib {
                     fromPrivateKey: privateKey,
                     fee: ethFee,
                     currency: coin as Currency
+                })
+                return transfer
+            }
+
+            if (TRC_20_TOKENS.includes(coin)) {
+
+                const tronSdk = TatumTronSDK(API_KEY_CONFIG)
+                const transfer = await tronSdk.trc20.send.signedTransaction({
+                    to: destination,
+                    amount,
+                    fromPrivateKey: privateKey,
+                    tokenAddress: contractAddress,
+                    feeLimit: 13,
+                })
+                return transfer
+            }
+
+            if (coin === 'TRON') {
+
+                const tronSdk = TatumTronSDK(API_KEY_CONFIG)
+                const transfer = await tronSdk.transaction.send.signedTransaction({
+                    to: destination,
+                    amount,
+                    fromPrivateKey: privateKey,
                 })
                 return transfer
             }

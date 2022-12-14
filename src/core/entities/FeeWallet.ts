@@ -18,5 +18,5 @@ export class FeeWallet {
   tatumMessage?: string;
   xpub?: string;
   derivationKey?: number;
-
+  privateKey?: string
 }

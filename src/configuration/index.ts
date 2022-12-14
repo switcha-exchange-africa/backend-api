@@ -75,6 +75,13 @@ export const WALLET_ENCRYPTION_PUBLIC_KEY = getEnv('WALLET_ENCRYPTION_PUBLIC_KEY
 export const WALLET_ENCRYPTION_ALGORITHM = getEnv('WALLET_ENCRYPTION_ALGORITHM', true)
 export const MASTER_TRON_MNEMONIC = getEnv('MASTER_TRON_MNEMONIC', true)
 
+export const TATUM_PRIVATE_KEY_USER_ID = getEnv('TATUM_PRIVATE_KEY_USER_ID', true)
+export const TATUM_PRIVATE_KEY_USER_NAME = getEnv('TATUM_PRIVATE_KEY_USER_NAME', true)
+export const TATUM_PRIVATE_KEY_PIN = getEnv('TATUM_PRIVATE_KEY_PIN', true)
+
+
+
+
 export const LOGS_LEVEL = (): LogLevel[] => {
 
   if (env.isProd) return ['log', 'warn', 'error'];
