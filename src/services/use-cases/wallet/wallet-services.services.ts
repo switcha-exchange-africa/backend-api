@@ -291,15 +291,15 @@ export class WalletServices {
           fullName: payload.fullName
         })
       }
-
       const { data, pagination } = await this.data.wallets.findAllWithPagination({
         query: cleanedPayload,
         queryFields: {},
         misc: {
           populated: {
             path: 'userId',
-            select: WalletCleanedData
-          }
+            select: '_id firstName lastName email phone'
+          },
+          select: WalletCleanedData
         }
       });
 
@@ -344,13 +344,13 @@ export class WalletServices {
       if (!data.privateKey) {
         // setup derivationKey
         const user = await this.data.users.findOne({ _id: data.userId })
-        if (!user) { }
+        if (!user || !user.transactionPin) { }
         else {
           const privateKey = await this.lib.generatePrivateKey({
             coin: data.coin,
             username: user.username,
             userId: data.userId,
-            password: user.password,
+            password: user.transactionPin,
             index: Number(data.derivationKey)
           })
           data = await this.data.wallets.update({ _id: id }, { privateKey })

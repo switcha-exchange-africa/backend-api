@@ -101,7 +101,7 @@ export class AdminFeeWalletsController {
   }
 
   @isAdminAuthenticated('strict')
-  @Put('/:id/update-accountId')
+  @Put('/:id/private-key')
   async updatePrivateKey(
     @Res() res: Response,
      @Param() param: FindByIdDto,
@@ -117,7 +117,7 @@ export class AdminFeeWalletsController {
       const response = await this.services.updatePrivateKey(payload);
       return res.status(response.status).json(response);
 
-    } catch (error) {
+    } catch (error) { 
       return res.status(error.status || 500).json(error);
 
     }

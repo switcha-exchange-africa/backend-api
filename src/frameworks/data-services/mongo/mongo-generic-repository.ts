@@ -117,7 +117,6 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
       myDateFrom = convertDate(dateFrom);
       myDateTo = convertDate(dateTo);
-
       const queryObj: any = { ...query, ...queryFields };
       const excludedFields = ['page', 'perpage', 'dateFrom', 'dateTo', 'search', 'sortBy', 'orderBy'];
       excludedFields.forEach((el) => delete queryObj[el]);
@@ -138,6 +137,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       };
       const populated = !isEmpty(options) && options.misc ? options.misc.populated || [] : this._populateOnFind || []
       const selected = !isEmpty(options) && options.misc ? options.misc.select || [] : []
+   
 
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
       const total = await this._repository.countDocuments(filterQuery as any);
