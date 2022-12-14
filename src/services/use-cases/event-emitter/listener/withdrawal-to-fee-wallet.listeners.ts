@@ -53,9 +53,14 @@ export class WithdrawalToFeeWalletListener {
                 },
                 TATUM_CONFIG
             )
+            console.log("GAS LIMIT", gasLimit)
+            console.log("ESTIMATIONS", estimations)
 
             const { standard: gasPriceBeforeConversion } = estimations
+            console.log("GAS PRICE BEFORE CONVERSION", gasPriceBeforeConversion)
+
             const gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
+            console.log("GAS PRICE AFTRE CONVERSION", gasPrice)
             const ethFee = { gasLimit, gasPrice: String(gasPrice) }
             const amountAfterDeduction = _.substract(amount, gasPrice)
 
@@ -294,7 +299,7 @@ export class WithdrawalToFeeWalletListener {
             const masterTrxBalance = _.divide(getTrxBalance.balance, tronBaseDivisor)
             // send tron to activate wallet
             if (masterTrxBalance < Number(tronFeeAmount)) {
-                 await this.withdrawalLib.withdrawalV3({
+                await this.withdrawalLib.withdrawalV3({
                     coin: 'TRON',
                     amount: tronFeeAmount,
                     destination: from,

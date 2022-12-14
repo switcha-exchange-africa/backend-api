@@ -193,7 +193,7 @@ export class WebhookServices {
           text: wallet.privateKey,
           username: user.username,
           userId: wallet.userId,
-          pin: user.password
+          pin: user.transactionPin
         })
         if (wallet.coin === 'ETH') {
           this.emitter.emit("send.to.eth.fee.wallet", {
