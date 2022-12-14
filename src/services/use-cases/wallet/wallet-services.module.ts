@@ -7,6 +7,7 @@ import { DiscordServicesModule } from 'src/frameworks/notification-services/disc
 import { NotificationFactoryService } from '../notification/notification-factory.service';
 import { TransactionFactoryService } from '../transaction/transaction-factory.services';
 import { AxiosServiceModule } from 'src/frameworks/http/axios/axios-service.module';
+import { WalletLib } from './wallet.lib';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AxiosServiceModule } from 'src/frameworks/http/axios/axios-service.modu
     TransactionFactoryService,
     NotificationFactoryService,
     WalletFactoryService,
+    WalletLib
   ],
   exports: [WalletServices, WalletFactoryService],
 })

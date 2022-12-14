@@ -63,6 +63,7 @@ export class Wallet {
   tatumMessage: string;
   xpub: string
   derivationKey: string
+  privateKey: string
   isActivated: boolean
 }
 
@@ -85,4 +86,24 @@ export const CoinPairList = [
   CryptoPairType.BTC_NGN,
   CryptoPairType.ETH_NGN,
 
+]
+
+export const WalletCleanedData = [
+  'balance',
+  'lockedBalance',
+  'address',
+  'userId',
+  'network',
+  'coin',
+  'status',
+  'reference',
+  'createdAt',
+  'updatedAt',
+  'isBlocked',
+  'destinationTag',
+  'memo',
+  'tatumMessage',
+  'isActivated',
+  "_id",
+  "id"
 ]

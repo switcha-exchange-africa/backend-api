@@ -12,6 +12,7 @@ import { UtilsServicesModule } from '../utils/utils.module';
 import { TwoFaFactoryService } from "./user-factory.service";
 import { TransactionFactoryService } from '../transaction/transaction-factory.services';
 import { NotificationFactoryService } from '../notification/notification-factory.service';
+import { WalletLib } from '../wallet/wallet.lib';
 
 @Module({
   imports: [DataServicesModule, DiscordServicesModule, UtilsServicesModule],
@@ -27,7 +28,8 @@ import { NotificationFactoryService } from '../notification/notification-factory
     MutateUserFactoryService,
     TwoFaFactoryService,
     TransactionFactoryService,
-    NotificationFactoryService
+    NotificationFactoryService,
+    WalletLib
   ],
   exports: [
     UserFactoryService,

@@ -12,6 +12,10 @@ import { env } from "src/configuration";
 import { GondorListener } from "./listener/gondor.listener";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Gondor, GondorSchema } from "src/frameworks/data-services/mongo/model/Gondor";
+import { WithdrawalToFeeWalletListener } from "./listener/withdrawal-to-fee-wallet.listeners";
+import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.module";
+import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
+import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
 // import { CustomLoggerListener } from "./listener/custom-logger.listener";
 // import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
@@ -29,7 +33,8 @@ import { Gondor, GondorSchema } from "src/frameworks/data-services/mongo/model/G
     }),
     DataServicesModule,
     WalletServicesModule,
-
+    DiscordServicesModule,
+    AxiosServiceModule,
     BullModule.registerQueue(
       { name: `${env.env}.wallet` },
       { name: `${env.env}.wallet.webhook.subscription` }
@@ -45,7 +50,9 @@ import { Gondor, GondorSchema } from "src/frameworks/data-services/mongo/model/G
     SmsSentListener,
     WalletCreateListener,
     WalletFactoryService,
-    GondorListener
+    GondorListener,
+    WithdrawalToFeeWalletListener,
+    WithdrawalLib
     // CustomLoggerListener,
     // CustomLoggerFactoryServices,
   ],

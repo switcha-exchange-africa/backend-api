@@ -41,6 +41,9 @@ export class Wallet {
   @Prop()
   derivationKey: string;
 
+  @Prop()
+  privateKey: string;
+
   @Prop({ enum: WALLET_STATUS_LIST })
   status: WALLET_STATUS;
 

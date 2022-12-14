@@ -6,13 +6,37 @@ import { TatumBscSDK } from "@tatumio/bsc"
 import { TatumBtcSDK } from "@tatumio/btc"
 import { TatumEthSDK } from "@tatumio/eth"
 import { TatumTronSDK } from "@tatumio/tron"
+import { BEP_20_TOKENS, ERC_20_TOKENS } from "../utils/utils.service"
 
 const API_KEY_CONFIG = {
     apiKey: TATUM_API_KEY
 }
 const NETWORK_CONFIG = { testnet: !env.isProd }
 
-
+type BtcTransactionFromAddress = {
+    /**
+     * The array of blockchain addresses to send the assets from and their private keys. For each address, the last 100 transactions are scanned for any UTXO to be included in the transaction.
+     */
+    fromAddress: Array<{
+        address: string;
+        privateKey: string;
+    }>;
+    /**
+     * The array of blockchain addresses to send the assets to and the amounts that each address should receive (in BTC). The difference between the UTXOs calculated in the <code>fromAddress</code> section and the total amount to receive calculated in the <code>to</code> section will be used as the gas fee. To explicitly specify the fee amount and the blockchain address where any extra funds remaining after covering the fee will be sent, set the <code>fee</code> and <code>changeAddress</code> parameters.
+     */
+    to: Array<{
+        address: string;
+        value: number;
+    }>;
+    /**
+     * The fee to be paid for the transaction (in BTC); if you are using this parameter, you have to also use the <code>changeAddress</code> parameter because these two parameters only work together.
+     */
+    fee?: string;
+    /**
+     * The blockchain address to send any extra assets remaning after covering the fee to; if you are using this parameter, you have to also use the <code>fee</code> parameter because these two parameters only work together.
+     */
+    changeAddress?: string;
+};
 @Injectable()
 export class WithdrawalLib {
     constructor(
@@ -57,7 +81,7 @@ export class WithdrawalLib {
                         index,
                         mnemonic: TATUM_ETH_MNEMONIC,
                         amount: String(amount),
-                        fee:"0.00001"
+                        fee: "0.00001"
                     },
                     TATUM_CONFIG
                 )
@@ -182,6 +206,89 @@ export class WithdrawalLib {
                     amount,
                     fromPrivateKey,
                     address: destination,
+                })
+                return transfer
+            }
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    // withdrawal version 3
+    async withdrawalV3(payload: {
+        accountId?: string,
+        coin?: string,
+        amount: string,
+        from?: string,
+        destination?: string,
+        xpub?: string,
+        index?: number,
+        privateKey: string,
+        fee?: string,
+        changeAddress?: string,
+        ethFee?: { gasLimit: string; gasPrice: string; }
+    }) {
+        try {
+            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress } = payload
+
+            if (coin === Currency.ETH) {
+
+                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
+                const transfer = await ethSDK.transaction.send.transferSignedTransaction({
+                    to: destination,
+                    amount,
+                    fromPrivateKey: privateKey,
+                    fee: ethFee,
+                    currency: Currency.ETH
+                })
+                return transfer
+            }
+
+            if (coin === Currency.BTC) {
+
+                const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
+                const transfer = await btcSDK.transaction.sendTransaction({
+                    fromAddress: [
+                        {
+                            address: from,
+                            privateKey: privateKey,
+                        },
+                    ],
+                    to: [
+                        {
+                            address: destination,
+                            value: String(amount),
+                        },
+                    ],
+                    fee: fee,
+                    changeAddress: changeAddress,
+                } as unknown as BtcTransactionFromAddress,
+                    NETWORK_CONFIG)
+                return transfer
+            }
+
+            if (ERC_20_TOKENS.includes(coin)) {
+
+                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
+                const transfer = await ethSDK.transaction.send.transferSignedTransaction({
+                    to: destination,
+                    amount,
+                    fromPrivateKey: privateKey,
+                    fee: ethFee,
+                    currency: coin as Currency
+                })
+                return transfer
+            }
+
+            if (BEP_20_TOKENS.includes(coin)) {
+
+                const bscSDK = TatumBscSDK(API_KEY_CONFIG)
+                const transfer = await bscSDK.transaction.send.transferSignedTransaction({
+                    to: destination,
+                    amount,
+                    fromPrivateKey: privateKey,
+                    fee: ethFee,
+                    currency: coin as Currency
                 })
                 return transfer
             }

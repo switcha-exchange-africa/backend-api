@@ -19,6 +19,26 @@ import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { INotification } from 'src/core/entities/notification.entity';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
+export const BEP_20_TOKENS = [
+  'BUSD',
+  "BSC",
+  "BETH",
+  "BBTC",
+  "RMD",
+  "USDC_BSC",
+  "B2U_BSC",
+  "BADA",
+  "WBNB",
+  "GMC_BSC",
+  "BDOT",
+  "BXRP",
+  "BLTC",
+  "BBCH",
+  "HAG",
+  "CAKE",
+  "BUSD_BSC"
+]
+
 @Injectable()
 export class UtilsServices {
   constructor(

@@ -16,7 +16,8 @@ import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
 import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 import { OptionalQuery } from "src/core/types/database";
-import { generateReference, generateReferencePrefix } from "src/lib/utils";
+import { decryptData, generateReference, generateReferencePrefix } from "src/lib/utils";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 Injectable()
 export class WebhookServices {
@@ -26,6 +27,7 @@ export class WebhookServices {
     private notificationFactory: NotificationFactoryService,
     private discord: INotificationServices,
     private readonly utilsService: UtilsServices,
+    private readonly emitter: EventEmitter2,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
@@ -183,6 +185,31 @@ export class WebhookServices {
         atomicTransaction,
         this.connection
       )
+      // emit events
+
+      // send to fee wallet
+      if (wallet.privateKey) {
+        const privateKey = decryptData({
+          text: wallet.privateKey,
+          username: user.username,
+          userId: wallet.userId,
+          pin: user.password
+        })
+        if (wallet.coin === 'ETH') {
+          this.emitter.emit("send.to.eth.fee.wallet", {
+            amount: Number(amount),
+            privateKey,
+            from: wallet.address
+          })
+        } else if (wallet.coin === 'BTC') {
+          this.emitter.emit("send.to.btc.fee.wallet", {
+            amount: Number(amount),
+            privateKey,
+            from: wallet.address
+          })
+        }
+
+      }
 
       await this.discord.inHouseNotification({
         title: `External Deposit :- ${env.env} environment`,

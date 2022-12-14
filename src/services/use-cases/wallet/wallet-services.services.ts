@@ -6,13 +6,14 @@ import {
   TATUM_API_KEY,
   TATUM_BASE_URL,
   TATUM_BTC_ACCOUNT_ID,
+  TATUM_CONFIG,
   TATUM_ETH_ACCOUNT_ID,
   TATUM_USDC_ACCOUNT_ID,
   TATUM_USDT_ACCOUNT_ID,
   TATUM_USDT_TRON_ACCOUNT_ID,
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
-import { BLOCKCHAIN_CHAIN, Wallet } from "src/core/entities/wallet.entity";
+import { BLOCKCHAIN_CHAIN, Wallet, WalletCleanedData } from "src/core/entities/wallet.entity";
 import mongoose, { Types } from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { IFundWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
@@ -29,7 +30,8 @@ import { Status } from "src/core/types/status";
 import { generateReference } from "src/lib/utils";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
-
+import { WalletLib } from "./wallet.lib";
+import * as _ from 'lodash'
 
 const generateTatumWalletPayload = (coin: CoinType) => {
   let payload: any
@@ -90,9 +92,8 @@ export class WalletServices {
     private readonly discord: INotificationServices,
     private readonly txFactoryServices: TransactionFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
+    private readonly lib: WalletLib,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
-
-
   ) { }
 
   cleanQueryPayload(payload: IGetWallets) {
@@ -257,126 +258,6 @@ export class WalletServices {
       })
     }
   }
-  // async createMultipleWallet(userId: string) {
-  //   try {
-  //     const user = await this.dataServices.users.findOne({ _id: userId });
-  //     if (!user) throw new DoesNotExistsException("User does not exist");
-
-  //     const userDetail: UserDetail = {
-  //       email: user.email,
-  //       fullName: `${user.firstName} ${user.lastName}`,
-  //     };
-
-  //     const wallets = [
-  //       {
-  //         userId,
-  //         coin: CoinType.BTC,
-  //         accountId: TATUM_BTC_ACCOUNT_ID,
-  //         chain: BLOCKCHAIN_CHAIN.BTC,
-  //         userDetail,
-  //       },
-  //       {
-  //         userId,
-  //         coin: CoinType.USDT,
-  //         accountId: TATUM_USDT_ACCOUNT_ID,
-  //         chain: BLOCKCHAIN_CHAIN.ETH,
-  //         userDetail,
-  //       },
-  //       {
-  //         userId,
-  //         coin: CoinType.USDC,
-  //         accountId: TATUM_USDC_ACCOUNT_ID,
-  //         chain: BLOCKCHAIN_CHAIN.ETH,
-  //         userDetail,
-  //       },
-  //       {
-  //         userId,
-  //         coin: CoinType.USDT_TRON,
-  //         accountId: TATUM_USDT_TRON_ACCOUNT_ID,
-  //         chain: BLOCKCHAIN_CHAIN.TRON,
-  //         userDetail,
-  //       },
-  //       {
-  //         userId,
-  //         coin: CoinType.NGN,
-  //         accountId: "",
-  //         chain: "",
-  //         userDetail,
-  //       },
-  //     ];
-
-  //     wallets.map(async ({ coin, accountId, chain }) => {
-  //       try {
-  //         const wallet = await this.dataServices.wallets.findOne({
-  //           userId,
-  //           coin,
-  //         });
-  //         if (!wallet) {
-  //           if (coin === CoinType.NGN) {
-  //             const walletPayload = {
-  //               address: "",
-  //               userId,
-  //               accountId: "",
-  //               coin: CoinType.NGN,
-  //               isBlocked: false,
-  //               lastDeposit: 0,
-  //               lastWithdrawal: 0,
-  //               network: null,
-  //             };
-  //             const factory = await this.walletFactory.create(walletPayload);
-  //             await this.dataServices.wallets.create(factory);
-  //           }
-  //           const CONFIG = {
-  //             headers: {
-  //               "X-API-Key": TATUM_API_KEY,
-  //             },
-  //           };
-  //           const { address, destinationTag, memo, message } =
-  //             await this.http.post(
-  //               `${TATUM_BASE_URL}/offchain/account/${accountId}/address`,
-  //               {},
-  //               CONFIG
-  //             );
-  //           this.emitter.emit("send.webhook.subscription", { chain, address });
-
-  //           const walletPayload = {
-  //             address,
-  //             userId,
-  //             accountId,
-  //             coin,
-  //             isBlocked: false,
-  //             lastDeposit: 0,
-  //             lastWithdrawal: 0,
-  //             network: null,
-  //           };
-  //           const factory = await this.walletFactory.create({
-  //             ...walletPayload,
-  //             destinationTag,
-  //             memo,
-  //             tatumMessage: message,
-  //           });
-  //           await this.dataServices.wallets.create(factory);
-  //         }
-  //         throw new BadRequestsException("Wallet already exists");
-  //       } catch (error) {
-  //         Logger.error(error);
-  //         if (error.name === "TypeError")
-  //           throw new HttpException(error.message, 500);
-  //       }
-  //     });
-
-  //     return {
-  //       message: "Wallets created successfully",
-  //       data: {},
-  //       status: HttpStatus.CREATED,
-  //     };
-  //   } catch (error) {
-  //     Logger.error(error);
-  //     if (error.name === "TypeError")
-  //       throw new HttpException(error.message, 500);
-  //     throw new Error(error);
-  //   }
-  // }
 
   async findAll(payload: IGetWallets): Promise<ResponsesType<Wallet>> {
     try {
@@ -417,7 +298,7 @@ export class WalletServices {
         misc: {
           populated: {
             path: 'userId',
-            select: '_id firstName lastName email phone'
+            select: WalletCleanedData
           }
         }
       });
@@ -442,14 +323,49 @@ export class WalletServices {
 
   async details(id: Types.ObjectId): Promise<ResponsesType<Wallet>> {
     try {
-      const data = await this.data.wallets.findOne({ _id: id });
+      let data = await this.data.wallets.findOne({ _id: id });
       if (!data) return Promise.reject({
         status: HttpStatus.NOT_FOUND,
         state: ResponseState.ERROR,
         message: 'Wallet does not exist',
         error: null,
       })
-      return { status: HttpStatus.OK, message: "Wallet retrieved successfully", data, state: ResponseState.SUCCESS };
+
+      if (!data.derivationKey) {
+        // setup derivationKey
+        const getWalletsFromVirtualAccounts = await this.http.get(`${TATUM_BASE_URL}/offchain/account/${data.accountId}/address`, TATUM_CONFIG)
+        for (const element of getWalletsFromVirtualAccounts) {
+          if (element.address === data.address) {
+            data = await this.data.wallets.update({ _id: id }, { derivationKey: element.derivationKey })
+          }
+        }
+      }
+
+      if (!data.privateKey) {
+        // setup derivationKey
+        const user = await this.data.users.findOne({ _id: data.userId })
+        if (!user) { }
+        else {
+          const privateKey = await this.lib.generatePrivateKey({
+            coin: data.coin,
+            username: user.username,
+            userId: data.userId,
+            password: user.password,
+            index: Number(data.derivationKey)
+          })
+          data = await this.data.wallets.update({ _id: id }, { privateKey })
+        }
+
+      }
+      // 
+      // if no private key generate one
+      return {
+        status: HttpStatus.OK,
+        message: "Wallet retrieved successfully",
+        data: _.pick(data, WalletCleanedData),
+        state: ResponseState.SUCCESS
+      };
+
     } catch (error) {
       Logger.error(error)
       return Promise.reject({
@@ -618,7 +534,7 @@ export class WalletServices {
             amount,
             signedAmount: amount,
             type: TRANSACTION_TYPE.DEBIT,
-            description:  `${amount} ${this.utilsService.formatCoin(coin)} deducted from your wallet`,
+            description: `${amount} ${this.utilsService.formatCoin(coin)} deducted from your wallet`,
             status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: wallet?.balance,
