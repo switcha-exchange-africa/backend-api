@@ -66,7 +66,7 @@ export class P2pOrderFactoryService {
     if (data.bankId) order.bankId = data.bankId;
     if (data.clientAccountName) order.clientAccountName = data.clientAccountName;
     if (data.clientAccountNumber) order.clientAccountNumber = data.clientAccountNumber;
-    if (data.clientBankName) order.clientAccountName = data.clientAccountName;
+    if (data.clientBankName) order.clientBankName = data.clientBankName;
     if (data.clientWalletId) order.clientWalletId = data.clientWalletId;
     if (data.method) order.method = data.method;
     if (data.coin) order.coin = data.coin;
