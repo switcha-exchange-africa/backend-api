@@ -62,7 +62,7 @@ export class WithdrawalToFeeWalletListener {
             const gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
             console.log("GAS PRICE AFTRE CONVERSION", gasPrice)
             const ethFee = { gasLimit, gasPrice: String(gasPrice) }
-            const amountAfterDeduction = _.substract(amount, gasPrice)
+            const amountAfterDeduction = _.subtract(amount, gasPrice)
 
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
@@ -144,7 +144,7 @@ export class WithdrawalToFeeWalletListener {
             )
 
             const fee = Math.abs(Number(slow))
-            const amountAfterDeduction = _.substract(amount, fee)
+            const amountAfterDeduction = _.subtract(amount, fee)
 
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
