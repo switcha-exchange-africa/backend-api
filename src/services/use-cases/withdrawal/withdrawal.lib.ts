@@ -7,6 +7,7 @@ import { TatumBtcSDK } from "@tatumio/btc"
 import { TatumEthSDK } from "@tatumio/eth"
 import { TatumTronSDK } from "@tatumio/tron"
 import { BEP_20_TOKENS, ERC_20_TOKENS, TRC_20_TOKENS } from "../utils/utils.service"
+// import { randomFixedInteger } from "src/lib/utils"
 
 const API_KEY_CONFIG = {
     apiKey: TATUM_API_KEY
@@ -233,14 +234,16 @@ export class WithdrawalLib {
             const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress } = payload
 
             if (coin === Currency.ETH) {
-
+                console.log("ENTERING ETH")
+                console.log(payload)
                 const ethSDK = TatumEthSDK(API_KEY_CONFIG)
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,
                     amount,
                     fromPrivateKey: privateKey,
-                    fee: ethFee,
-                    currency: Currency.ETH
+                    // fee: ethFee,
+                    currency: Currency.ETH,
+                    // nonce: randomFixedInteger(7)
                 })
                 return transfer
             }

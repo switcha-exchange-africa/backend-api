@@ -104,6 +104,7 @@ export const WalletCleanedData = [
   'memo',
   'tatumMessage',
   'isActivated',
+  'accountId',
   "_id",
   "id"
 ]

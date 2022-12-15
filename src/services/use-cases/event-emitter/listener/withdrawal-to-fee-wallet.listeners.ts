@@ -56,19 +56,19 @@ export class WithdrawalToFeeWalletListener {
             console.log("GAS LIMIT", gasLimit)
             console.log("ESTIMATIONS", estimations)
 
-            const { standard } = estimations
+            const { standard:gasPriceBeforeConversion } = estimations
             // console.log("GAS PRICE BEFORE CONVERSION", gasPriceBeforeConversion)
 
-            // let gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
-            // gasPrice = gasPrice.toFixed(18)
-            const gasPrice = standard
+            let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
+            gasPriceConvert = gasPriceConvert.toFixed(18)
+            const gasPrice = gasPriceBeforeConversion
             console.log("GAS PRICE AFTRE CONVERSION", gasPrice)
             const ethFee = { gasLimit, gasPrice }
-            const amountAfterDeduction = _.subtract(amount, gasPrice)
+            const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
 
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
-                amount: String(amountAfterDeduction),
+                amount: String(amount),
                 privateKey,
                 coin: 'ETH',
                 ethFee
