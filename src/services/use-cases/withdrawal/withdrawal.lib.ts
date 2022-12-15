@@ -234,8 +234,6 @@ export class WithdrawalLib {
             const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress } = payload
 
             if (coin === Currency.ETH) {
-                console.log("ENTERING ETH")
-                console.log(payload)
                 const ethSDK = TatumEthSDK(API_KEY_CONFIG)
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,

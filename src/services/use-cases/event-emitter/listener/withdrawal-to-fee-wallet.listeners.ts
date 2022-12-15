@@ -68,7 +68,7 @@ export class WithdrawalToFeeWalletListener {
 
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
-                amount: String(amount),
+                amount: String(amountAfterDeduction),
                 privateKey,
                 coin: 'ETH',
                 ethFee
@@ -85,9 +85,9 @@ export class WithdrawalToFeeWalletListener {
                 
                 Amount After Deduction:-  ${amountAfterDeduction}
                 
-                Gas Limit :- ${gasLimit}
+                // Gas Limit :- ${gasLimit}
         
-                Gas Price :- ${gasLimit}
+                // Gas Price :- ${gasLimit}
         
                 From:- ${from}
                 
