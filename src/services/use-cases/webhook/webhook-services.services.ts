@@ -188,7 +188,7 @@ export class WebhookServices {
       // emit events
 
       // send to fee wallet
-      if (wallet.privateKey) {
+      if (wallet.privateKey && user.transactionPin) {
         const privateKey = decryptData({
           text: wallet.privateKey,
           username: user.username,
