@@ -56,6 +56,9 @@ export class P2pAds {
   @Prop()
   totalAmount: number
 
+  @Prop({ default: 0 })
+  lockedBalance: number
+
   @Prop()
   minLimit: number
 

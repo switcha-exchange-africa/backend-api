@@ -34,6 +34,7 @@ export class P2pAds {
   totalAmount: number
   minLimit: number
   maxLimit: number
+  lockedBalance: number
   highestPriceOrder: number
   counterPartConditions: CounterpartConditionsType
   banks: string[];

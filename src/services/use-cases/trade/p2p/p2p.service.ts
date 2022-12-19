@@ -839,7 +839,12 @@ export class P2pServices {
               noOfP2pOrderCreated: 1
             }
           }, session)
-
+          await this.data.p2pAds.update({ _id: ad._id }, {
+            $inc: {
+              totalAmount: -quantity,
+              lockedBalance: quantity
+            }
+          }, session)
           // await this.data.p2pAds.update({ _id: ad._id }, {
           //   $inc: {
           //     totalAmount: -quantity
@@ -1156,7 +1161,7 @@ export class P2pServices {
           }, session)// credit switcha fee wallet
           console.log(" ------------- CLIENT PROCESSING ORDERS -------------")
           const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
-            $inc: { totalAmount: -order.quantity }
+            $inc: { lockedBalance: -order.quantity }
           }, session)// deduct ad totalAmount 
           console.log(" ------------- CLIENT PROCESSING ORDERS -------------")
 
@@ -1437,7 +1442,7 @@ export class P2pServices {
           console.log(" ------------- MERCHANT PROCESSING ORDERS -------------")
           console.log("BEFORE AD TOTAL AMOUNT", ad.totalAmount)
           const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
-            $inc: { totalAmount: -order.quantity }
+            $inc: { lockedBalance: -order.quantity }
           }, session)
           console.log("ORDER QUANTITY", order.quantity)
           console.log("AFTER AD TOTAL AMOUNT", deductAdTotalAmount.totalAmount)

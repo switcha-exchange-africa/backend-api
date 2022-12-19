@@ -993,9 +993,11 @@ export class QuickTradeServices {
 
           await this.data.p2pAds.update({ _id: ad._id }, {
             $inc: {
-              totalAmount: -amount
+              totalAmount: -amount,
+              lockedBalance: amount
             }
-          }, session) // deduct quantity from ad
+          }, session)
+          // deduct quantity from ad and add in locked balance
           await this.data.users.update({ _id: String(orderPayload.merchantId) }, {
             $inc: {
               noOfP2pOrderCreated: 1
@@ -1017,7 +1019,7 @@ export class QuickTradeServices {
 
             })
             await this.data.lockedBalances.create(lockBalanceFactory, session)
-            
+
             await this.data.wallets.update(
               { userId, coin: ad.coin }, {
               $inc: {
