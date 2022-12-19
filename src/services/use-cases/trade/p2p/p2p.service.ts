@@ -179,7 +179,7 @@ export class P2pServices {
 
         const atomicTransaction = async (session: mongoose.ClientSession) => {
           try {
-            const ad = await this.data.p2pAds.create(factory, session)
+            ad = await this.data.p2pAds.create(factory, session)
             p2pId = ad._id
             await this.data.users.update({ _id: userId }, {
               $inc: {
@@ -213,7 +213,7 @@ export class P2pServices {
 
         return {
           message: `Buy ads created successfully`,
-          data: payload,
+          data: ad,
           status: HttpStatus.OK,
           state: ResponseState.SUCCESS,
         };
@@ -748,7 +748,9 @@ export class P2pServices {
         })
       }
       const merchant = await this.data.users.findOne({ _id: ad.userId, lock: false })  // add creator
+      console.log("AD AMOUNT", ad.totalAmount)
       if (quantity > ad.totalAmount) {
+
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
