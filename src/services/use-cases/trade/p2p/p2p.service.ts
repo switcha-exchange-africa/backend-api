@@ -80,7 +80,7 @@ export class P2pServices {
   async createAds(payload: ICreateP2pAd) {
     try {
       const { userId, type, coin, totalAmount, kyc, moreThanDot1Btc, registeredZeroDaysAgo, minLimit, maxLimit } = payload
-      let p2pId
+      let p2pId, ad
 
       if (minLimit > totalAmount) {
         return Promise.reject({
@@ -254,7 +254,7 @@ export class P2pServices {
             }
           }, session)
 
-          const ad = await this.data.p2pAds.create(factory, session)
+          ad = await this.data.p2pAds.create(factory, session)
 
           p2pId = ad._id
 
@@ -286,7 +286,7 @@ export class P2pServices {
 
       return {
         message: `Sell ads created successfully`,
-        data: {},
+        data: ad,
         status: HttpStatus.CREATED,
         state: ResponseState.SUCCESS,
       };
@@ -840,11 +840,11 @@ export class P2pServices {
             }
           }, session)
 
-          await this.data.p2pAds.update({ _id: ad._id }, {
-            $inc: {
-              totalAmount: -quantity
-            }
-          }, session) // deduct quantity from ad
+          // await this.data.p2pAds.update({ _id: ad._id }, {
+          //   $inc: {
+          //     totalAmount: -quantity
+          //   }
+          // }, session) // deduct quantity from ad
           if (ad.type === P2pAdsType.BUY) {
             // check if seller has wallet and enough coin
             const lockBalanceFactory = await this.lockedBalanceFactory.create({
@@ -1435,9 +1435,13 @@ export class P2pServices {
             lastDeposit: fee
           }, session)
           console.log(" ------------- MERCHANT PROCESSING ORDERS -------------")
+          console.log("BEFORE AD TOTAL AMOUNT", ad.totalAmount)
           const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
             $inc: { totalAmount: -order.quantity }
           }, session)
+          console.log("ORDER QUANTITY", order.quantity)
+          console.log("AFTER AD TOTAL AMOUNT", deductAdTotalAmount.totalAmount)
+
           console.log(" ------------- MERCHANT PROCESSING ORDERS -------------")
           await this.data.wallets.update({ _id: merchantWallet._id }, {
             $inc: {
