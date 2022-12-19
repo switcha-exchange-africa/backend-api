@@ -839,7 +839,7 @@ export class AuthServices {
       const data = await this.data.users.findOne(
         { _id: id },
         null, {
-        select: ['-password']
+        select: ['-password', 'transactionPin']
       })
       email = data.email
       return {
