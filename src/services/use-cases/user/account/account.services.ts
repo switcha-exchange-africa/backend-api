@@ -21,7 +21,7 @@ import {
 } from "../exceptions";
 import * as speakeasy from 'speakeasy';
 import { TwoFaFactoryService } from "../user-factory.service";
-import { IChangePassword, ICheckTwoFaCode, ICreateTransactionPin, IUpdateTransactionPin } from "src/core/dtos/account/kyc.dto";
+import { IChangePassword, ICheckTwoFaCode, ICreateTransactionPin, IUpdatePhone, IUpdateTransactionPin } from "src/core/dtos/account/kyc.dto";
 
 @Injectable()
 export class AccountServices {
@@ -316,6 +316,37 @@ export class AccountServices {
       })
     }
   }
+
+  async updatePhone(payload: IUpdatePhone) {
+    const { userId, email, phone } = payload
+    try {
+      await this.data.users.update({ _id: userId }, { phone })
+      return {
+        message: "Phone number updated successfully",
+        status: HttpStatus.OK,
+        data: {},
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ENABLE AUTHENTICATOR',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+
 
   async disableAuthenticator(payload: { userId: string, email: string }) {
     const { userId, email } = payload

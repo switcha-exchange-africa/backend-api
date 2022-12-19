@@ -7,6 +7,7 @@ export class User {
   lastName: string;
   username: string;
   email: string;
+  phone: string
   device: SwitchaDeviceType
   password: string
   agreedToTerms: boolean

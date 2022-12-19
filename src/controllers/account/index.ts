@@ -14,8 +14,10 @@ import {
   IChangePassword,
   ICheckTwoFaCode,
   ICreateTransactionPin,
+  IUpdatePhone,
   IUpdateTransactionPin,
   TxPinDto,
+  UpdatePhoneDto,
   UpdateTxPinDto,
   UploadAvatarDto,
 } from "src/core/dtos/account/kyc.dto";
@@ -60,7 +62,7 @@ export class AccountController {
     @Body() body: UpdateTxPinDto
   ) {
     try {
-      
+
       const userId = req?.user?._id;
       const { pin, oldPin } = body;
 
@@ -117,6 +119,34 @@ export class AccountController {
 
     }
   }
+
+
+
+
+  @isAuthenticated('strict')
+  @Put('/update-phone')
+  async updatePhone(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: UpdatePhoneDto
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user?.email
+      
+      const payload:IUpdatePhone = {
+        userId,
+        email,
+        ...body
+      }
+      const response = await this.accountServices.updatePhone(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
 
 
   @isAuthenticated('strict')

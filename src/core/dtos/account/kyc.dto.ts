@@ -107,3 +107,13 @@ export type IChangePassword = ChangePasswordDto & {
   email: string
   userId: string
 }
+
+export class UpdatePhoneDto {
+  @IsNotEmpty()
+  @IsString()
+  public readonly phone: string
+}
+export type IUpdatePhone = UpdatePhoneDto & {
+  email: string
+  userId: string
+}

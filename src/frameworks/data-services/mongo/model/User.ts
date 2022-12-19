@@ -61,6 +61,9 @@ export class User {
   country: string
 
   @Prop()
+  phone: string
+
+  @Prop()
   isAdmin: boolean
 
   @Prop({ default: false })
