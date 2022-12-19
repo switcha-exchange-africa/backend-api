@@ -1047,20 +1047,24 @@ export class P2pServices {
       }
       // check verification code
       const savedCode = await this.inMemoryServices.get(redisKey);
-      if (isEmpty(savedCode)) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      if (isEmpty(savedCode)) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Code is incorrect, invalid or has expired',
+          error: null,
+        })
+      }
 
       const correctCode = await compareHash(String(code).trim(), (savedCode || '').trim())
-      if (!correctCode) return Promise.reject({
-        status: HttpStatus.BAD_REQUEST,
-        state: ResponseState.ERROR,
-        message: 'Code is incorrect, invalid or has expired',
-        error: null,
-      })
+      if (!correctCode) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Code is incorrect, invalid or has expired',
+          error: null,
+        })
+      }
 
       if (ad.type === P2pAdsType.BUY) {
         // order client id must be the logged in user
@@ -1150,11 +1154,12 @@ export class P2pServices {
             },
             lastDeposit: fee
           }, session)// credit switcha fee wallet
+          console.log(" ------------- CLIENT PROCESSING ORDERS -------------")
           const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
-            $inc: {
-              totalAmount: -order.quantity
-            }
+            $inc: { totalAmount: -order.quantity }
           }, session)// deduct ad totalAmount 
+          console.log(" ------------- CLIENT PROCESSING ORDERS -------------")
+
           await this.data.wallets.update({ _id: clientWallet._id }, {
             $inc: {
               lockedBalance: -order.quantity
@@ -1296,7 +1301,7 @@ export class P2pServices {
             }
           }, session)
           await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session),
-            deductAdTotalAmount.balance === 0 ?
+            deductAdTotalAmount.totalAmount === 0 ?
               await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
               await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
@@ -1429,12 +1434,11 @@ export class P2pServices {
             },
             lastDeposit: fee
           }, session)
-
+          console.log(" ------------- MERCHANT PROCESSING ORDERS -------------")
           const deductAdTotalAmount = await this.data.p2pAds.update({ _id: ad._id }, {
-            $inc: {
-              totalAmount: -order.quantity
-            }
+            $inc: { totalAmount: -order.quantity }
           }, session)
+          console.log(" ------------- MERCHANT PROCESSING ORDERS -------------")
           await this.data.wallets.update({ _id: merchantWallet._id }, {
             $inc: {
               lockedBalance: -order.quantity
@@ -1560,7 +1564,7 @@ export class P2pServices {
           await this.data.activities.create(merchantActivityFactory, session)
           await this.data.activities.create(buyerActivityFactory, session)
           await this.data.p2pOrders.update({ _id: order._id }, { status: Status.COMPLETED }, session)
-          deductAdTotalAmount.balance === 0 ?
+          deductAdTotalAmount.totalAmount === 0 ?
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
             await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
@@ -1608,7 +1612,7 @@ export class P2pServices {
           toEmail: merchant.email,
           toName: `${merchant.firstName} ${merchant.lastName}`,
           templateId: EmailTemplates.PROCESS_CLIENT_P2P_ORDER_SELLER,
-          subject: `Wallet debited. #${order.orderId}`,
+          subject: `Wallet Debited. #${order.orderId}`,
           variables: {
             id: order.orderId,
             amount: order.quantity,

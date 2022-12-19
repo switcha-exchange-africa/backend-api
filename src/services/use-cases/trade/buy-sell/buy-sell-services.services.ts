@@ -565,7 +565,7 @@ export class BuySellServices {
           };
 
           const txFeeCreditPayload: OptionalQuery<Transaction> = {
-            feeWalletId: creditedFeeWallet?._id,
+            feeWalletId: String(creditedFeeWallet?._id),
             currency: debitCoin,
             amount: fee,
             signedAmount: fee,

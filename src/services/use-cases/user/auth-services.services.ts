@@ -275,7 +275,7 @@ export class AuthServices {
       })
       // Remove phone code for this user
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-        _id: updatedUser._id,
+        _id: String(updatedUser._id),
         firstName: updatedUser?.firstName,
         lastName: updatedUser?.lastName,
         email: updatedUser.email,
@@ -294,7 +294,7 @@ export class AuthServices {
           fullName: `${updatedUser.firstName} ${updatedUser.lastName}`
         }),
         this.userFeatureManagementFactory.manageUser({
-          userId: updatedUser._id,
+          userId: String(updatedUser._id),
           canBuy: true,
           canSell: true,
           canSwap: true,

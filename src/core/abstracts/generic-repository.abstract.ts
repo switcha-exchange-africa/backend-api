@@ -27,7 +27,7 @@ export abstract class IGenericRepository<T> {
   abstract create(payload: T | T[], session?: ClientSession);
   abstract delete(key: FilterQuery<T>, session?: ClientSession) 
   abstract deleteMany(key: FilterQuery<T>[], session?: ClientSession) 
-  abstract update(key: FilterQuery<T>, payload: UpdateQuery<T>, session?: ClientSession);
+  abstract update(key: FilterQuery<T>, payload: UpdateQuery<T>, session?: ClientSession): Promise<mongoose.HydratedDocument<T>>;
 
   abstract aggregation(pipeline: any[]): Promise<any>
   abstract search(options: { query: PaginationType, populate?: string | string[] }) 
