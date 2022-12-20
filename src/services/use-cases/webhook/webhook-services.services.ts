@@ -207,6 +207,14 @@ export class WebhookServices {
             privateKey,
             from: wallet.address
           })
+        } else if (wallet.coin === 'USDT_TRON') {
+          this.emitter.emit('send.to.trc20.fee.wallet', {
+            amount: Number(amount),
+            privateKey,
+            from: wallet.address,
+            email: user.email,
+            coin: 'USDT_TRON'
+          })
         }
 
       }
@@ -839,7 +847,7 @@ export class WebhookServices {
           }, session
         )
 
-        const txCreditPayload: OptionalQuery<Transaction> = {
+        const txPayload: OptionalQuery<Transaction> = {
           feeWalletId: String(feeWallet._id),
           currency: feeWallet.coin,
           amount: convertedAmount,
@@ -857,7 +865,7 @@ export class WebhookServices {
           metadata: payload
         };
 
-        const factory = await this.txFactoryServices.create(txCreditPayload)
+        const factory = await this.txFactoryServices.create(txPayload)
         await this.data.transactions.create(factory, session)
       }
       await databaseHelper.executeTransactionWithStartTransaction(

@@ -4,10 +4,11 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { env, TATUM_BASE_URL, TATUM_CONFIG } from "src/configuration"
+import { env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
-import { UtilsServices } from "../../utils/utils.service"
+import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
+import { decryptData } from "src/lib/utils"
 
 const ethBaseDivisorInWei = 1000000000000000000
 const tronBaseDivisor = 1000000
@@ -53,7 +54,7 @@ export class WithdrawalToFeeWalletListener {
                 },
                 TATUM_CONFIG
             )
-            const { standard:gasPriceBeforeConversion } = estimations
+            const { standard: gasPriceBeforeConversion } = estimations
 
             let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
             gasPriceConvert = gasPriceConvert.toFixed(18)
@@ -217,8 +218,8 @@ export class WithdrawalToFeeWalletListener {
             )
 
             const { standard: gasPriceBeforeConversion } = estimations
-            const gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
-            const ethFee = { gasLimit, gasPrice: String(gasPrice) }
+            // const gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
+            const ethFee = { gasLimit, gasPrice: String(gasPriceBeforeConversion) }
 
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
@@ -280,14 +281,17 @@ export class WithdrawalToFeeWalletListener {
                 this.data.feeWallets.findOne({ coin: 'TRON' }),
                 this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
             ])
+
             if (!masterTronWallet) {
                 // send notification to discord
-                throw new Error("Fee Wallet does not exists")
+                throw new Error(`Master Tron wallet does not exists`)
             }
             if (!coinFeeWallet) {
                 // send notification to discord
-                throw new Error("Fee Wallet does not exists")
+                throw new Error(`USDT_TRON fee wallet does not exists`)
             }
+
+            // get tron balance
             const getTrxBalance = await this.http.get(
                 `${TATUM_BASE_URL}/tron/account/${masterTronWallet.address}`,
 
@@ -296,40 +300,29 @@ export class WithdrawalToFeeWalletListener {
             const masterTrxBalance = _.divide(getTrxBalance.balance, tronBaseDivisor)
             // send tron to activate wallet
             if (masterTrxBalance < Number(tronFeeAmount)) {
+                const masterTronWalletPrivateKey = decryptData({
+                    text: masterTronWallet.privateKey,
+                    username: TATUM_PRIVATE_KEY_USER_NAME,
+                    userId: TATUM_PRIVATE_KEY_USER_ID,
+                    pin: TATUM_PRIVATE_KEY_PIN
+                })
                 await this.withdrawalLib.withdrawalV3({
                     coin: 'TRON',
                     amount: tronFeeAmount,
                     destination: from,
                     from: masterTronWallet.address,
-                    privateKey: masterTronWallet.privateKey
+                    privateKey: masterTronWalletPrivateKey
                 })
             }
-            // check if master wallet has enough tron
-            // check if user has enough trx to cover transaction i.e trx should be greater than 13
-            // transfer from trx master wallet to user wallet
-            const { gasLimit, estimations } = await this.http.post(
-                `${TATUM_BASE_URL}/ethereum/gas`,
-                {
 
-                    from,
-                    to: coinFeeWallet.address,
-                    amount,
-                    contractAddress: coin === 'USDT' ? ERC_20_TOKENS_ADDRESS.USDT : ERC_20_TOKENS_ADDRESS.USDC
-
-                },
-                TATUM_CONFIG
-            )
-
-            const { standard: gasPriceBeforeConversion } = estimations
-            const gasPrice = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
-            const ethFee = { gasLimit, gasPrice: String(gasPrice) }
-
+            // send to coin fee wallet
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amount),
                 privateKey,
-                coin: 'ETH',
-                ethFee
+                coin: 'USDT_TRON',
+                contractAddress: Trc20TokensContractAddress.USDT_TRON,
+                fee: String(tronFeeAmount)
             })
 
             // emit to discord
@@ -341,9 +334,6 @@ export class WithdrawalToFeeWalletListener {
 
                 Amount before deduction:-  ${amount}  
                                 
-                Gas Limit :- ${gasLimit}
-        
-                Gas Price :- ${gasLimit}
         
                 From:- ${from}
                 

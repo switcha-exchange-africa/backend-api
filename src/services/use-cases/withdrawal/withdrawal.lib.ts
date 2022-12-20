@@ -304,7 +304,7 @@ export class WithdrawalLib {
                     amount,
                     fromPrivateKey: privateKey,
                     tokenAddress: contractAddress,
-                    feeLimit: 13,
+                    feeLimit: Number(fee),
                 })
                 return transfer
             }

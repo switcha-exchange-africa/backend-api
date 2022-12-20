@@ -39,7 +39,9 @@ export const BEP_20_TOKENS = [
   "BUSD_BSC"
 ]
 export const TRC_20_TOKENS = ['USDT_TRON']
-
+export enum Trc20TokensContractAddress {
+  USDT_TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+}
 @Injectable()
 export class UtilsServices {
   constructor(

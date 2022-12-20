@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
-  env, TATUM_BASE_URL, TATUM_CONFIG,
+  env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -12,9 +12,10 @@ import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import { UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
-import { generateReference } from "src/lib/utils"
+import { decryptData, generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
 import {
+  IEthWithdrawal,
   IGetWithdrawals,
   Withdrawal,
   WithdrawalStatus,
@@ -30,7 +31,7 @@ import { ActivityFactoryService } from "../activity/activity-factory.service"
 import { ActivityAction } from "src/core/dtos/activity"
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper"
 import { InjectConnection } from "@nestjs/mongoose"
-import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, TRON_ADDRESS_MONITOR_CHANNEL, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
@@ -79,7 +80,7 @@ export class WithdrawalServices {
 
     try {
       // check if user has access to this feature
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
@@ -157,102 +158,25 @@ export class WithdrawalServices {
         }
       }
 
-      const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
+      // const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
 
-      /**
-       * activate wallet for tron/usdt_tron addresses
-       */
-      if (wallet.coin === 'USDT_TRON' || wallet.coin === 'TRON') {
-
-        const getFeeTronWallet = await this.data.feeWallets.findOne({ coin: 'TRON' })
-        if (!getFeeTronWallet) {
-          await this.discord.inHouseNotification({
-            title: `Tron network withdrawal :- ${env.env} environment`,
-            message: `
-            
-            Tron wallet not yet set, please set it up on production
-    
-          `,
-            link: TRON_ADDRESS_MONITOR_CHANNEL,
-          })
-          return Promise.reject({
-            status: HttpStatus.BAD_REQUEST,
-            state: ResponseState.ERROR,
-            message: `TRON/TRC-10/TRC-20 withdrawals not supported yet, please contact support`,
-            error: null
-          })
+      let response 
+      if(coin === 'ETH'){
+        const ethPayload:IEthWithdrawal = {
+          email,
+          from: feeWallet.address,
+          destination: wallet.address,
+          fromPrivateKey: decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+          amount
         }
-
-        if (getFeeTronWallet.balance < amount) {
-
-          await this.discord.inHouseNotification({
-            title: `Tron network withdrawal :- ${env.env} environment`,
-            message: `
-            
-            Tron master wallet balance is low
-
-            Balance:- ${getFeeTronWallet.balance}
-    
-          `,
-            link: TRON_ADDRESS_MONITOR_CHANNEL,
-          })
-
-          return Promise.reject({
-            status: HttpStatus.BAD_REQUEST,
-            state: ResponseState.ERROR,
-            message: `TRON/TRC-10/TRC-20 withdrawals disabled, please contact support`,
-            error: null
-          })
-        }
-        const getTrxBalance = await this.http.get(
-          `${TATUM_BASE_URL}/tron/account/${wallet.address}`,
-
-          TATUM_CONFIG
-        )
-        const divisor = 1000000
-        const trxBalance = getTrxBalance.balance / divisor
-        // send tron to activate wallet
-        const tronAmount = '12.798'
-        if (trxBalance < Number(tronAmount)) {
-          const transferTron = await this.lib.withdrawal({
-            accountId: getFeeTronWallet.accountId,
-            coin: 'TRON',
-            amount: tronAmount,
-            destination: wallet.address,
-            index: getFeeTronWallet.derivationKey
-          })
-
-          await this.data.wallets.update({ _id: wallet._id }, { isActivated: true })
-          await this.discord.inHouseNotification({
-            title: `Tron network withdrawal :- ${env.env} environment`,
-            message: `
-            
-            Transfer successful!!
-  
-            ${tronAmount} TRX sent to ${wallet.address}
-  
-            user: ${email}
-  
-            Transaction Details:- ${JSON.stringify(transferTron)}
-    
-          `,
-            link: TRON_ADDRESS_MONITOR_CHANNEL,
-          })
-        }
-
-
+        response = await this.ethWithdrawal(ethPayload)
       }
-
-      /**
-  * activate wallet for tron/usdt_tron addresses
-  */
-      const response = await this.lib.withdrawal({
-        accountId: wallet.accountId,
-        coin,
-        amount: String(amount),
-        destination,
-        index
-      })
+    
 
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -319,7 +243,7 @@ export class WithdrawalServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Withdrawal request of ${amount} ${coin}`,
-            status: Status.PENDING,
+            status: Status.COMPLETED,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -336,15 +260,14 @@ export class WithdrawalServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${coin}`,
-            status: Status.PENDING,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
             metadata: response,
-            balanceBefore: feeWallet.balance,
-            balanceAfter: creditedFeeWallet.balance,
             reference: generateReference('debit'),
           };
+          
           const txFeeWalletPayload: OptionalQuery<Transaction> = {
             feeWalletId: String(feeWallet?._id),
             currency: coin,
@@ -352,12 +275,14 @@ export class WithdrawalServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${coin}`,
-            status: Status.PENDING,
+            status: Status.COMPLETED,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
             metadata: response,
             reference: generateReference('debit'),
+            balanceBefore: feeWallet.balance,
+            balanceAfter: creditedFeeWallet.balance,
           };
           const [transactionFactory, feeTransactionFactory, feeWalletTransactionFactory] = await Promise.all([
             this.transactionFactory.create(txDebitPayload),
@@ -385,7 +310,7 @@ export class WithdrawalServices {
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
             subType: WithdrawalSubType.AUTO,
-            status: WithdrawalStatus.PENDING,
+            status: WithdrawalStatus.APPROVED,
             amount,
             tatumWithdrawalId: response.id,
             blockchainTransactionId: response.txId,
@@ -690,5 +615,135 @@ export class WithdrawalServices {
     }
   }
 
+  async ethWithdrawal(payload:IEthWithdrawal){
+    const {email, from, destination, fromPrivateKey, amount} = payload
+    console.log(payload)
+    try{
+      const { gasLimit, estimations } = await this.http.post(
+        `${TATUM_BASE_URL}/ethereum/gas`,
+        {
+
+            from,
+            to: destination,
+            amount
+        },
+        TATUM_CONFIG
+    )
+    const { standard } = estimations
+
+    const gasPrice = standard
+    const ethFee = { gasLimit, gasPrice }
+
+    const transfer = await this.lib.withdrawalV3({
+        destination,
+        amount:String(amount),
+        privateKey:fromPrivateKey,
+        coin: 'ETH',
+        ethFee
+    })
+
+    return transfer
+    }catch(error){
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'ETH WITHDRAWAL',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utils.errorReporter(errorPayload)
+      throw new Error(error)
+    }
+  }
 
 }
+
+
+  /**
+       * activate wallet for tron/usdt_tron addresses
+       */
+  // if (wallet.coin === 'USDT_TRON' || wallet.coin === 'TRON') {
+
+  //   const getFeeTronWallet = await this.data.feeWallets.findOne({ coin: 'TRON' })
+  //   if (!getFeeTronWallet) {
+  //     await this.discord.inHouseNotification({
+  //       title: `Tron network withdrawal :- ${env.env} environment`,
+  //       message: `
+        
+  //       Tron wallet not yet set, please set it up on production
+
+  //     `,
+  //       link: TRON_ADDRESS_MONITOR_CHANNEL,
+  //     })
+  //     return Promise.reject({
+  //       status: HttpStatus.BAD_REQUEST,
+  //       state: ResponseState.ERROR,
+  //       message: `TRON/TRC-10/TRC-20 withdrawals not supported yet, please contact support`,
+  //       error: null
+  //     })
+  //   }
+
+  //   if (getFeeTronWallet.balance < amount) {
+
+  //     await this.discord.inHouseNotification({
+  //       title: `Tron network withdrawal :- ${env.env} environment`,
+  //       message: `
+        
+  //       Tron master wallet balance is low
+
+  //       Balance:- ${getFeeTronWallet.balance}
+
+  //     `,
+  //       link: TRON_ADDRESS_MONITOR_CHANNEL,
+  //     })
+
+  //     return Promise.reject({
+  //       status: HttpStatus.BAD_REQUEST,
+  //       state: ResponseState.ERROR,
+  //       message: `TRON/TRC-10/TRC-20 withdrawals disabled, please contact support`,
+  //       error: null
+  //     })
+  //   }
+  //   const getTrxBalance = await this.http.get(
+  //     `${TATUM_BASE_URL}/tron/account/${wallet.address}`,
+
+  //     TATUM_CONFIG
+  //   )
+  //   const divisor = 1000000
+  //   const trxBalance = getTrxBalance.balance / divisor
+  //   // send tron to activate wallet
+  //   const tronAmount = '12.798'
+  //   if (trxBalance < Number(tronAmount)) {
+  //     const transferTron = await this.lib.withdrawal({
+  //       accountId: getFeeTronWallet.accountId,
+  //       coin: 'TRON',
+  //       amount: tronAmount,
+  //       destination: wallet.address,
+  //       index: getFeeTronWallet.derivationKey
+  //     })
+
+  //     await this.data.wallets.update({ _id: wallet._id }, { isActivated: true })
+  //     await this.discord.inHouseNotification({
+  //       title: `Tron network withdrawal :- ${env.env} environment`,
+  //       message: `
+        
+  //       Transfer successful!!
+
+  //       ${tronAmount} TRX sent to ${wallet.address}
+
+  //       user: ${email}
+
+  //       Transaction Details:- ${JSON.stringify(transferTron)}
+
+  //     `,
+  //       link: TRON_ADDRESS_MONITOR_CHANNEL,
+  //     })
+  //   }
+
+
+  // }
+
+  /**
+* activate wallet for tron/usdt_tron addresses
+*/
