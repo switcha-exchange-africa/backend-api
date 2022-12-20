@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
 import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAdBank, IUpdateP2pAds, P2pAdCreateBankDto, P2pAdEditBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
@@ -114,7 +114,7 @@ export class P2pController {
 
   @isAuthenticated('strict')
   // @IsLevelThree('three')
-  @Patch('/p2p/bank/:id')
+  @Delete('/p2p/bank/:id')
   async disableAdsBank(
     @Res() res: Response,
     @Param() params: FindByIdDto,

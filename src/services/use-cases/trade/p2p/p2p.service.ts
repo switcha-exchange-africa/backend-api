@@ -659,7 +659,7 @@ export class P2pServices {
   async disableAdsBank(id: mongoose.Types.ObjectId) {
     try {
 
-      const data = await this.data.p2pAdBanks.update({ _id: id }, { isActive: false });
+      const data = await this.data.p2pAdBanks.delete({ _id: id });
       return Promise.resolve({
         message: "Bank disabled succesfully",
         status: 200,
