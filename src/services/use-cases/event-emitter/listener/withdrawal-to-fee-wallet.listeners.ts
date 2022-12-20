@@ -53,16 +53,11 @@ export class WithdrawalToFeeWalletListener {
                 },
                 TATUM_CONFIG
             )
-            console.log("GAS LIMIT", gasLimit)
-            console.log("ESTIMATIONS", estimations)
-
             const { standard:gasPriceBeforeConversion } = estimations
-            // console.log("GAS PRICE BEFORE CONVERSION", gasPriceBeforeConversion)
 
             let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
             gasPriceConvert = gasPriceConvert.toFixed(18)
             const gasPrice = gasPriceBeforeConversion
-            console.log("GAS PRICE AFTRE CONVERSION", gasPrice)
             const ethFee = { gasLimit, gasPrice }
             const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
 
