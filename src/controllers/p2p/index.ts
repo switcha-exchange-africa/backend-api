@@ -72,7 +72,6 @@ export class P2pController {
         sortBy,
         orderBy,
         type,
-        isActive,
         isAcceptingToPaymentTo,
         isWillingToPayTo
       } = query
@@ -82,7 +81,7 @@ export class P2pController {
         userId, page,
         type,
         dateFrom, dateTo, sortBy, orderBy,
-        isActive,
+        isActive: true,
         isAcceptingToPaymentTo,
         isWillingToPayTo
       }
@@ -115,7 +114,7 @@ export class P2pController {
 
   @isAuthenticated('strict')
   // @IsLevelThree('three')
-  @Post('/p2p/bank/:id')
+  @Patch('/p2p/bank/:id')
   async disableAdsBank(
     @Res() res: Response,
     @Param() params: FindByIdDto,
