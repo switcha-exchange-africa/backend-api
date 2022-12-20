@@ -104,3 +104,5 @@ export type IGetWithdrawals = PaginationType & {
 }
 
 export type IEthWithdrawal = { email: string, from: string, destination: string, fromPrivateKey: string, amount: number }
+export type IBtcWithdrawal = { amount: string, privateKey: string, from: string, email: string, destination: string }
+export type ITrc20Withdrawal = { amount: string, privateKey: string, email: string, destination: string }

@@ -235,7 +235,7 @@ export class WithdrawalLib {
 
             if (coin === Currency.ETH) {
                 const ethSDK = TatumEthSDK(API_KEY_CONFIG)
-                
+
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,
                     amount,
@@ -304,7 +304,7 @@ export class WithdrawalLib {
                     amount,
                     fromPrivateKey: privateKey,
                     tokenAddress: contractAddress,
-                    feeLimit: Number(fee),
+                    feeLimit: Number(fee) | 15,
                 })
                 return transfer
             }

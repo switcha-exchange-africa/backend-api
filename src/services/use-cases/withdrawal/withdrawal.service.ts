@@ -10,13 +10,15 @@ import { ICreateWithdrawal } from "src/core/dtos/withdrawal"
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity"
 import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
-import { UtilsServices } from "../utils/utils.service"
+import { ERC_20_TOKENS, Trc20TokensContractAddress, TRC_20_TOKENS, UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
 import { decryptData, generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
 import {
+  IBtcWithdrawal,
   IEthWithdrawal,
   IGetWithdrawals,
+  ITrc20Withdrawal,
   Withdrawal,
   WithdrawalStatus,
   WithdrawalSubType,
@@ -175,8 +177,49 @@ export class WithdrawalServices {
           amount
         }
         response = await this.ethWithdrawal(ethPayload)
+      }else if(TRC_20_TOKENS.includes(coin)){
+        const trc20Payload:ITrc20Withdrawal = {
+          amount:String(amount),
+          privateKey:decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+          email,
+          destination
+        }
+        response = await this.trc20Withdrawal(trc20Payload)
+      }else if(coin === 'BTC'){
+        const btcPayload:IBtcWithdrawal = {
+          amount:String(amount),
+            privateKey:  decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+        from: feeWallet.address,
+        email,
+          destination
+        }
+        response = await this.btcWithdrawal(btcPayload)
+
+      }else if(ERC_20_TOKENS.includes(coin)){
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `${coin} withdrawal not supported`,
+          error: null
+        })
+      }else {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `${coin} withdrawal not supported`,
+          error: null
+        })
       }
-    
 
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -656,6 +699,85 @@ export class WithdrawalServices {
     }
   }
 
+  async btcWithdrawal(payload:IBtcWithdrawal){
+    const {amount, privateKey, from, email, destination} = payload
+    try{
+      const { fast } = await this.http.post(
+        `${TATUM_BASE_URL}/blockchain/estimate`,
+        {
+
+            chain: "BTC",
+            type: "TRANSFER",
+            fromAddress: [
+                from
+            ],
+            to: [
+                {
+                    address:destination,
+                    value: amount
+                }
+            ]
+        },
+        TATUM_CONFIG
+    )
+
+    const fee = Math.abs(Number(fast))
+
+    const transfer = await this.lib.withdrawalV3({
+      destination,
+      amount,
+      privateKey,
+      coin: 'BTC',
+      from,
+      fee:String(fee),
+      changeAddress: from,
+  })
+    return transfer
+
+    }catch(error){
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'BTC WITHDRAWAL',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utils.errorReporter(errorPayload)
+      throw new Error(error)
+    }
+  }
+
+
+
+
+  async trc20Withdrawal(payload:ITrc20Withdrawal){
+    const {amount, privateKey, email, destination} = payload
+    try{
+
+    const transfer = await this.lib.withdrawalV3({
+      destination,
+      amount,
+      privateKey,
+      coin: 'USDT_TRON',
+      fee:'13',
+      contractAddress: Trc20TokensContractAddress.USDT_TRON,
+  })
+    return transfer
+
+    }catch(error){
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'USDT_TRON WITHDRAWAL',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utils.errorReporter(errorPayload)
+      throw new Error(error)
+    }
+  }
 }
 
 
