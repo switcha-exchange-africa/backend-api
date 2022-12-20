@@ -173,6 +173,13 @@ export class P2pAdCreateBankDto {
 
 }
 
+export class P2pAdEditBankDto extends PartialType(P2pAdCreateBankDto) { }
+export type IUpdateP2pAdBank = P2pAdEditBankDto & {
+  email: string
+  userId: string
+  id: Types.ObjectId
+}
+
 export type ICreateP2pAd = P2pCreateAdDto & {
   userId: string
   email: string

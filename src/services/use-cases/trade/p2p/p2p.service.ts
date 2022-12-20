@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAdBank, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -683,6 +683,67 @@ export class P2pServices {
       })
     }
   }
+  async editAdsBank(payload: IUpdateP2pAdBank) {
+    const {
+      id,
+      email,
+      name,
+      code,
+      type,
+      accountName,
+      accountNumber,
+      isActive,
+      isWillingToPayTo,
+      isAcceptingToPaymentTo,
+    } = payload
+    try {
+
+      const data = await this.data.p2pAdBanks.findOne({ _id: id });
+      if (!data) {
+        return Promise.reject({
+          message: "Bank does not exists",
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null
+        })
+      }
+      await this.data.p2pAdBanks.update({ _id: id }, {
+        name,
+        code,
+        type,
+        accountName,
+        accountNumber,
+        isActive,
+        isWillingToPayTo,
+        isAcceptingToPaymentTo,
+      })
+
+      return Promise.resolve({
+        message: "Bank updated succesfully",
+        status: HttpStatus.OK,
+        data: {},
+        state: ResponseState.SUCCESS
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'DISABLE ADS BANK',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
 
   async createP2pOrder(payload: ICreateP2pOrder) {
     try {

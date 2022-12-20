@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAds, P2pAdCreateBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
+import { FindByOrderIdDto, ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAdBank, IUpdateP2pAds, P2pAdCreateBankDto, P2pAdEditBankDto, P2pConfirmOrderDto, P2pCreateAdDto, P2pCreateOrderDto, UpdateP2pCreateAdDto } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
@@ -130,6 +130,35 @@ export class P2pController {
       return res.status(error.status || 500).json(error);
     }
   }
+
+  @isAuthenticated('strict')
+  // @IsLevelThree('three')
+  @Put('/p2p/bank/:id')
+  async editAdsBank(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() params: FindByIdDto,
+    @Body() body: P2pAdEditBankDto
+
+  ) {
+    try {
+      const userId = req?.user?._id;
+      const email = req?.user.email
+      const { id } = params
+      const payload: IUpdateP2pAdBank = {
+        id,
+        ...body,
+        userId,
+        email
+      }
+      const response = await this.services.editAdsBank(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
+
 
   @Get('/p2p/ads')
   @isAuthenticated('strict')
