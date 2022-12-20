@@ -165,7 +165,7 @@ export class WithdrawalServices {
         const ethPayload:IEthWithdrawal = {
           email,
           from: feeWallet.address,
-          destination: wallet.address,
+          destination,
           fromPrivateKey: decryptData({
             text: feeWallet.privateKey,
             username: TATUM_PRIVATE_KEY_USER_NAME,
@@ -267,7 +267,7 @@ export class WithdrawalServices {
             metadata: response,
             reference: generateReference('debit'),
           };
-          
+
           const txFeeWalletPayload: OptionalQuery<Transaction> = {
             feeWalletId: String(feeWallet?._id),
             currency: coin,
@@ -617,7 +617,6 @@ export class WithdrawalServices {
 
   async ethWithdrawal(payload:IEthWithdrawal){
     const {email, from, destination, fromPrivateKey, amount} = payload
-    console.log(payload)
     try{
       const { gasLimit, estimations } = await this.http.post(
         `${TATUM_BASE_URL}/ethereum/gas`,
