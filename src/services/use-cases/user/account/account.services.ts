@@ -121,6 +121,45 @@ export class AccountServices {
     }
   }
 
+
+  async getTransactionPin(payload: { email: string, userId: string }) {
+    const { userId, email } = payload;
+
+    try {
+      const user = await this.data.users.findOne({ _id: userId });
+      if (!user) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          error: null,
+          message: "User does not exists"
+        })
+      };
+
+      return {
+        status: HttpStatus.OK,
+        message: "Transaction pin retreived successfully",
+        data: user && user.transactionPin ? true : false,
+        state: ResponseState.SUCCESS
+      };
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET TRANSACTION PIN',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
   async issuePhoneVerificationCode(phone: string) {
     try {
       console.log(phone);
