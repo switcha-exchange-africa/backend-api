@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Req, Res } from "@nestjs/common";
-import { AddBankDto, IBank, IGetBank, IGetSingleBank } from "src/core/dtos/bank";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res } from "@nestjs/common";
+import { AddBankDto, IBank, IGetBank, IGetSingleBank, IUpdateBank, UpdateBankDto } from "src/core/dtos/bank";
 import { Request, Response } from 'express';
 import { BankServices } from "src/services/use-cases/bank/bank-services.services";
 import { nigeriaBanks } from "src/lib/nigerian-banks";
@@ -99,6 +99,29 @@ export class BankController {
     }
   }
 
+  @isAuthenticated('strict')
+  @Put('/:id')
+  async updateBank(
+    @Req() req: Request,
+    @Param() params: FindByIdDto,
+    @Body() body: UpdateBankDto,
+    @Res() res: Response
+  ) {
+    try {
+      const user = req?.user
+      const { id } = params
+      const payload: IUpdateBank = {
+        userId: req.user._id,
+        email: user.email,
+        id,
+        ...body
+      }
+      const response = await this.services.updateBank(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
 
   @Get('/default/nigerian-banks')
   @isAuthenticated('strict')

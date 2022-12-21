@@ -1,3 +1,4 @@
+import { PartialType } from "@nestjs/mapped-types"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Types } from "mongoose"
 import { PaginationType } from "src/core/types/database"
@@ -26,7 +27,14 @@ export class AddBankDto {
   public readonly accountNumber: string
 }
 
-
+export class UpdateBankDto extends PartialType(AddBankDto) {
+  
+}
+export type IUpdateBank = UpdateBankDto & {
+  id: Types.ObjectId
+  email: string
+  userId: string
+}
 export interface IBank {
   name: string
   code: string

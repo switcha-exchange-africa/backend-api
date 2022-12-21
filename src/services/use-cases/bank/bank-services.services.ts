@@ -1,6 +1,6 @@
 import { IDataServices } from "src/core/abstracts";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { IBank, IGetBank, IGetSingleBank } from "src/core/dtos/bank";
+import { IBank, IGetBank, IGetSingleBank, IUpdateBank } from "src/core/dtos/bank";
 import { ResponseState, ResponsesType } from "src/core/types/response";
 import { Bank } from "src/core/entities/Bank";
 import { IErrorReporter } from "src/core/types/error";
@@ -162,6 +162,39 @@ export class BankServices {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
         action: 'DELETE BANK',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
+  async updateBank(payload: IUpdateBank) {
+    const { email, id, name, code, branch, accountName, accountNumber } = payload
+    try {
+
+      await this.data.banks.update({ _id: id }, {
+        name, code, branch, accountName, accountNumber
+      });
+
+      return {
+        message: "Bank updated successfully",
+        status: HttpStatus.OK,
+        data: {},
+        state: ResponseState.SUCCESS
+      };
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'Update BANK',
         error,
         email,
         message: error.message
