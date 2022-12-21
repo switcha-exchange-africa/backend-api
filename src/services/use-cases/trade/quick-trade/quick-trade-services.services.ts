@@ -878,7 +878,7 @@ export class QuickTradeServices {
 
       const { amount, cash, coin, method, userId, clientAccountName, clientAccountNumber, clientBankName, type, email, firstName, lastName } = payload
 
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,

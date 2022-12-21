@@ -749,7 +749,7 @@ export class P2pServices {
     try {
       //
       const { adId, clientId, quantity, clientAccountName, clientAccountNumber, clientBankName, type, bankId, firstName, lastName, email } = payload
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(clientId) })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: clientId })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
