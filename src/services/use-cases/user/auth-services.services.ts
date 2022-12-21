@@ -385,14 +385,14 @@ export class AuthServices {
       const emailCode = randomFixedInteger(6)
       // Remove email code for this user
       const [user,] = await Promise.all([this.data.users.findOne({ email: authUser?.email }), this.inMemoryServices.del(redisKey)])
-      if (!user){
+      if (!user) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
           state: ResponseState.ERROR,
           message: 'User does not exists',
           error: null
         })
-      } 
+      }
 
 
       // hash verification code in redis
@@ -439,14 +439,14 @@ export class AuthServices {
       const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`
 
       const [userRequestReset, user] = await Promise.all([this.inMemoryServices.get(resetPasswordRedisKey), this.data.users.findOne({ email: String(email) })]);
-      if (!userRequestReset){
+      if (!userRequestReset) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           message: 'Invalid or expired reset token',
           error: null
         })
-      } 
+      }
       if (!user) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -805,7 +805,22 @@ export class AuthServices {
         userId: String(user._id)
       })
       await this.data.activities.create(activityFactory)
-
+      const userManager = await this.data.userFeatureManagement.findOne({ userId: String(user._id) })
+      if (!userManager) {
+        const userManagerFactory = await this.userFeatureManagementFactory.manageUser({
+          userId: String(updatedUser._id),
+          canBuy: true,
+          canSell: true,
+          canSwap: true,
+          canP2PBuy: true,
+          canP2PSell: true,
+          canWithdraw: false,
+          canP2PCreateBuyAd: true,
+          canP2PCreateSellAd: true
+        })
+        await this.data.userFeatureManagement.create(userManagerFactory)
+      }
+      
       return {
         status: HttpStatus.OK,
         message: 'User logged in successfully',
