@@ -301,8 +301,8 @@ export class AuthServices {
           canP2PBuy: true,
           canP2PSell: true,
           canWithdraw: false,
-          canP2PCreateBuyAd: false,
-          canP2PCreateSellAd: false
+          canP2PCreateBuyAd: true,
+          canP2PCreateSellAd: true
         }),
         this.activityFactory.create({
           action: ActivityAction.VERIFY_EMAIL,
