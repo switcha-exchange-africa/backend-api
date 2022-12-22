@@ -118,12 +118,16 @@ P2pAdsSchema.index({
   id: 'text',
   price: 'text',
   totalAmount: 'text',
+  minLimit: 'text',
+  maxLimit: 'text'
 },
   {
     weights: {
       _id: 5,
       price: 5,
-      totalAmount: 5
+      totalAmount: 5,
+      minLimit: 5,
+      maxLimit: 5,
     },
   },);
 
