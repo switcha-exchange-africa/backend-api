@@ -122,8 +122,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       excludedFields.forEach((el) => delete queryObj[el]);
 
       for (const key of Object.keys(queryObj)) {
-        if (key == 'createdAt') {
-          andArr.push({ [key]: { $gte: myDateFrom, $lt: myDateTo } });
+        if (query.dateFrom && query.dateTo) {
+          andArr.push({ 'createdAt': { $gte: myDateFrom, $lt: myDateTo } });
         } else {
           andArr.push({
             [key]: String(queryObj[key])
