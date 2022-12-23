@@ -33,6 +33,7 @@ export class AdminTradesController {
         method,
         coin,
         cash,
+        orderType,
         q
       } = query
       const payload: IGetP2pOrders = {
@@ -42,6 +43,7 @@ export class AdminTradesController {
         dateTo,
         sortBy,
         orderBy,
+        orderType,
         merchantId,
         clientId,
         adId,
