@@ -1,4 +1,3 @@
-
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Document } from "mongoose";
 import { CounterpartConditionsType, P2pAdsList, P2pAdsType, P2pPriceType, P2pPriceTypeList } from "src/core/entities/P2pAds";

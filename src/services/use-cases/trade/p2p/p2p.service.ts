@@ -395,11 +395,13 @@ export class P2pServices {
           populated: ['user', 'bank']
         }
       });
-
+      const filteredData = data.filter((data) => {
+        return data.status !== Status.FILLED
+      })
       return Promise.resolve({
         message: "Ads retrieved successfully",
         status: 200,
-        data,
+        data: filteredData,
         pagination,
       });
 
@@ -421,46 +423,7 @@ export class P2pServices {
       })
     }
   }
-  async getPendingAds(payload: IGetP2pAds) {
-    const { email } = payload
-    try {
-      const cleanedPayload = this.cleanQueryPayload(payload)
-      const { data, pagination } = await this.data.p2pAds.findAllWithPagination({
-        query: {
-          status: { $ne: Status.FILLED },
-          ...cleanedPayload
-        },
-        queryFields: {},
-        misc: {
-          populated: ['user', 'bank']
-        }
-      });
 
-      return Promise.resolve({
-        message: "Ads retrieved successfully",
-        status: 200,
-        data,
-        pagination,
-      });
-
-    } catch (error) {
-      Logger.error(error)
-      const errorPayload: IErrorReporter = {
-        action: 'GET P2P ADS',
-        error,
-        email,
-        message: error.message
-      }
-
-      this.utilsService.errorReporter(errorPayload)
-      return Promise.reject({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        state: ResponseState.ERROR,
-        message: error.message,
-        error: error
-      })
-    }
-  }
 
   async getSingleAd(id: mongoose.Types.ObjectId) {
     try {

@@ -194,7 +194,7 @@ export class P2pController {
         paymentTimeLimit
       }
 
-      const response = await this.services.getPendingAds(payload);
+      const response = await this.services.getAllAds(payload);
       return res.status(response.status).json(response);
 
     } catch (error) {
