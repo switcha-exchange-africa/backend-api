@@ -27,7 +27,7 @@ export class P2pFactoryService {
     if (data.isSwitchaMerchant) ads.isSwitchaMerchant = data.isSwitchaMerchant;
     if (data.isPublished) ads.isPublished = data.isPublished;
 
-    
+
     return ads;
   }
 }
@@ -71,9 +71,9 @@ export class P2pOrderFactoryService {
     if (data.method) order.method = data.method;
     if (data.coin) order.coin = data.coin;
     if (data.cash) order.cash = data.cash;
+    if (data.orderType) order.orderType = data.orderType
 
 
-    
     order.orderId = String(randomFixedInteger(12))
     return order;
   }

@@ -984,6 +984,7 @@ export class QuickTradeServices {
             cash: ad.cash,
             method,
             price: ad.price,
+            orderType: 'quick-trade',
             clientWalletId: clientWallet ? String(clientWallet._id) : null,
             totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(amount))
           }

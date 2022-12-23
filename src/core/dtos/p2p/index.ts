@@ -252,6 +252,7 @@ export type IGetP2pOrders = PaginationType & {
   email?: string
   coin: string
   cash: string
+  orderType: string
 }
 
 

@@ -377,7 +377,7 @@ export class P2pServices {
     if (payload.method) key['method'] = payload.method
     if (payload.coin) key['coin'] = payload.coin
     if (payload.cash) key['cash'] = payload.cash
-
+    if (payload.orderType) key['orderType'] = payload.orderType
 
 
     return key
@@ -931,6 +931,7 @@ export class P2pServices {
             clientAccountNumber,
             clientBankName,
             price: ad.price,
+            orderType: 'p2p',
             clientWalletId: clientWallet ? String(clientWallet._id) : null,
             totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(quantity))
           }

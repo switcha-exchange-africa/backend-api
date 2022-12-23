@@ -297,6 +297,7 @@ export class P2pController {
         method,
         coin,
         cash,
+        orderType,
         q
       } = query
       const merchantId = req?.user?._id;
@@ -318,6 +319,7 @@ export class P2pController {
         method,
         coin,
         cash,
+        orderType,
         email: req?.user?.email,
         q
       }

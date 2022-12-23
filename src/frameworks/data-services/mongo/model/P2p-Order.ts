@@ -10,7 +10,7 @@ export type P2pOrderDocument = P2pOrder & Document;
   toJSON: {
     virtuals: true,
   },
-  timestamps:true
+  timestamps: true
 })
 export class P2pOrder {
 
@@ -50,6 +50,9 @@ export class P2pOrder {
   @Prop({ enum: P2pOrderTypeList })
   type: P2pOrderType;
 
+  @Prop()
+  orderType: string
+  
   @Prop({ enum: STATUS_LIST })
   status: Status;
 
