@@ -383,8 +383,28 @@ export class P2pServices {
     return key
   }
   async getAllAds(payload: IGetP2pAds) {
-    const { email } = payload
+    const { email, q, perpage, page, dateFrom, dateTo, orderBy, sortBy } = payload
     try {
+      if (q) {
+        const { data, pagination } = await this.data.p2pAds.search({
+          query: {
+            q,
+            perpage,
+            page,
+            dateFrom,
+            dateTo,
+            sortBy,
+            orderBy,
+          }
+        })
+        return {
+          status: HttpStatus.OK,
+          message: "Ads retrieved successfully",
+          data,
+          pagination,
+        };
+      }
+
       const cleanedPayload = this.cleanQueryPayload(payload)
       const { data, pagination } = await this.data.p2pAds.findAllWithPagination({
         query: {
