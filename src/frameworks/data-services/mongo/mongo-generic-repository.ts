@@ -141,7 +141,6 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
       const filterQuery = isEmpty(andArr) ? {} : searchQuery;
       const total = await this._repository.countDocuments(filterQuery as any);
-      console.log("FILTER QUERY", filterQuery)
       const data = await this._repository
         .find(filterQuery as any)
         .populate(populated)

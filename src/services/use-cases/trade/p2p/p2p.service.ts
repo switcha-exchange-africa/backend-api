@@ -395,6 +395,48 @@ export class P2pServices {
           populated: ['user', 'bank']
         }
       });
+
+      return Promise.resolve({
+        message: "Ads retrieved successfully",
+        status: 200,
+        data,
+        pagination,
+      });
+
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET P2P ADS',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+  async getPendingAds(payload: IGetP2pAds) {
+    const { email } = payload
+    try {
+      const cleanedPayload = this.cleanQueryPayload(payload)
+      const { data, pagination } = await this.data.p2pAds.findAllWithPagination({
+        query: {
+          // status: Status.PENDING,
+          // // status: Status.PARTIAL,
+
+          ...cleanedPayload
+        },
+        queryFields: {},
+        misc: {
+          populated: ['user', 'bank']
+        }
+      });
       const filteredData = data.filter((data) => {
         return data.status !== Status.FILLED
       })
@@ -423,7 +465,6 @@ export class P2pServices {
       })
     }
   }
-
 
   async getSingleAd(id: mongoose.Types.ObjectId) {
     try {
