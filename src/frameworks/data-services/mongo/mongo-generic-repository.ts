@@ -123,7 +123,11 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
       for (const key of Object.keys(queryObj)) {
         if (query.dateFrom && query.dateTo) {
-          andArr.push({ 'createdAt': { $gte: myDateFrom, $lt: myDateTo } });
+          andArr.push({ 
+            'createdAt': { $gte: myDateFrom, $lt: myDateTo },
+            [key]: String(queryObj[key])
+          
+          });
         } else {
           andArr.push({
             [key]: String(queryObj[key])
