@@ -29,7 +29,7 @@ export class TransactionServices {
     if (payload.hash) key['hash'] = payload.hash
     if (payload.accountId) key['accountId'] = payload.accountId
 
-    
+
 
     return key
   }
@@ -89,7 +89,12 @@ export class TransactionServices {
   async getSingleTransaction(id: Types.ObjectId) {
     try {
 
-      const data = await this.data.transactions.findOne({ _id: id });
+      const data = await this.data.transactions.findOne({ _id: id }, null, { 
+        populate: {
+          path: 'userId',
+          select: '_id firstName lastName email phone'
+        }
+       });
       return Promise.resolve({
         message: "Transaction Details retrieved succesfully",
         status: 200,
