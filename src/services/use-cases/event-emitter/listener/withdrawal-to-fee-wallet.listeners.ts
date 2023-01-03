@@ -61,7 +61,7 @@ export class WithdrawalToFeeWalletListener {
             const gasPrice = gasPriceBeforeConversion
             const ethFee = { gasLimit, gasPrice }
             const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
-            
+
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amountAfterDeduction),
@@ -122,7 +122,7 @@ export class WithdrawalToFeeWalletListener {
                 throw new Error("Fee Wallet does not exists")
             }
 
-            const { slow } = await this.http.post(
+            const { fast } = await this.http.post(
                 `${TATUM_BASE_URL}/blockchain/estimate`,
                 {
 
@@ -141,7 +141,7 @@ export class WithdrawalToFeeWalletListener {
                 TATUM_CONFIG
             )
 
-            const fee = Math.abs(Number(slow))
+            const fee = Math.abs(Number(fast))
             const amountAfterDeduction = _.subtract(amount, fee)
 
             const transfer = await this.withdrawalLib.withdrawalV3({
@@ -150,6 +150,7 @@ export class WithdrawalToFeeWalletListener {
                 privateKey,
                 coin: 'BTC',
                 from,
+                fee: String(fee),
                 changeAddress: coinFeeWallet.address,
             })
 

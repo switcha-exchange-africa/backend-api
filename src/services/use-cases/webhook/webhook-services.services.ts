@@ -196,13 +196,13 @@ export class WebhookServices {
           pin: user.transactionPin
         })
         if (wallet.coin === 'ETH') {
-          console.log("SENDING FEE TO ETH")
           this.emitter.emit("send.to.eth.fee.wallet", {
             amount: String(amount),
             privateKey,
             from: wallet.address
           })
         } else if (wallet.coin === 'BTC') {
+          console.log("SENDING FEE TO BTC FEE WALLET")
           this.emitter.emit("send.to.btc.fee.wallet", {
             amount: Number(amount),
             privateKey,
@@ -913,3 +913,5 @@ export class WebhookServices {
     // "address": "0x8ce4e40889a13971681391AAd29E88eFAF91f784",
     // "amount": "0.1",
     // "blockHeight": 8517664
+
+    // https://coinfaucet.eu/en/btc-testnet/
