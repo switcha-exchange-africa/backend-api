@@ -9,7 +9,7 @@ import { WalletFactoryService } from '../wallet/wallet-factory.service';
 import { UserServices } from './user-services.services';
 import { ActivityFactoryService } from '../activity/activity-factory.service';
 import { UtilsServicesModule } from '../utils/utils.module';
-import { TwoFaFactoryService } from "./user-factory.service";
+import { TwoFaFactoryService, LoginHistoryFactoryService } from "./user-factory.service";
 import { TransactionFactoryService } from '../transaction/transaction-factory.services';
 import { NotificationFactoryService } from '../notification/notification-factory.service';
 import { WalletLib } from '../wallet/wallet.lib';
@@ -29,7 +29,8 @@ import { WalletLib } from '../wallet/wallet.lib';
     TwoFaFactoryService,
     TransactionFactoryService,
     NotificationFactoryService,
-    WalletLib
+    WalletLib,
+    LoginHistoryFactoryService
   ],
   exports: [
     UserFactoryService,

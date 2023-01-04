@@ -57,7 +57,7 @@ class LogsMiddleware implements NestMiddleware {
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', async () => {
       try {
-        const { method, originalUrl, headers } = request
+        const { method, originalUrl, headers , ip} = request
         const { statusCode, statusMessage } = response;
         const message = `${method} ${originalUrl} ${statusCode} ${statusMessage}`;
         let token = request.headers.authorization;
@@ -68,8 +68,7 @@ class LogsMiddleware implements NestMiddleware {
         const checkUser = user ? true : false
 
 
-        const sourceIp = Array.isArray(headers['x-original-forwarded-for']) ? headers['x-original-forwarded-for'].join(',') : headers['x-original-forwarded-for'];
-        console.log("SOURCE IP", sourceIp)
+        const sourceIp = ip;
         const sourceIpCountryCode = Array.isArray(headers['cf-ipcountry']) ? headers['cf-ipcountry'].join(',') : headers['cf-ipcountry'];
         const platform = Array.isArray(headers['platform']) ? headers['platform'].join(',') : headers['platform'];
 
@@ -112,5 +111,7 @@ class LogsMiddleware implements NestMiddleware {
     next();
   }
 }
+
+
 
 export default LogsMiddleware;

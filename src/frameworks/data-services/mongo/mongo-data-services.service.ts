@@ -36,6 +36,7 @@ import { VirtualAccount, VirtualAccountDocument } from './model/Virtual-Account'
 import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresses';
 // import { Gondor } from './model/Gondor';
 import { LockedBalance, LockedBalanceDocument } from "./model/Locked-Balances";
+import { LoginHistory, LoginHistoryDocument } from "./model/LoginHistory";
 
 
 
@@ -74,6 +75,7 @@ export class MongoDataServices
   virtualAccounts: MongoGenericRepository<VirtualAccount>
   depositAddresses: MongoGenericRepository<DepositAddress>
   lockedBalances: MongoGenericRepository<LockedBalance>
+  loginHistory: MongoGenericRepository<LoginHistory>
 
 
   // gondor: MongoGenericRepository<Gondor>
@@ -179,6 +181,10 @@ export class MongoDataServices
     @InjectModel(LockedBalance.name)
     private LockedBalanceRepository: Model<LockedBalanceDocument>,
 
+    @InjectModel(LoginHistory.name)
+    private LoginHistoryRepository: Model<LoginHistoryDocument>,
+
+
   ) { }
 
 
@@ -215,6 +221,7 @@ export class MongoDataServices
     this.virtualAccounts = new MongoGenericRepository<VirtualAccount>(this.VirtualAccountRepository)
     this.depositAddresses = new MongoGenericRepository<DepositAddress>(this.DepositAddressRepository)
     this.lockedBalances = new MongoGenericRepository<LockedBalance>(this.LockedBalanceRepository)
+    this.loginHistory = new MongoGenericRepository<LoginHistory>(this.LoginHistoryRepository)
 
 
 

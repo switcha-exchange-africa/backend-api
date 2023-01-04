@@ -40,9 +40,14 @@ export class AuthenticationController {
 
   @FeatureManagement(FeatureEnum.SIGNIN)
   @Post(AUTHENTICATION_ROUTE.LOGIN)
-  async login(@Res() res: Response, @Body() body: LoginDto) {
+  async login(@Res() res: Response, @Body() body: LoginDto, @Req() req: Request) {
     try {
-      const payload: ILogin = { ...body }
+      const { headers, ip } = req
+      const payload: ILogin = {
+        ...body,
+        headers,
+        ip
+      }
       const response = await this.services.login(payload);
       return res.status(response.status).json(response);
     } catch (error) {

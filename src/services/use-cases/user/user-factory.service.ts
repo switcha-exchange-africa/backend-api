@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { LoginHistory } from 'src/core/entities/LoginHistory';
 import { MutateUser } from 'src/core/entities/MutateUser';
 import { TwoFa } from 'src/core/entities/TwoFa';
 import { User } from 'src/core/entities/user.entity';
@@ -35,7 +36,7 @@ export class UserFactoryService {
     user.notify = false
 
     user.lastLoginDate = new Date();
-  
+
     return user;
   }
 
@@ -58,7 +59,7 @@ export class UserFeatureManagementFactoryService {
     return manage;
   }
 
-  
+
 }
 
 @Injectable()
@@ -69,11 +70,11 @@ export class MutateUserFactoryService {
     if (data.reason) mutate.reason = data.reason;
     if (data.active) mutate.active = data.active;
     if (data.type) mutate.type = data.type;
-    
+
     return mutate;
   }
 
-  
+
 }
 
 @Injectable()
@@ -89,5 +90,22 @@ export class TwoFaFactoryService {
     return twoFa;
   }
 
-  
+
+}
+
+
+
+@Injectable()
+export class LoginHistoryFactoryService {
+  async create(data: OptionalQuery<LoginHistory>) {
+    const result = new LoginHistory();
+    if (data.userId) result.userId = data.userId;
+    if (data.ip) result.ip = data.ip;
+    if (data.platform) result.platform = data.platform;
+    if (data.location) result.location = data.location;
+    if (data.headers) result.headers = data.headers;
+    if (data.userAgent) result.userAgent = data.userAgent;
+    if (data.browser) result.browser = data.browser
+    return result;
+  }
 }

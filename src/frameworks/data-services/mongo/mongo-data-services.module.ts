@@ -36,6 +36,7 @@ import { VirtualAccount, VirtualAccountSchema } from "./model/Virtual-Account";
 import { DepositAddress, DepositAddressSchema } from "./model/Deposit-Addresses";
 import { Gondor, GondorSchema } from "./model/Gondor";
 import { LockedBalance, LockedBalanceSchema } from "./model/Locked-Balances";
+import { LoginHistory, LoginHistorySchema } from "./model/LoginHistory";
 
 @Module({
   imports: [
@@ -78,6 +79,8 @@ import { LockedBalance, LockedBalanceSchema } from "./model/Locked-Balances";
       { name: VirtualAccount.name, schema: VirtualAccountSchema },
       { name: DepositAddress.name, schema: DepositAddressSchema },
       { name: LockedBalance.name, schema: LockedBalanceSchema },
+      { name: LoginHistory.name, schema: LoginHistorySchema },
+      
     ], 'switcha'),
     MongooseModule.forFeature([
       { name: Gondor.name, schema: GondorSchema }

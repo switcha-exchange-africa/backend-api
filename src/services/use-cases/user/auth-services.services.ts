@@ -8,7 +8,7 @@ import { env } from "src/configuration";
 import { compareHash, hash, isEmpty, maybePluralize, randomFixedInteger, secondsToDhms } from "src/lib/utils";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { randomBytes } from 'crypto'
-import { UserFactoryService, UserFeatureManagementFactoryService } from './user-factory.service';
+import { LoginHistoryFactoryService, UserFactoryService, UserFeatureManagementFactoryService } from './user-factory.service';
 import { ResponseState, ResponsesType } from 'src/core/types/response';
 import { User } from 'src/core/entities/user.entity';
 import { EventEmitter2 } from "@nestjs/event-emitter";
@@ -36,6 +36,7 @@ export class AuthServices {
     private readonly userFeatureManagementFactory: UserFeatureManagementFactoryService,
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
+    private readonly loginHistoryFactory: LoginHistoryFactoryService,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection,
 
   ) { }
@@ -671,7 +672,7 @@ export class AuthServices {
 
   async login(payload: ILogin): Promise<ResponsesType<User>> {
     try {
-      const { email, password } = payload
+      const { email, password, headers, ip } = payload
       const user = await this.data.users.findOne({ email });
 
       if (!user) {
@@ -804,23 +805,46 @@ export class AuthServices {
         description: 'Signin',
         userId: String(user._id)
       })
-      await this.data.activities.create(activityFactory)
-      const userManager = await this.data.userFeatureManagement.findOne({ userId: String(user._id) })
-      if (!userManager) {
-        const userManagerFactory = await this.userFeatureManagementFactory.manageUser({
-          userId: String(updatedUser._id),
-          canBuy: true,
-          canSell: true,
-          canSwap: true,
-          canP2PBuy: true,
-          canP2PSell: true,
-          canWithdraw: false,
-          canP2PCreateBuyAd: true,
-          canP2PCreateSellAd: true
-        })
-        await this.data.userFeatureManagement.create(userManagerFactory)
+      const loginHistoryFactory = await this.loginHistoryFactory.create({
+        userId: String(user._id),
+        platform: headers['sec-ch-ua-platform'],
+        browser: headers['sec-ch-ua'],
+        ip,
+        location: '',
+        headers,
+        userAgent: headers['user-agent'],
+      })
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        try {
+          await this.data.activities.create(activityFactory, session)
+          await this.data.loginHistory.create(loginHistoryFactory, session)
+          const userManager = await this.data.userFeatureManagement.findOne({ userId: String(user._id) })
+          if (!userManager) {
+            const userManagerFactory = await this.userFeatureManagementFactory.manageUser({
+              userId: String(updatedUser._id),
+              canBuy: true,
+              canSell: true,
+              canSwap: true,
+              canP2PBuy: true,
+              canP2PSell: true,
+              canWithdraw: false,
+              canP2PCreateBuyAd: true,
+              canP2PCreateSellAd: true
+            })
+            await this.data.userFeatureManagement.create(userManagerFactory, session)
+          }
+
+
+        } catch (error) {
+          Logger.error(error);
+          throw new Error(error);
+        }
       }
-      
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
       return {
         status: HttpStatus.OK,
         message: 'User logged in successfully',

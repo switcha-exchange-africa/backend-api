@@ -8,6 +8,7 @@ import { PermissionGuard } from "./middleware-guards/permission-guard.middleware
 import { RoleType } from "./core/types/roles";
 import { AdminAuthGuard, AuthGuard, BypassGuard, IsLevelThreeGuard, IsLevelTwoGuard } from "./middleware-guards/auth-guard.middleware";
 import { FeatureManagementGuard } from "./middleware-guards/misc.middleware";
+import CustomIpMiddleware from "./middleware-guards/custom-ip.middleware";
 declare global {
   namespace Express {
     export interface Request {
@@ -72,7 +73,9 @@ declare global {
 
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CustomIpMiddleware).forRoutes('*');    
     consumer.apply(LogsMiddleware).forRoutes('*');
+
   }
 }
 

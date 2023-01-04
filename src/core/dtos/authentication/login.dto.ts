@@ -72,7 +72,10 @@ export class SignupDto {
 }
 
 export type ISignup = SignupDto & {}
-export type ILogin = LoginDto & {}
+export type ILogin = LoginDto & {
+  headers?: Record<string, any>
+  ip?: string
+}
 
 export class UpdateUserDto extends PartialType(SignupDto) { }
 export class MultpleUserDto extends PartialType(SignupDto) {

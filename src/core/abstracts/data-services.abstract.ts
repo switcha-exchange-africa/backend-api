@@ -30,6 +30,7 @@ import { TwoFa } from '../entities/TwoFa';
 import { VirtualAccount } from '../entities/Virtual-Account';
 import { DepositAddress } from '../entities/Deposit-Address';
 import { LockedBalance } from '../entities/Locked-Balance';
+import { LoginHistory } from '../entities/LoginHistory';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -64,6 +65,7 @@ export abstract class IDataServices {
   abstract virtualAccounts: IGenericRepository<VirtualAccount>
   abstract depositAddresses: IGenericRepository<DepositAddress>
   abstract lockedBalances: IGenericRepository<LockedBalance>
+  abstract loginHistory: IGenericRepository<LoginHistory>
 
 
   

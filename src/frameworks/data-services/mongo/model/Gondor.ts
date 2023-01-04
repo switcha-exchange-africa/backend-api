@@ -1,5 +1,5 @@
 import { Prop, SchemaFactory, Schema } from "@nestjs/mongoose";
-
+import { Document } from "mongoose";
 
 export type GondorDocument = Gondor & Document;
 
