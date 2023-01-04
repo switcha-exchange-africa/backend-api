@@ -23,6 +23,13 @@ export class P2pOrder {
 
   @Prop({
     type: Types.ObjectId,
+    ref: "Admin",
+    required: true
+  })
+  processedByAdminId: string
+
+  @Prop({
+    type: Types.ObjectId,
     ref: "User",
     required: true
   })
@@ -52,7 +59,7 @@ export class P2pOrder {
 
   @Prop()
   orderType: string
-  
+
   @Prop({ enum: STATUS_LIST })
   status: Status;
 

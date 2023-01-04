@@ -8,7 +8,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { IInMemoryServices } from "src/core/abstracts/in-memory.abstract";
 import { ActivityAction } from "src/core/dtos/activity";
 import {
-  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IP2pNotifyMerchant, IUpdateP2pAdBank, IUpdateP2pAds, P2pOrderType,
+  ICreateP2pAd, ICreateP2pAdBank, ICreateP2pOrder, IGetOrderByOrderId, IGetP2pAdBank, IGetP2pAds, IGetP2pBanks, IGetP2pOrders, IP2pConfirmOrder, IP2pConfirmOrderAdmin, IP2pNotifyMerchant, IUpdateP2pAdBank, IUpdateP2pAds, P2pOrderType,
   // P2pOrderType
 } from "src/core/dtos/p2p";
 import { IActivity } from "src/core/entities/Activity";
@@ -1227,14 +1227,73 @@ export class P2pServices {
       })
     }
   }
+
+  async confirmP2pOrderAdmin(payload: IP2pConfirmOrderAdmin) {
+    try {
+      const { orderId, processedByAdminId } = payload
+      const order = await this.data.p2pOrders.findOne({ _id: orderId })
+      if (!order) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Order does not exists',
+          error: null
+        })
+      }
+      if (order.status === Status.EXPIRED || order.status === Status.COMPLETED) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Order already processed or expired',
+          error: null
+        })
+      }
+      const [ad, merchant, client] = await Promise.all([
+        this.data.p2pAds.findOne({ _id: order.adId }),
+        this.data.users.findOne({ _id: order.merchantId }),
+        this.data.users.findOne({ _id: order.clientId }),
+      ])
+
+
+
+      if (ad.type === P2pAdsType.BUY) {
+        // order client id must be the logged in user
+        return this.processClientP2pOrder({
+          client,
+          order,
+          ad,
+          processedByAdminId
+        })
+      }
+      return this.processMerchantP2pOrder({
+        merchant,
+        order,
+        processedByAdminId,
+        ad
+      })
+      // update order status
+      // release coins
+      // set order status to completed
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
+
   async processClientP2pOrder(payload: {
     client: mongoose.HydratedDocument<User>,
     order: mongoose.HydratedDocument<P2pOrder>,
-    ad: mongoose.HydratedDocument<P2pAds>
+    ad: mongoose.HydratedDocument<P2pAds>,
+    processedByAdminId?: string
   }) {
     try {
 
-      const { client, order, ad } = payload
+      const { client, order, ad, processedByAdminId } = payload
       const clientWallet = await this.data.wallets.findOne({ coin: ad.coin, userId: String(client._id) })
       if (!clientWallet) {
         Logger.error('Client wallet does not exist')
@@ -1439,7 +1498,9 @@ export class P2pServices {
               await this.data.p2pAds.update({ _id: ad._id }, { status: Status.FILLED }, session) :
               await this.data.p2pAds.update({ _id: ad._id }, { status: Status.PARTIAL }, session)
 
-
+          if (processedByAdminId) {
+            await this.data.p2pOrders.update({ _id: order._id }, { processedByAdminId })
+          }
         } catch (error) {
           throw new Error(error)
         }
@@ -1511,10 +1572,11 @@ export class P2pServices {
     merchant: mongoose.HydratedDocument<User>,
     order: mongoose.HydratedDocument<P2pOrder>,
     ad: mongoose.HydratedDocument<P2pAds>,
-    redisKey: string
+    redisKey?: string,
+    processedByAdminId?: string
   }) {
     try {
-      const { merchant, order, ad, redisKey } = payload
+      const { merchant, order, ad, redisKey, processedByAdminId } = payload
       const { coin } = ad
 
 
@@ -1716,7 +1778,9 @@ export class P2pServices {
               noOfP2pOrderCompleted: 1,
             }
           }, session)
-
+          if (processedByAdminId) {
+            await this.data.p2pOrders.update({ _id: order._id }, { processedByAdminId })
+          }
         } catch (error) {
           Logger.error(error)
           throw new Error(error)
@@ -1776,9 +1840,11 @@ export class P2pServices {
         `,
           link: env.isProd ? P2P_CHANNEL_LINK_PRODUCTION : P2P_CHANNEL_LINK_DEVELOPMENT,
         }),
-        this.inMemoryServices.del(redisKey)
-      ])
 
+      ])
+      if (redisKey) {
+        this.inMemoryServices.del(redisKey)
+      }
       return {
         message: "Order confirmed succesfully",
         status: HttpStatus.OK,

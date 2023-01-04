@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Query, Res } from "@nestjs/common";
-import { Response } from "express"
+import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { Response, Request } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
-import { IGetP2pOrders } from "src/core/dtos/p2p";
+import { IGetP2pOrders, IP2pConfirmOrderAdmin } from "src/core/dtos/p2p";
 import { P2pServices } from "src/services/use-cases/trade/p2p/p2p.service";
 
 @Controller('admin/trades')
@@ -78,4 +78,26 @@ export class AdminTradesController {
     }
   }
 
+  @Post('/:id/release')
+  @isAdminAuthenticated('strict')
+  async confirmP2pOrder(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() params: FindByIdDto
+
+  ) {
+    try {
+      const { id } = params
+      const payload: IP2pConfirmOrderAdmin = {
+        orderId: id,
+        processedByAdminId: req?.user?._id
+      }
+
+      const response = await this.services.confirmP2pOrderAdmin(payload);
+      return res.status(response.status).json(response);
+
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
 }

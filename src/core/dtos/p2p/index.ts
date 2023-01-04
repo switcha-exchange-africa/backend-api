@@ -238,7 +238,10 @@ export type IP2pConfirmOrder = P2pConfirmOrderDto & {
   email?: string
   orderId: Types.ObjectId
 }
-
+export type IP2pConfirmOrderAdmin = {
+  orderId: Types.ObjectId
+  processedByAdminId: string
+}
 export type IGetP2pOrders = PaginationType & {
   merchantId?: string;
   clientId?: string;

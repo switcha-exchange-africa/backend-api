@@ -20,6 +20,7 @@ export class P2pOrder {
   totalAmount: number
   clientWalletId: string
   orderType: string
+  processedByAdminId: string
   completionTime: Date
 }
 
