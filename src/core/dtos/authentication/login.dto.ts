@@ -5,13 +5,18 @@ import {
   IsEnum,
   IsBoolean,
   IsNumber,
-  IsPositive
+  IsPositive,
+  IsOptional,
+  ArrayMinSize,
+  IsArray,
+  ValidateNested
 } from "class-validator";
 import { PartialType } from '@nestjs/mapped-types';
 import { SwitchaDeviceType } from 'src/lib/constants';
 import { Types } from 'mongoose';
 import { ActivityAction } from "../activity";
 import { Type } from "class-transformer";
+import { User } from "src/core/entities/user.entity";
 
 export class LoginDto {
   @IsNotEmpty()
@@ -70,7 +75,10 @@ export type ISignup = SignupDto & {}
 export type ILogin = LoginDto & {}
 
 export class UpdateUserDto extends PartialType(SignupDto) { }
-
+export class MultpleUserDto extends PartialType(SignupDto) {
+  @IsOptional()
+  public readonly phone: string
+}
 
 
 export class FindByIdDto {
@@ -127,4 +135,16 @@ export class MutateUserAccountDto {
 
 export type IMutateUserAccount = MutateUserAccountDto & {
   id: Types.ObjectId
+}
+
+
+
+export class AddMultipleUsersDto {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => MultpleUserDto)
+  public readonly users: User[]
+
 }

@@ -8,6 +8,7 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { MutateUserFactoryService } from "./user-factory.service";
 import * as mongoose from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
+import { User } from "src/core/entities/user.entity";
 
 @Injectable()
 export class UserServices {
@@ -15,7 +16,7 @@ export class UserServices {
     private readonly data: IDataServices,
     private readonly mutateUserFactory: MutateUserFactoryService,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
-    
+
 
   ) { }
   cleanUserQueryPayload(payload: IGetUsers) {
@@ -63,7 +64,7 @@ export class UserServices {
           }
         })
         return {
-          status: 200,
+          status: HttpStatus.OK,
           message: "User retrieved successfully",
           data,
           pagination,
@@ -78,7 +79,7 @@ export class UserServices {
       });
 
       return {
-        status: 200,
+        status: HttpStatus.OK,
         state: ResponseState.SUCCESS,
         message: "Users retrieved successfully",
         data,
@@ -107,7 +108,7 @@ export class UserServices {
         })
       };
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: "User retrieved successfully",
         data,
         state: ResponseState.SUCCESS,
@@ -154,7 +155,7 @@ export class UserServices {
         this.connection
       )
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: "User disabled successfully",
         data: {},
         state: ResponseState.SUCCESS,
@@ -204,7 +205,7 @@ export class UserServices {
         this.connection
       )
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: "User locked successfully",
         data: {},
         state: ResponseState.SUCCESS,
@@ -251,7 +252,7 @@ export class UserServices {
         this.connection
       )
       return {
-        status: 200,
+        status: HttpStatus.OK,
         message: "User locked successfully",
         data: {},
         state: ResponseState.SUCCESS,
@@ -268,6 +269,26 @@ export class UserServices {
     }
   }
 
+
+  async addMultipleUsers(users: User[]) {
+    try {
+      const data = await this.data.users.create(users)
+      return {
+        status: HttpStatus.OK,
+        message: "User uploaded successfully",
+        data,
+        state: ResponseState.SUCCESS,
+      };
+    } catch (error) {
+      Logger.error(error)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 }
 
 

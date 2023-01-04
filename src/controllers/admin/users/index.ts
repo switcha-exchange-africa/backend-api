@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, Query, Res } from "@nestjs/common";
 import { UserServices } from "src/services/use-cases/user/user-services.services";
 import { Response } from 'express'
-import { FindByIdDto, IMutateUserAccount, MutateUserAccountDto } from "src/core/dtos/authentication/login.dto";
+import { AddMultipleUsersDto, FindByIdDto, IMutateUserAccount, MutateUserAccountDto } from "src/core/dtos/authentication/login.dto";
 import { isAdminAuthenticated } from "src/core/decorators";
 import { IGetUsers } from "src/core/dtos/users";
 
@@ -72,6 +72,18 @@ export class AdminUsersController {
     }
   }
 
+  @isAdminAuthenticated('strict')
+  @Get('/')
+  async addMultipleUsers(@Res() res: Response, @Body() body: AddMultipleUsersDto) {
+    try {
+      const { users } = body
+      const response = await this.services.addMultipleUsers(users);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
   @isAdminAuthenticated('strict')
   @Get('/:id')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
