@@ -169,7 +169,8 @@ export class AdminUsersController {
         browser,
         durationTimeInSec,
         durationTimeInMin,
-        id
+        id,
+        type
       } = query
       const { id: userId } = param;
 
@@ -186,12 +187,13 @@ export class AdminUsersController {
         durationTimeInSec,
         durationTimeInMin,
         userId: String(userId),
-        id
+        id,
+        type
 
       }
       const response = await this.services.loginHistories(payload);
       return res.status(response.status).json(response);
-      
+
     } catch (error) {
       return res.status(error.status || 500).json(error);
 

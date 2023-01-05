@@ -27,4 +27,5 @@ export type IGetLoginHistory = PaginationType & {
   durationTimeInSec: string
   durationTimeInMin: string
   userId: string
+  type: string
 }

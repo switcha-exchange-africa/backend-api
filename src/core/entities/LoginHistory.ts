@@ -10,10 +10,10 @@ export class LoginHistory {
     countryCode: string
     region: string
     regionName: string
-    city:string
-    lat:string
-    lon:string
-    timezone:string
-    createdAt:Date
-
+    city: string
+    lat: string
+    lon: string
+    timezone: string
+    createdAt: Date
+    type: string
 }

@@ -26,6 +26,9 @@ export class LoginHistory {
     @Prop()
     browser: string
 
+    @Prop()
+    type:string
+
     @Prop({ type: Object })
     location: Object;
 

@@ -213,6 +213,7 @@ export class AuthServices {
         ip,
         location,
         headers,
+        type: 'signup',
         userAgent: headers['user-agent'],
         country: env.isDev ? '' : location.country,
         countryCode: env.isDev ? '' : location.countryCode,
@@ -228,10 +229,10 @@ export class AuthServices {
       const loginHistoryRedisKey = `${email}-login-activity`
       await this.inMemoryServices.set(loginHistoryRedisKey, loginHistory._id, JWT_EXPIRY_TIME_IN_SECONDS)
 
-      await this.data.users.update({_id: user._id}, {
+      await this.data.users.update({ _id: user._id }, {
         signupLocation: location
       })
-      
+
       return {
         status: HttpStatus.CREATED,
         message: "User signed up successfully",
@@ -852,6 +853,8 @@ export class AuthServices {
         lat: env.isDev ? '' : location.lat,
         lon: env.isDev ? '' : location.lon,
         timezone: env.isDev ? '' : location.timezone,
+        type: 'login',
+
       })
 
       let loginHistory

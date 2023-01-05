@@ -114,8 +114,8 @@ export class LoginHistoryFactoryService {
     if (data.lat) result.lat = data.lat
     if (data.lon) result.lon = data.lon
     if (data.timezone) result.timezone = data.timezone
+    if (data.type) result.type = data.type
 
-  
     return result;
   }
 }
