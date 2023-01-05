@@ -131,7 +131,14 @@ export class WithdrawalServices {
           error: null
         })
       }
+      console.log(payload)
+      console.log("ENTERING WITHDRAWALS")
+      console.log("AMOUNT BEFORE FEE", amountBeforeFee)
+        console.log("WALLET BALANCE", wallet.balance)
       if (amountBeforeFee >= wallet.balance) {
+        console.log("AMOUNT BEFORE FEE", amountBeforeFee)
+        console.log("WALLET BALANCE", wallet.balance)
+        
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
@@ -139,9 +146,14 @@ export class WithdrawalServices {
           error: null
         })
       }
-
+console.log("PASSED FIRST CHECk")
       const { fee, amount } = await this.utils.calculateWithdrawalFees({ amount: amountBeforeFee, coin })
+      console.log("FEE", fee)
+      console.log("AMOUNT AFTER FEE", amount)
+      console.log("AMOUNT BEFORE FEE", amountBeforeFee)
+
       if (fee >= amountBeforeFee) {
+        console.log("INSUFFICIENT BALANCE")
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
@@ -149,6 +161,8 @@ export class WithdrawalServices {
           error: null
         })
       }
+      console.log("PASSED SECOND CHECk")
+
       let getIndex
 
       if (!wallet.derivationKey) {
@@ -191,6 +205,7 @@ export class WithdrawalServices {
         }
         response = await this.trc20Withdrawal(trc20Payload)
       }else if(coin === 'BTC'){
+        console.log("ENTERING BTC WITHDRAWALS")
         const btcPayload:IBtcWithdrawal = {
           amount:String(amount),
             privateKey:  decryptData({
@@ -452,7 +467,7 @@ export class WithdrawalServices {
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,
-        message: 'An error occured, please contact support',
+        message: typeof error === 'string' ? error: 'An error occured, please contact support',
         error: error
       })
     }
@@ -702,6 +717,8 @@ export class WithdrawalServices {
   async btcWithdrawal(payload:IBtcWithdrawal){
     const {amount, privateKey, from, email, destination} = payload
     try{
+     
+    let convertTo8Dp = Number(amount).toFixed(8)
       const { fast } = await this.http.post(
         `${TATUM_BASE_URL}/blockchain/estimate`,
         {
@@ -714,7 +731,7 @@ export class WithdrawalServices {
             to: [
                 {
                     address:destination,
-                    value: amount
+                    value: Number(convertTo8Dp)
                 }
             ]
         },
@@ -722,7 +739,8 @@ export class WithdrawalServices {
     )
 
     const fee = Math.abs(Number(fast))
-    const amountAfterDeduction = _.subtract(amount, fee)
+    const amountAfterDeduction = _.subtract(Number(amount), fee)
+
 
     const transfer = await this.lib.withdrawalV3({
       destination,
@@ -745,7 +763,7 @@ export class WithdrawalServices {
       }
 
       this.utils.errorReporter(errorPayload)
-      throw new Error(error)
+      throw new Error(error.message)
     }
   }
 
@@ -871,3 +889,35 @@ export class WithdrawalServices {
 */
 
 // https://live.blockcypher.com/btc-testnet/tx/00c0d9638e14129a0b54bd13cc905406b13ea86bf69323e0dcfc8c66e7ac1f75/
+
+
+
+// {
+//   chain: 'BTC',
+//   type: 'TRANSFER',
+//   fromAddress: [ 'tb1qcqn0qxtrp96yzwww5nwjmer56qykna4jdzkrqj' ],
+//   to: [
+//     {
+//       address: 'tb1qpu4w7tsuse73k8glf4mc5n430q44xerfv7j7m5',
+//       value: 0.00010000000000000005
+//     }
+//   ]
+// }
+
+
+// {
+//   fromAddress: [
+//     {
+//       address: 'tb1qcqn0qxtrp96yzwww5nwjmer56qykna4jdzkrqj',
+//       privateKey: 'cQKufonyMWYfy4pZLCq94NZfch1kS7KGfVcwLyXe2x4gzVFAGtub'
+//     }
+//   ],
+//   to: [
+//     {
+//       address: 'tb1qpu4w7tsuse73k8glf4mc5n430q44xerfv7j7m5',
+//       value: 0.00055116
+//     }
+//   ],
+//   fee: '0.00004884',
+//   changeAddress: 'tb1qcqn0qxtrp96yzwww5nwjmer56qykna4jdzkrqj'
+// }

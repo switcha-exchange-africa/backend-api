@@ -226,7 +226,7 @@ export class UtilsServices {
       const { coin, amount } = payload
       const getFeeAmount = await this.data.coinWithdrawalFee.findOne({ coin })
       if (getFeeAmount.fee >= amount) {
-        return Promise.reject({ message: "Insufficient balance", status: 400 })
+        return Promise.reject(`Insufficient balance:- Withdrawal fee is ${getFeeAmount.fee}`)
       }
       const withdrawableAmount = Math.abs(_.subtract(amount, Math.abs(getFeeAmount.fee)))
       return {
