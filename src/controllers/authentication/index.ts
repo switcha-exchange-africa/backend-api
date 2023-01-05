@@ -139,4 +139,19 @@ export class AuthenticationController {
       return res.status(error.status || 500).json(error);
     }
   }
+
+  @Post('/auth/logout')
+  @isAuthenticated('loose')
+  async logoutUser(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+
+      const response = await this.services.logoutUser(req?.user.email);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+    }
+  }
 }

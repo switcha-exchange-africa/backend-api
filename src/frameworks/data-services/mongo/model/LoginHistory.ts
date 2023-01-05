@@ -24,8 +24,8 @@ export class LoginHistory {
     platform: string;
 
     @Prop()
-    browser:string
-    
+    browser: string
+
     @Prop()
     location: string;
 
@@ -40,6 +40,16 @@ export class LoginHistory {
 
     @Prop()
     updatedAt: Date;
+
+    @Prop()
+    loggedOutDate: Date;
+
+    @Prop()
+    durationTimeInSec: string;
+
+    @Prop()
+    durationTimeInMin: string;
+
 }
 
 const LoginHistorySchema = SchemaFactory.createForClass(LoginHistory);

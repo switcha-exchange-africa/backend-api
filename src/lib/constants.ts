@@ -53,6 +53,7 @@ export type JWT_USER_PAYLOAD_TYPE = {
   phoneVerified?: boolean;
 };
 export const JWT_EXPIRY_TIME: number = 5;
+export const JWT_EXPIRY_TIME_IN_SECONDS: number = 5 * 60 * 60;
 export const SIGNUP_CODE_EXPIRY: number = 600;
 export const ONE_HOUR_IN_SECONDS: number = 3600
 export const THREE_MIN_IN_SECONDS: number = 60 * 3

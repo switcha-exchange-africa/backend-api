@@ -1,7 +1,7 @@
 import { VerifyUserDto } from 'src/core/dtos/verifyEmail.dto';
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices, INotificationServices } from "src/core/abstracts";
-import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LEVEL_TYPE } from "src/lib/constants";
+import { DISCORD_VERIFICATION_CHANNEL_LINK, INCOMPLETE_AUTH_TOKEN_VALID_TIME, JWT_EXPIRY_TIME_IN_SECONDS, JWT_USER_PAYLOAD_TYPE, ONE_HOUR_IN_SECONDS, RedisPrefix, RESET_PASSWORD_EXPIRY, SIGNUP_CODE_EXPIRY, USER_LEVEL_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { Response, Request } from "express"
 import { env } from "src/configuration";
@@ -21,6 +21,7 @@ import { IErrorReporter } from 'src/core/types/error';
 import mongoose from 'mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { InjectConnection } from "@nestjs/mongoose";
+import * as moment from "moment";
 
 const SIGNUP_ATTEMPT_KEY = 'failed-signup-attempt'
 const LOGIN_ATTEMPT_KEY = 'login-signup-attempt'
@@ -814,10 +815,11 @@ export class AuthServices {
         headers,
         userAgent: headers['user-agent'],
       })
+      let loginHistory
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           await this.data.activities.create(activityFactory, session)
-          await this.data.loginHistory.create(loginHistoryFactory, session)
+          loginHistory = await this.data.loginHistory.create(loginHistoryFactory, session)
           const userManager = await this.data.userFeatureManagement.findOne({ userId: String(user._id) })
           if (!userManager) {
             const userManagerFactory = await this.userFeatureManagementFactory.manageUser({
@@ -844,6 +846,8 @@ export class AuthServices {
         atomicTransaction,
         this.connection
       )
+      const loginHistoryRedisKey = `${email}-login-activity`
+      await this.inMemoryServices.set(loginHistoryRedisKey, loginHistory._id, JWT_EXPIRY_TIME_IN_SECONDS)
 
       return {
         status: HttpStatus.OK,
@@ -905,7 +909,65 @@ export class AuthServices {
       })
     }
   }
+  async logoutUser(email: string) {
+    try {
+      const loginHistoryRedisKey = `${email}-login-activity`
+      const loginHistoryRedis = await this.inMemoryServices.get(loginHistoryRedisKey)
+      const loginHistory = await this.data.loginHistory.findOne({ _id: loginHistoryRedis })
+      if (!loginHistory) {
+        Logger.error('@login-history-failed', 'Login History does not exists')
+        return {
+          status: HttpStatus.OK,
+          state: ResponseState.SUCCESS,
+          message: 'Logged out successfully',
+          data: {}
+        }
+      }
+
+      const createdDate = moment(loginHistory.createdAt)
+      const now = moment(new Date())
+      const diffInSeconds = now.diff(createdDate, 'seconds', true)
+      const diffInMinutes = now.diff(createdDate, 'minutes', true)
+
+      await this.data.loginHistory.update({ _id: loginHistoryRedis }, {
+        loggedOutDate: now,
+        durationTimeInSec: diffInSeconds,
+        durationTimeInMin: diffInMinutes
+      })
+      await this.inMemoryServices.del(loginHistoryRedisKey)
+
+      return {
+        status: HttpStatus.OK,
+        state: ResponseState.SUCCESS,
+        message: 'Logged out successfully',
+        data: {
+          createdDate,
+          now,
+          diffInSeconds,
+          diffInMinutes
+        }
+      }
+    } catch (error) {
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'LOGOUT USER',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: error.message,
+        error: error
+      })
+    }
+  }
 }
 
 
 
+// "diffInSeconds": -332,
+// "diffInMinutes": -5

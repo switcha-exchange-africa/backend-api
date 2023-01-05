@@ -6,4 +6,6 @@ export class LoginHistory {
     headers: Object
     userAgent: string;
     browser: string
+    createdAt:Date
+    
 }
