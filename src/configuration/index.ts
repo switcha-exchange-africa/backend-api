@@ -79,7 +79,7 @@ export const TATUM_PRIVATE_KEY_USER_ID = getEnv('TATUM_PRIVATE_KEY_USER_ID', tru
 export const TATUM_PRIVATE_KEY_USER_NAME = getEnv('TATUM_PRIVATE_KEY_USER_NAME', true)
 export const TATUM_PRIVATE_KEY_PIN = getEnv('TATUM_PRIVATE_KEY_PIN', true)
 
-
+export const TRC_20_TRON_FEE_AMOUNT: string = '14'
 
 
 export const LOGS_LEVEL = (): LogLevel[] => {

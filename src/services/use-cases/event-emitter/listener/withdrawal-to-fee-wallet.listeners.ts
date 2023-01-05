@@ -4,7 +4,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME } from "src/configuration"
+import { env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
@@ -12,7 +12,6 @@ import { decryptData } from "src/lib/utils"
 
 const ethBaseDivisorInWei = 1000000000000000000
 const tronBaseDivisor = 1000000
-const tronFeeAmount = '15'
 
 export enum ERC_20_TOKENS_ADDRESS {
     USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -310,12 +309,12 @@ export class WithdrawalToFeeWalletListener {
             const masterTrxBalance = _.divide(getMasterTrxBalance.balance, tronBaseDivisor)
             const fromTrxBalanceConversionBalance = _.divide(fromTrxBalance.balance, tronBaseDivisor)
 
-            if(masterTrxBalance < Number(tronFeeAmount)){
-                Logger.error('send.to.trc20.fee.wallet', `Master tron balance is less than ${tronFeeAmount}`)
-                throw new Error(`Master tron balance is less than ${tronFeeAmount}`)
+            if(masterTrxBalance < Number(TRC_20_TRON_FEE_AMOUNT)){
+                Logger.error('send.to.trc20.fee.wallet', `Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+                throw new Error(`Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
             // send tron to activate wallet
-            if (fromTrxBalanceConversionBalance < Number(tronFeeAmount)) {
+            if (fromTrxBalanceConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
                 // if balance is less than the fee send from tron master address to from address
                 const masterTronWalletPrivateKey = decryptData({
                     text: masterTronWallet.privateKey,
@@ -325,7 +324,7 @@ export class WithdrawalToFeeWalletListener {
                 })
                 await this.withdrawalLib.withdrawalV3({
                     coin: 'TRON',
-                    amount: tronFeeAmount,
+                    amount: TRC_20_TRON_FEE_AMOUNT,
                     destination: from,
                     from: masterTronWallet.address,
                     privateKey: masterTronWalletPrivateKey
@@ -339,7 +338,7 @@ export class WithdrawalToFeeWalletListener {
                 privateKey,
                 coin: 'USDT_TRON',
                 contractAddress: Trc20TokensContractAddress.USDT_TRON,
-                fee: String(tronFeeAmount)
+                fee: String(TRC_20_TRON_FEE_AMOUNT)
             })
 
             // emit to discord

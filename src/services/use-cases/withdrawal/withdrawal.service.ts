@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
-  env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME,
+  env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -778,7 +778,7 @@ console.log("PASSED FIRST CHECk")
       amount,
       privateKey,
       coin: 'USDT_TRON',
-      fee:'13',
+      fee:TRC_20_TRON_FEE_AMOUNT,
       contractAddress: Trc20TokensContractAddress.USDT_TRON,
   })
     return transfer
