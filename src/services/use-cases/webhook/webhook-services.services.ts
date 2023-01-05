@@ -777,7 +777,7 @@ export class WebhookServices {
 
   async addressTransaction(payload: Record<string, any>) {
     try {
-      const { address, amount: amountBeforeConversion, counterAddress, txId, mempool } = payload
+      const { address, amount: amountBeforeConversion, counterAddress, txId, mempool, type: webhookTxType } = payload
       const feeWallet = await this.data.feeWallets.findOne({ address })
 
       if (mempool) {
@@ -820,8 +820,15 @@ export class WebhookServices {
       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
       const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
-      const subType = Math.sign(convertedAmount) === 1 ? TRANSACTION_SUBTYPE.CREDIT : TRANSACTION_SUBTYPE.DEBIT
 
+      let subType
+      if (Math.sign(convertedAmount) === 1) {
+        subType = TRANSACTION_SUBTYPE.CREDIT
+      } else if (Math.sign(convertedAmount) === -1 && webhookTxType === 'fee') {
+        subType = TRANSACTION_SUBTYPE.FEE
+      } else {
+        subType = TRANSACTION_SUBTYPE.DEBIT
+      }
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
