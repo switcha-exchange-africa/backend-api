@@ -682,7 +682,7 @@ console.log("PASSED FIRST CHECk")
 
             from,
             to: destination,
-            amount
+            amount:String(amount)
         },
         TATUM_CONFIG
     )
@@ -690,7 +690,6 @@ console.log("PASSED FIRST CHECk")
 
     const gasPrice = standard
     const ethFee = { gasLimit, gasPrice }
-
     const transfer = await this.lib.withdrawalV3({
         destination,
         amount:String(amount),
@@ -739,12 +738,12 @@ console.log("PASSED FIRST CHECk")
     )
 
     const fee = Math.abs(Number(fast))
-    const amountAfterDeduction = _.subtract(Number(amount), fee)
-
+    // const amountAfterDeduction = _.subtract(Number(amount), fee)
+        // no need to subtract gas fee
 
     const transfer = await this.lib.withdrawalV3({
       destination,
-      amount: String(amountAfterDeduction),
+      amount: String(amount),
       privateKey,
       coin: 'BTC',
       from,

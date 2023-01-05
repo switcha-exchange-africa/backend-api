@@ -17,7 +17,7 @@ const NETWORK_CONFIG = { testnet: !env.isProd }
 export class WalletLib {
     constructor() { }
 
-    async generatePrivateKey(payload: { coin: string, username: string, userId: string, password: string, index: number }) {
+    async  generatePrivateKey(payload: { coin: string, username: string, userId: string, password: string, index: number }) {
         try {
             const { coin, username, userId, password, index } = payload
             if (coin.toUpperCase() === 'ETH' || ERC_20_TOKENS.includes(coin.toUpperCase())) {
