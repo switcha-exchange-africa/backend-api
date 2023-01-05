@@ -5,7 +5,7 @@ import { IHttpServices } from "src/core/abstracts/http-services.abstract";
 @Injectable()
 export class CustomAxiosService implements IHttpServices {
   
-  async get(url: string, config: Record<string, any>) {
+  async get(url: string, config?: Record<string, any>) {
     try {
       const response = await axios.get(url, config);
       if (response?.data?.data) return Promise.resolve(response.data.data);

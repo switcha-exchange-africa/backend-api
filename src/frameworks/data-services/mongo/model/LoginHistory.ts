@@ -26,8 +26,32 @@ export class LoginHistory {
     @Prop()
     browser: string
 
+    @Prop({ type: Object })
+    location: Object;
+
     @Prop()
-    location: string;
+    country: string
+
+    @Prop()
+    countryCode: string
+
+    @Prop()
+    region: string
+
+    @Prop()
+    regionName: string
+
+    @Prop()
+    city:string
+
+    @Prop()
+    lat:string
+
+    @Prop()
+    lon:string
+
+    @Prop()
+    timezone:string
 
     @Prop({ type: Object })
     headers: Object
@@ -54,6 +78,7 @@ export class LoginHistory {
 
 const LoginHistorySchema = SchemaFactory.createForClass(LoginHistory);
 export { LoginHistorySchema }
+
 
 // headers
 // Object

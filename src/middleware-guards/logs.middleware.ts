@@ -5,6 +5,7 @@ import { IDataServices } from "src/core/abstracts";
 import { Gondor } from 'src/core/entities/Gondor';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OptionalQuery } from 'src/core/types/database';
+var requestIp = require('request-ip');
 
 export enum State {
   SUCCESS = "success",
@@ -57,7 +58,7 @@ class LogsMiddleware implements NestMiddleware {
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', async () => {
       try {
-        const { method, originalUrl, headers , ip} = request
+        const { method, originalUrl, headers } = request
         const { statusCode, statusMessage } = response;
         const message = `${method} ${originalUrl} ${statusCode} ${statusMessage}`;
         let token = request.headers.authorization;
@@ -68,7 +69,7 @@ class LogsMiddleware implements NestMiddleware {
         const checkUser = user ? true : false
 
 
-        const sourceIp = ip;
+        const sourceIp = requestIp.getClientIp(request);
         const sourceIpCountryCode = Array.isArray(headers['cf-ipcountry']) ? headers['cf-ipcountry'].join(',') : headers['cf-ipcountry'];
         const platform = Array.isArray(headers['platform']) ? headers['platform'].join(',') : headers['platform'];
 

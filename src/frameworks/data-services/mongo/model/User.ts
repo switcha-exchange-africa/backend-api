@@ -96,6 +96,9 @@ export class User {
   @Prop({ enum: USER_LEVEL_LIST, default: USER_LEVEL_TYPE.ONE })
   level: USER_LEVEL_TYPE
 
+  @Prop({ type: Object })
+  signupLocation: Object;
+  
   @Prop()
   avatar: string
 

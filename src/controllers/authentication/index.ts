@@ -29,9 +29,16 @@ export class AuthenticationController {
 
   @FeatureManagement(FeatureEnum.SIGNUP)
   @Post(AUTHENTICATION_ROUTE.SIGNUP)
-  async signup(@Res() res: Response, @Body() body: SignupDto) {
+  async signup(@Res() res: Response, @Body() body: SignupDto, @Req() req: Request) {
     try {
-      const payload: ISignup = { ...body }
+      
+      const { headers } = req
+      const payload: ISignup = {
+        ...body,
+        headers,
+        ip: requestIp.getClientIp(req)
+      }
+
       const response = await this.services.signup(payload);
       return res.status(response.status).json(response);
     } catch (error) {
@@ -43,14 +50,17 @@ export class AuthenticationController {
   @Post(AUTHENTICATION_ROUTE.LOGIN)
   async login(@Res() res: Response, @Body() body: LoginDto, @Req() req: Request) {
     try {
+      
       const { headers } = req
       const payload: ILogin = {
         ...body,
         headers,
-        ip:requestIp.getClientIp(req)
+        ip: requestIp.getClientIp(req)
       }
+
       const response = await this.services.login(payload);
       return res.status(response.status).json(response);
+      
     } catch (error) {
       return res.status(error.status || 500).json(error);
     }

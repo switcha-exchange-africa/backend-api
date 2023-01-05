@@ -71,7 +71,10 @@ export class SignupDto {
 
 }
 
-export type ISignup = SignupDto & {}
+export type ISignup = SignupDto & {
+  headers?: Record<string, any>
+  ip?: string
+}
 export type ILogin = LoginDto & {
   headers?: Record<string, any>
   ip?: string

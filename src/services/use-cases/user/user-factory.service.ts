@@ -106,6 +106,16 @@ export class LoginHistoryFactoryService {
     if (data.headers) result.headers = data.headers;
     if (data.userAgent) result.userAgent = data.userAgent;
     if (data.browser) result.browser = data.browser
+    if (data.country) result.country = data.country
+    if (data.countryCode) result.countryCode = data.countryCode
+    if (data.region) result.region = data.region
+    if (data.regionName) result.regionName = data.regionName
+    if (data.city) result.city = data.city
+    if (data.lat) result.lat = data.lat
+    if (data.lon) result.lon = data.lon
+    if (data.timezone) result.timezone = data.timezone
+
+  
     return result;
   }
 }

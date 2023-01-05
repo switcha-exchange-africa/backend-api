@@ -39,6 +39,8 @@ export class User {
   disabledReason: string;
   isDisabled: boolean;
   enableTwoFa: boolean;
+  signupLocation: Object;
+
 }
 
 

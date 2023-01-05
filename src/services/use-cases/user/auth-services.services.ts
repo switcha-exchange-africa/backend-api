@@ -22,6 +22,7 @@ import mongoose from 'mongoose';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
 import { InjectConnection } from "@nestjs/mongoose";
 import * as moment from "moment";
+import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 
 const SIGNUP_ATTEMPT_KEY = 'failed-signup-attempt'
 const LOGIN_ATTEMPT_KEY = 'login-signup-attempt'
@@ -38,6 +39,8 @@ export class AuthServices {
     private readonly activityFactory: ActivityFactoryService,
     private readonly utilsService: UtilsServices,
     private readonly loginHistoryFactory: LoginHistoryFactoryService,
+    private http: IHttpServices,
+
     @InjectConnection('switcha') private readonly connection: mongoose.Connection,
 
   ) { }
@@ -88,7 +91,7 @@ export class AuthServices {
   async signup(data: ISignup): Promise<ResponsesType<User>> {
     try {
 
-      const { email, username } = data
+      const { email, username, headers, ip } = data
 
       const [userExists, usernameExists] = await Promise.all([
         this.data.users.findOne({ email }),
@@ -202,7 +205,33 @@ export class AuthServices {
       ])
 
       // signup activity
+      const location = env.isDev ? {} : await this.http.get(`http://ip-api.com/json/${ip}`)
+      const loginHistoryFactory = await this.loginHistoryFactory.create({
+        userId: String(user._id),
+        platform: headers['sec-ch-ua-platform'],
+        browser: headers['sec-ch-ua'],
+        ip,
+        location,
+        headers,
+        userAgent: headers['user-agent'],
+        country: env.isDev ? '' : location.country,
+        countryCode: env.isDev ? '' : location.countryCode,
+        region: env.isDev ? '' : location.region,
+        regionName: env.isDev ? '' : location.regionName,
+        city: env.isDev ? '' : location.city,
+        lat: env.isDev ? '' : location.lat,
+        lon: env.isDev ? '' : location.lon,
+        timezone: env.isDev ? '' : location.timezone,
+      })
 
+      const loginHistory = await this.data.loginHistory.create(loginHistoryFactory)
+      const loginHistoryRedisKey = `${email}-login-activity`
+      await this.inMemoryServices.set(loginHistoryRedisKey, loginHistory._id, JWT_EXPIRY_TIME_IN_SECONDS)
+
+      await this.data.users.update({_id: user._id}, {
+        signupLocation: location
+      })
+      
       return {
         status: HttpStatus.CREATED,
         message: "User signed up successfully",
@@ -806,16 +835,27 @@ export class AuthServices {
         description: 'Signin',
         userId: String(user._id)
       })
+      const location = env.isDev ? {} : await this.http.get(`http://ip-api.com/json/${ip}`)
       const loginHistoryFactory = await this.loginHistoryFactory.create({
         userId: String(user._id),
         platform: headers['sec-ch-ua-platform'],
         browser: headers['sec-ch-ua'],
         ip,
-        location: '',
+        location,
         headers,
         userAgent: headers['user-agent'],
+        country: env.isDev ? '' : location.country,
+        countryCode: env.isDev ? '' : location.countryCode,
+        region: env.isDev ? '' : location.region,
+        regionName: env.isDev ? '' : location.regionName,
+        city: env.isDev ? '' : location.city,
+        lat: env.isDev ? '' : location.lat,
+        lon: env.isDev ? '' : location.lon,
+        timezone: env.isDev ? '' : location.timezone,
       })
+
       let loginHistory
+
       const atomicTransaction = async (session: mongoose.ClientSession) => {
         try {
           await this.data.activities.create(activityFactory, session)
