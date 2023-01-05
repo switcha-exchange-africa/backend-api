@@ -285,22 +285,38 @@ export class WithdrawalToFeeWalletListener {
 
             if (!masterTronWallet) {
                 // send notification to discord
+                Logger.error('send.to.trc20.fee.wallet', 'Master Tron wallet does not exists')
                 throw new Error(`Master Tron wallet does not exists`)
             }
             if (!coinFeeWallet) {
                 // send notification to discord
+                Logger.error('send.to.trc20.fee.wallet', 'USDT_TRON fee wallet does not exists')
+
                 throw new Error(`USDT_TRON fee wallet does not exists`)
             }
 
-            // get tron balance
-            const getTrxBalance = await this.http.get(
+            // get master tron balance
+            const getMasterTrxBalance = await this.http.get(
                 `${TATUM_BASE_URL}/tron/account/${masterTronWallet.address}`,
 
                 TATUM_CONFIG
             )
-            const masterTrxBalance = _.divide(getTrxBalance.balance, tronBaseDivisor)
+            const fromTrxBalance = await this.http.get(
+                `${TATUM_BASE_URL}/tron/account/${from}`,
+
+                TATUM_CONFIG
+            )
+            
+            const masterTrxBalance = _.divide(getMasterTrxBalance.balance, tronBaseDivisor)
+            const fromTrxBalanceConversionBalance = _.divide(fromTrxBalance.balance, tronBaseDivisor)
+
+            if(masterTrxBalance < Number(tronFeeAmount)){
+                Logger.error('send.to.trc20.fee.wallet', `Master tron balance is less than ${tronFeeAmount}`)
+                throw new Error(`Master tron balance is less than ${tronFeeAmount}`)
+            }
             // send tron to activate wallet
-            if (masterTrxBalance < Number(tronFeeAmount)) {
+            if (fromTrxBalanceConversionBalance < Number(tronFeeAmount)) {
+                // if balance is less than the fee send from tron master address to from address
                 const masterTronWalletPrivateKey = decryptData({
                     text: masterTronWallet.privateKey,
                     username: TATUM_PRIVATE_KEY_USER_NAME,

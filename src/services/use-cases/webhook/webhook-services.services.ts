@@ -209,6 +209,7 @@ export class WebhookServices {
             from: wallet.address
           })
         } else if (wallet.coin === 'USDT_TRON') {
+          console.log("SENDING FEE TO USDT TRON FEE WALLET")
           this.emitter.emit('send.to.trc20.fee.wallet', {
             amount: Number(amount),
             privateKey,
@@ -899,7 +900,7 @@ export class WebhookServices {
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
-        action: 'TATUM ADDRESS  NOTIFICATION',
+        action: 'TATUM ADDRESS NOTIFICATION',
         error,
         email: payload.to,
         message: error.message
