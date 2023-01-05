@@ -31,6 +31,7 @@ import { VirtualAccount } from '../entities/Virtual-Account';
 import { DepositAddress } from '../entities/Deposit-Address';
 import { LockedBalance } from '../entities/Locked-Balance';
 import { LoginHistory } from '../entities/LoginHistory';
+import { Deactivated2faRequest } from '../entities/Deactivated2faRequestDocument';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -66,7 +67,7 @@ export abstract class IDataServices {
   abstract depositAddresses: IGenericRepository<DepositAddress>
   abstract lockedBalances: IGenericRepository<LockedBalance>
   abstract loginHistory: IGenericRepository<LoginHistory>
-
+  abstract deactivated2faRequests: IGenericRepository<Deactivated2faRequest>
 
   
 } 

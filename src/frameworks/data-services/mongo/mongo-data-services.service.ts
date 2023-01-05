@@ -37,6 +37,7 @@ import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresse
 // import { Gondor } from './model/Gondor';
 import { LockedBalance, LockedBalanceDocument } from "./model/Locked-Balances";
 import { LoginHistory, LoginHistoryDocument } from "./model/LoginHistory";
+import { Deactivated2faRequest, Deactivated2faRequestDocument } from './model/Deactivate2faRequests';
 
 
 
@@ -76,7 +77,7 @@ export class MongoDataServices
   depositAddresses: MongoGenericRepository<DepositAddress>
   lockedBalances: MongoGenericRepository<LockedBalance>
   loginHistory: MongoGenericRepository<LoginHistory>
-
+  deactivated2faRequests: MongoGenericRepository<Deactivated2faRequest>
 
   // gondor: MongoGenericRepository<Gondor>
 
@@ -184,6 +185,9 @@ export class MongoDataServices
     @InjectModel(LoginHistory.name)
     private LoginHistoryRepository: Model<LoginHistoryDocument>,
 
+    @InjectModel(Deactivated2faRequest.name)
+    private Deactivated2faRequestRepository: Model<Deactivated2faRequestDocument>
+
 
   ) { }
 
@@ -222,7 +226,7 @@ export class MongoDataServices
     this.depositAddresses = new MongoGenericRepository<DepositAddress>(this.DepositAddressRepository)
     this.lockedBalances = new MongoGenericRepository<LockedBalance>(this.LockedBalanceRepository)
     this.loginHistory = new MongoGenericRepository<LoginHistory>(this.LoginHistoryRepository)
-
+    this.deactivated2faRequests = new MongoGenericRepository<Deactivated2faRequest>(this.Deactivated2faRequestRepository)
 
 
   }
