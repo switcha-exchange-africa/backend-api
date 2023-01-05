@@ -21,6 +21,7 @@ import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureManagement } from "src/decorator";
 import { FeatureEnum } from "src/core/dtos/activity";
+var requestIp = require('request-ip');
 
 @Controller()
 export class AuthenticationController {
@@ -42,11 +43,11 @@ export class AuthenticationController {
   @Post(AUTHENTICATION_ROUTE.LOGIN)
   async login(@Res() res: Response, @Body() body: LoginDto, @Req() req: Request) {
     try {
-      const { headers, ip } = req
+      const { headers } = req
       const payload: ILogin = {
         ...body,
         headers,
-        ip
+        ip:requestIp.getClientIp(req)
       }
       const response = await this.services.login(payload);
       return res.status(response.status).json(response);

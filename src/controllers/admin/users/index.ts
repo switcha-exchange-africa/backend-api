@@ -3,7 +3,7 @@ import { UserServices } from "src/services/use-cases/user/user-services.services
 import { Response } from 'express'
 import { AddMultipleUsersDto, FindByIdDto, IMutateUserAccount, MutateUserAccountDto } from "src/core/dtos/authentication/login.dto";
 import { isAdminAuthenticated } from "src/core/decorators";
-import { IGetUsers } from "src/core/dtos/users";
+import { IGetLoginHistory, IGetUsers } from "src/core/dtos/users";
 
 @Controller('admin/users')
 export class AdminUsersController {
@@ -84,6 +84,7 @@ export class AdminUsersController {
 
     }
   }
+
   @isAdminAuthenticated('strict')
   @Get('/:id')
   async detail(@Res() res: Response, @Param() param: FindByIdDto) {
@@ -151,4 +152,50 @@ export class AdminUsersController {
 
     }
   }
+
+  @isAdminAuthenticated('strict')
+  @Get('/:id/login-history')
+  async loginHistories(@Res() res: Response, @Param() param: FindByIdDto, @Query() query: any) {
+    try {
+      const {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        platform,
+        location,
+        browser,
+        durationTimeInSec,
+        durationTimeInMin,
+        id
+      } = query
+      const { id: userId } = param;
+
+      const payload: IGetLoginHistory = {
+        perpage,
+        page,
+        dateFrom,
+        dateTo,
+        sortBy,
+        orderBy,
+        platform,
+        location,
+        browser,
+        durationTimeInSec,
+        durationTimeInMin,
+        userId: String(userId),
+        id
+
+      }
+      const response = await this.services.loginHistories(payload);
+      return res.status(response.status).json(response);
+      
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
 }
