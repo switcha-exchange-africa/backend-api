@@ -250,22 +250,7 @@ export class WithdrawalLib {
             if (coin === Currency.BTC) {
                 const convertToNumber = Number(amount).toFixed(8)
                 const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
-                console.log({
-                    fromAddress: [
-                        {
-                            address: from,
-                            privateKey: privateKey,
-                        },
-                    ],
-                    to: [
-                        {
-                            address: destination,
-                            value: Number(convertToNumber),
-                        },
-                    ],
-                    fee: fee,
-                    changeAddress: changeAddress,
-                })
+                
                 const transfer = await btcSDK.transaction.sendTransaction({
                     fromAddress: [
                         {

@@ -722,10 +722,11 @@ export class WithdrawalServices {
     )
 
     const fee = Math.abs(Number(fast))
+    const amountAfterDeduction = _.subtract(amount, fee)
 
     const transfer = await this.lib.withdrawalV3({
       destination,
-      amount,
+      amount: String(amountAfterDeduction),
       privateKey,
       coin: 'BTC',
       from,
@@ -868,3 +869,5 @@ export class WithdrawalServices {
   /**
 * activate wallet for tron/usdt_tron addresses
 */
+
+// https://live.blockcypher.com/btc-testnet/tx/00c0d9638e14129a0b54bd13cc905406b13ea86bf69323e0dcfc8c66e7ac1f75/
