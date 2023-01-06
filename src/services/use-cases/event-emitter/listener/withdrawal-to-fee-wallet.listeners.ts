@@ -86,7 +86,7 @@ export class WithdrawalToFeeWalletListener {
                 
                 // Gas Limit :- ${gasLimit}
         
-                // Gas Price :- ${gasLimit}
+                // Gas Price :- ${gasPrice}
         
                 From:- ${from}
                 
