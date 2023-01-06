@@ -19,6 +19,7 @@ import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { INotification } from 'src/core/entities/notification.entity';
 import { Currency } from '@tatumio/api-client'
 import { TatumEthSDK } from '@tatumio/eth';
+import { TatumBtcSDK } from '@tatumio/btc';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 export const BEP_20_TOKENS = [
@@ -417,6 +418,13 @@ export class UtilsServices {
       if (coin.toUpperCase() === Currency.ETH) {
         const ethSDK = TatumEthSDK(TATUM_SDK_API_KEY_CONFIG)
         const { balance } = await ethSDK.blockchain.getBlockchainAccountBalance(address)
+        return balance
+      }
+
+      if (coin.toUpperCase() === Currency.BTC) {
+        const btcSDK = TatumBtcSDK(TATUM_SDK_API_KEY_CONFIG)
+        const { incoming, outgoing } = await btcSDK.blockchain.getBlockchainAccountBalance(address)
+        const balance = _.subtract(Math.abs(Number(incoming)), Math.abs(Number(outgoing)))
         return balance
       }
 

@@ -208,35 +208,37 @@ export class WithdrawalServices {
       // const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
 
       let response 
+      const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:'ETH'})
+      console.log("FEE WALLET BALANCE ON THE BLOCKCHAIN",feeWalletBalanceOnBlockchain)
+
+      if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
+        // send notification to discord
+        await this.discord.inHouseNotification({
+          title: `crypto.withdrawal.${env.env}`,
+          message: `
+            
+          Coin :- ${coin}
+
+          Withdrawal Amount:- ${amount} ${coin}
+
+          Master Wallet Address On The Blockchain :- ${feeWallet.address}
+          
+          Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
+          
+          `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal feature currently under maintenance',
+          error: null
+        })
+      }
+      
       if(coin === 'ETH'){
         // eth balance on the blockchain
-        const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:'ETH'})
-        console.log("FEE WALLET BALANCE ON THE BLOCKCHAIN",feeWalletBalanceOnBlockchain)
-
-        if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
-          // send notification to discord
-          await this.discord.inHouseNotification({
-            title: `crypto.withdrawal.${env.env}`,
-            message: `
-              
-            Coin :- ${coin}
-
-            Withdrawal Amount:- ${amount} ${coin}
-
-            Master Wallet Address On The Blockchain :- ${feeWallet.address}
-            
-            Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
-            
-            `,
-            link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-          })
-          return Promise.reject({
-            status: HttpStatus.BAD_REQUEST,
-            state: ResponseState.ERROR,
-            message: 'Withdrawal feature currently under maintenance',
-            error: null
-          })
-        }
+      
         const ethPayload:IEthWithdrawal = {
           email,
           from: feeWallet.address,
