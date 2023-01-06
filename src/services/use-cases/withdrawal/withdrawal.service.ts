@@ -312,17 +312,18 @@ export class WithdrawalServices {
             },
             session
           );
-          const creditedFeeWallet = await this.data.feeWallets.update(
-            {
-              _id: feeWallet._id,
-            },
-            {
-              $inc: {
-                balance: fee,
-              },
-            },
-            session
-          );
+          /** no need to credit fee wallet since we are transfering all funds to the fee wallets */
+          // const creditedFeeWallet = await this.data.feeWallets.update(
+          //   {
+          //     _id: feeWallet._id,
+          //   },
+          //   {
+          //     $inc: {
+          //       balance: fee,
+          //     },
+          //   },
+          //   session
+          // );
           if (!debitedWallet) {
             await this.discord.inHouseNotification({
               title: `Withdraw Crypto :- ${env.env} environment`,
@@ -337,20 +338,20 @@ export class WithdrawalServices {
             })
             throw new Error('An error occured, please contact support')
           }
-          if (!creditedFeeWallet) {
-            await this.discord.inHouseNotification({
-              title: `Withdraw Crypto :- ${env.env} environment`,
-              message: `
+        //   if (!creditedFeeWallet) {
+        //     await this.discord.inHouseNotification({
+        //       title: `Withdraw Crypto :- ${env.env} environment`,
+        //       message: `
 
-            Fee Wallet Not Set Up Yet
+        //     Fee Wallet Not Set Up Yet
 
-            Coin: ${coin}
+        //     Coin: ${coin}
 
-        `,
-              link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-            })
-            throw new Error('An error occured, please contact support')
-          }
+        // `,
+        //       link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        //     })
+        //     throw new Error('An error occured, please contact support')
+        //   }
 
           const txDebitPayload: OptionalQuery<Transaction> = {
             userId,
@@ -385,38 +386,39 @@ export class WithdrawalServices {
             reference: generateReference('debit'),
           };
 
-          const txFeeWalletPayload: OptionalQuery<Transaction> = {
-            feeWalletId: String(feeWallet?._id),
-            currency: coin,
-            amount: fee,
-            signedAmount: -fee,
-            type: TRANSACTION_TYPE.DEBIT,
-            description: `Charged ${fee} ${coin}`,
-            status: Status.COMPLETED,
-            subType: TRANSACTION_SUBTYPE.FEE,
-            customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
-            generalTransactionReference,
-            metadata: response,
-            reference: generateReference('debit'),
-            balanceBefore: feeWallet.balance,
-            balanceAfter: creditedFeeWallet.balance,
-          };
-          const [transactionFactory, feeTransactionFactory, feeWalletTransactionFactory] = await Promise.all([
+          // const txFeeWalletPayload: OptionalQuery<Transaction> = {
+          //   feeWalletId: String(feeWallet?._id),
+          //   currency: coin,
+          //   amount: fee,
+          //   signedAmount: -fee,
+          //   type: TRANSACTION_TYPE.DEBIT,
+          //   description: `Charged ${fee} ${coin}`,
+          //   status: Status.COMPLETED,
+          //   subType: TRANSACTION_SUBTYPE.FEE,
+          //   customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
+          //   generalTransactionReference,
+          //   metadata: response,
+          //   reference: generateReference('debit'),
+          //   balanceBefore: feeWallet.balance,
+          //   balanceAfter: creditedFeeWallet.balance,
+          // };
+          const [transactionFactory, feeTransactionFactory] = await Promise.all([
             this.transactionFactory.create(txDebitPayload),
             this.transactionFactory.create(txFeePayload),
 
-            this.transactionFactory.create(txFeeWalletPayload),
+            // feeWalletTransactionFactory
+            // this.transactionFactory.create(txFeeWalletPayload),
 
           ])
           const transactionData = await this.data.transactions.create(transactionFactory, session)
           const feeTransactionData = await this.data.transactions.create(feeTransactionFactory, session)
-          const feeWalletTransaction = await this.data.transactions.create(feeWalletTransactionFactory, session)
+          // const feeWalletTransaction = await this.data.transactions.create(feeWalletTransactionFactory, session)
 
           const withdrawalPayload: OptionalQuery<Withdrawal> = {
             userId,
             transactionId: transactionData._id,
             feeTransactionId: feeTransactionData._id,
-            feeWalletTransactionId: feeWalletTransaction._id,
+            // feeWalletTransactionId: feeWalletTransaction._id,
             walletId: String(wallet?._id),
             destination: {
               address: destination,
@@ -548,7 +550,7 @@ export class WithdrawalServices {
           }
         })
         return {
-          status: 200,
+          status: HttpStatus.OK,
           message: "Withdrawals retrieved successfully",
           data,
           pagination,
@@ -568,7 +570,7 @@ export class WithdrawalServices {
 
       return Promise.resolve({
         message: "Withdrawal retrieved successfully",
-        status: 200,
+        status: HttpStatus.OK,
         data,
         pagination,
       });
@@ -590,7 +592,7 @@ export class WithdrawalServices {
 
       return Promise.resolve({
         message: "Withdrawal retrieved successfully",
-        status: 200,
+        status: HttpStatus.OK,
         data,
       });
 
