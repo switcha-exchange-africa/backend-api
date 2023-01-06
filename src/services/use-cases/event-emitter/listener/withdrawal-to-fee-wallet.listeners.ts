@@ -43,7 +43,7 @@ export class WithdrawalToFeeWalletListener {
                 throw new Error("Fee Wallet does not exists")
             }
 
-            const { gasLimit, estimations } = await this.http.post(
+            const { gasLimit, gasPrice: beforeGasPriceOh, estimations } = await this.http.post(
                 `${TATUM_BASE_URL}/ethereum/gas`,
                 {
 
@@ -53,14 +53,17 @@ export class WithdrawalToFeeWalletListener {
                 },
                 TATUM_CONFIG
             )
-            const { standard: gasPriceBeforeConversion } = estimations
+            const { fast: gasPriceBeforeConversion } = estimations
 
             let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
             gasPriceConvert = gasPriceConvert.toFixed(18)
             const gasPrice = gasPriceBeforeConversion
             const ethFee = { gasLimit, gasPrice }
             const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
-
+            console.log("GAS LIMIT", gasLimit)
+            console.log("GAS PRICE", beforeGasPriceOh)
+            console.log("ESTIMATIONS", estimations)
+            console.log("ETH FEE", ethFee)
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amountAfterDeduction),
@@ -305,11 +308,11 @@ export class WithdrawalToFeeWalletListener {
 
                 TATUM_CONFIG
             )
-            
+
             const masterTrxBalance = _.divide(getMasterTrxBalance.balance, tronBaseDivisor)
             const fromTrxBalanceConversionBalance = _.divide(fromTrxBalance.balance, tronBaseDivisor)
 
-            if(masterTrxBalance < Number(TRC_20_TRON_FEE_AMOUNT)){
+            if (masterTrxBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
                 Logger.error('send.to.trc20.fee.wallet', `Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
                 throw new Error(`Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
