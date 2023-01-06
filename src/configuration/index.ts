@@ -95,4 +95,10 @@ export const TATUM_CONFIG = {
   },
 };
 
+export const TATUM_SDK_API_KEY_CONFIG = {
+  apiKey: TATUM_API_KEY
+}
+
+export const TATUM_SDK_NETWORK_CONFIG = { testnet: !env.isProd }
+
 // https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/

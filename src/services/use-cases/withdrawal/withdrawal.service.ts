@@ -131,14 +131,33 @@ export class WithdrawalServices {
           error: null
         })
       }
-      console.log(payload)
-      console.log("ENTERING WITHDRAWALS")
-      console.log("AMOUNT BEFORE FEE", amountBeforeFee)
-        console.log("WALLET BALANCE", wallet.balance)
+      // check fee wallet balance on switcha
+      // check 
+      if (feeWallet.balance <= amountBeforeFee) {
+        // send notification to discord
+        await this.discord.inHouseNotification({
+          title: `crypto.withdrawal.${env.env}`,
+          message: `
+             
+          Coin :- ${coin}
+
+          Withdrawal Amount:- ${amountBeforeFee} ${coin}
+
+          Master Wallet Address On Switcha :- ${feeWallet.address}
+          
+          Master Wallet Balance On Switcha :- ${feeWallet.balance}
+          
+          `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal feature currently under maintenance',
+          error: null
+        })
+      }
       if (amountBeforeFee >= wallet.balance) {
-        console.log("AMOUNT BEFORE FEE", amountBeforeFee)
-        console.log("WALLET BALANCE", wallet.balance)
-        
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
@@ -146,11 +165,7 @@ export class WithdrawalServices {
           error: null
         })
       }
-console.log("PASSED FIRST CHECk")
       const { fee, amount } = await this.utils.calculateWithdrawalFees({ amount: amountBeforeFee, coin })
-      console.log("FEE", fee)
-      console.log("AMOUNT AFTER FEE", amount)
-      console.log("AMOUNT BEFORE FEE", amountBeforeFee)
 
       if (fee >= amountBeforeFee) {
         console.log("INSUFFICIENT BALANCE")
@@ -161,7 +176,6 @@ console.log("PASSED FIRST CHECk")
           error: null
         })
       }
-      console.log("PASSED SECOND CHECk")
 
       let getIndex
 
@@ -178,6 +192,32 @@ console.log("PASSED FIRST CHECk")
 
       let response 
       if(coin === 'ETH'){
+        // eth balance on the blockchain
+        const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:'ETH'})
+        if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
+          // send notification to discord
+          await this.discord.inHouseNotification({
+            title: `crypto.withdrawal.${env.env}`,
+            message: `
+              
+            Coin :- ${coin}
+
+            Withdrawal Amount:- ${amount} ${coin}
+
+            Master Wallet Address On The Blockchain :- ${feeWallet.address}
+            
+            Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
+            
+            `,
+            link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+          })
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: 'Withdrawal feature currently under maintenance',
+            error: null
+          })
+        }
         const ethPayload:IEthWithdrawal = {
           email,
           from: feeWallet.address,

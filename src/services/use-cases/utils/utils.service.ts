@@ -6,7 +6,7 @@ import { ActivityAction } from 'src/core/dtos/activity';
 import { Fee } from 'src/core/entities/Fee';
 import * as mongoose from "mongoose";
 import { IFeeAmountType } from 'src/core/dtos/fee';
-import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_ETH_MNEMONIC } from 'src/configuration';
+import { env, MAILJET_API_PUBLIC_KEY, MAILJET_API_SECRET_KEY, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_ETH_MNEMONIC, TATUM_SDK_API_KEY_CONFIG } from 'src/configuration';
 import { IHttpServices } from 'src/core/abstracts/http-services.abstract';
 import { IUtilsNotification } from 'src/core/types/utils';
 import { NotificationFactoryService } from '../notification/notification-factory.service';
@@ -17,6 +17,8 @@ import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_
 import { IErrorReporter } from 'src/core/types/error';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { INotification } from 'src/core/entities/notification.entity';
+import { Currency } from '@tatumio/api-client'
+import { TatumEthSDK } from '@tatumio/eth';
 
 export const ERC_20_TOKENS = ['USDT', 'USDC']
 export const BEP_20_TOKENS = [
@@ -403,6 +405,20 @@ export class UtilsServices {
         atomicTransaction,
         this.connection
       )
+
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  async getAddressBalanceOnTheBlockchain(payload: { address: string, coin: string }) {
+    try {
+      const { address, coin } = payload
+      if (coin.toUpperCase() === Currency.ETH) {
+        const ethSDK = TatumEthSDK(TATUM_SDK_API_KEY_CONFIG)
+        const { balance } = await ethSDK.blockchain.getBlockchainAccountBalance(address)
+        return balance
+      }
 
     } catch (error) {
       throw new Error(error)
