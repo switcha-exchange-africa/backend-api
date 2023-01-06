@@ -9,6 +9,7 @@ import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
 import { decryptData } from "src/lib/utils"
+import { BlockchainFeesAccruedFactoryServices } from "../../fees/fee-factory.service"
 
 const ethBaseDivisorInWei = 1000000000000000000
 
@@ -26,7 +27,8 @@ export class WithdrawalToFeeWalletListener {
         private readonly data: IDataServices,
         private readonly http: IHttpServices,
         private readonly discord: INotificationServices,
-        private readonly utils: UtilsServices
+        private readonly utils: UtilsServices,
+        private readonly blockchainFeesAccured: BlockchainFeesAccruedFactoryServices
     ) { }
 
 
@@ -35,9 +37,11 @@ export class WithdrawalToFeeWalletListener {
         amount: number,
         privateKey: string,
         from: string,
-        email: string
+        email: string,
+        userId: string,
+        walletId: string
     }) {
-        const { amount, privateKey, from, email } = event
+        const { amount, privateKey, from, email, userId, walletId } = event
         try {
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'ETH' })
             if (!coinFeeWallet) {
@@ -56,10 +60,10 @@ export class WithdrawalToFeeWalletListener {
             )
             const { fast: gasPriceBeforeConversion } = estimations
 
-            let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
-            gasPriceConvert = gasPriceConvert.toFixed(18)
+            let gasPriceConvertToEth = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
+            gasPriceConvertToEth = gasPriceConvertToEth.toFixed(18)
 
-            const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
+            const amountAfterDeduction = _.subtract(amount, gasPriceConvertToEth)
 
             const convertGasPriceToGwei = _.divide(Number(gasPriceBeforeConversion), BASE_DIVISOR_IN_GWEI)
             const gasPrice = String(convertGasPriceToGwei)
@@ -72,6 +76,15 @@ export class WithdrawalToFeeWalletListener {
                 coin: 'ETH',
                 ethFee
             })
+            const blockchainFeeAccuredFactory = await this.blockchainFeesAccured.create({
+                action: 'deposit',
+                coin: 'ETH',
+                fee: gasPriceConvertToEth,
+                description: '',
+                userId,
+                walletId,
+            })
+            await this.data.blockchainFeesAccured.create(blockchainFeeAccuredFactory)
 
             // emit to discord
             await this.discord.inHouseNotification({
@@ -86,7 +99,7 @@ export class WithdrawalToFeeWalletListener {
                 
                 // Gas Limit :- ${gasLimit}
         
-                // Gas Price :- ${gasPrice}
+                // Gas Price :- ${gasPrice} GWEI
         
                 From:- ${from}
                 

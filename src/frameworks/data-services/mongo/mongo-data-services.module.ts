@@ -38,6 +38,7 @@ import { Gondor, GondorSchema } from "./model/Gondor";
 import { LockedBalance, LockedBalanceSchema } from "./model/Locked-Balances";
 import { LoginHistory, LoginHistorySchema } from "./model/LoginHistory";
 import { Deactivated2faRequest, Deactivated2faRequestSchema } from "./model/Deactivate2faRequests";
+import { BlockchainFeesAccrued, BlockchainFeesAccruedSchema } from "./model/BlockchainFeesAccrued";
 
 @Module({
   imports: [
@@ -82,6 +83,9 @@ import { Deactivated2faRequest, Deactivated2faRequestSchema } from "./model/Deac
       { name: LockedBalance.name, schema: LockedBalanceSchema },
       { name: LoginHistory.name, schema: LoginHistorySchema },
       { name: Deactivated2faRequest.name, schema: Deactivated2faRequestSchema },
+      { name: BlockchainFeesAccrued.name, schema: BlockchainFeesAccruedSchema },
+
+      
       
     ], 'switcha'),
     MongooseModule.forFeature([

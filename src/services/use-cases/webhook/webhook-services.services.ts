@@ -199,7 +199,10 @@ export class WebhookServices {
           this.emitter.emit("send.to.eth.fee.wallet", {
             amount: String(amount),
             privateKey,
-            from: wallet.address
+            from: wallet.address,
+            email: user.email,
+            userId: String(user._id),
+            walletId: String(wallet._id)
           })
         } else if (wallet.coin === 'BTC') {
           console.log("SENDING FEE TO BTC FEE WALLET")

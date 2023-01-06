@@ -16,6 +16,7 @@ import { WithdrawalToFeeWalletListener } from "./listener/withdrawal-to-fee-wall
 import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.module";
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
+import { BlockchainFeesAccruedFactoryServices } from "../fees/fee-factory.service";
 // import { CustomLoggerListener } from "./listener/custom-logger.listener";
 // import { CustomLoggerFactoryServices } from "src/services/use-cases/customer-logger/custom-logger-factory.services";
 
@@ -52,7 +53,8 @@ import { WithdrawalLib } from "../withdrawal/withdrawal.lib";
     WalletFactoryService,
     GondorListener,
     WithdrawalToFeeWalletListener,
-    WithdrawalLib
+    WithdrawalLib,
+    BlockchainFeesAccruedFactoryServices
     // CustomLoggerListener,
     // CustomLoggerFactoryServices,
   ],

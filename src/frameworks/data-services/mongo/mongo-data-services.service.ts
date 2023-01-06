@@ -38,6 +38,7 @@ import { DepositAddress, DepositAddressDocument } from './model/Deposit-Addresse
 import { LockedBalance, LockedBalanceDocument } from "./model/Locked-Balances";
 import { LoginHistory, LoginHistoryDocument } from "./model/LoginHistory";
 import { Deactivated2faRequest, Deactivated2faRequestDocument } from './model/Deactivate2faRequests';
+import { BlockchainFeesAccrued, BlockchainFeesAccruedDocument } from "./model/BlockchainFeesAccrued";
 
 
 
@@ -78,7 +79,7 @@ export class MongoDataServices
   lockedBalances: MongoGenericRepository<LockedBalance>
   loginHistory: MongoGenericRepository<LoginHistory>
   deactivated2faRequests: MongoGenericRepository<Deactivated2faRequest>
-
+  blockchainFeesAccured: MongoGenericRepository<BlockchainFeesAccrued>
   // gondor: MongoGenericRepository<Gondor>
 
 
@@ -186,7 +187,10 @@ export class MongoDataServices
     private LoginHistoryRepository: Model<LoginHistoryDocument>,
 
     @InjectModel(Deactivated2faRequest.name)
-    private Deactivated2faRequestRepository: Model<Deactivated2faRequestDocument>
+    private Deactivated2faRequestRepository: Model<Deactivated2faRequestDocument>,
+
+    @InjectModel(BlockchainFeesAccrued.name)
+    private BlockchainFeesAccruedRepository: Model<BlockchainFeesAccruedDocument>
 
 
   ) { }
@@ -227,6 +231,7 @@ export class MongoDataServices
     this.lockedBalances = new MongoGenericRepository<LockedBalance>(this.LockedBalanceRepository)
     this.loginHistory = new MongoGenericRepository<LoginHistory>(this.LoginHistoryRepository)
     this.deactivated2faRequests = new MongoGenericRepository<Deactivated2faRequest>(this.Deactivated2faRequestRepository)
+    this.blockchainFeesAccured = new MongoGenericRepository<BlockchainFeesAccrued>(this.BlockchainFeesAccruedRepository)
 
 
   }

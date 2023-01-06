@@ -32,6 +32,7 @@ import { DepositAddress } from '../entities/Deposit-Address';
 import { LockedBalance } from '../entities/Locked-Balance';
 import { LoginHistory } from '../entities/LoginHistory';
 import { Deactivated2faRequest } from '../entities/Deactivated2faRequestDocument';
+import { BlockchainFeesAccrued } from '../entities/BlockchainFeesAccured';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -68,7 +69,7 @@ export abstract class IDataServices {
   abstract lockedBalances: IGenericRepository<LockedBalance>
   abstract loginHistory: IGenericRepository<LoginHistory>
   abstract deactivated2faRequests: IGenericRepository<Deactivated2faRequest>
+  abstract blockchainFeesAccured: IGenericRepository<BlockchainFeesAccrued>
 
-  
 } 
 
