@@ -99,8 +99,9 @@ export class WithdrawalToFeeWalletListener {
                 
                 Gas Limit :- ${gasLimit}
         
-                Gas Price :- ${gasPrice} GWEI
-        
+                Gas Price In GWEI :- ${gasPrice} GWEI
+                
+                Gas Price In ETH :- ${gasPriceConvertToEth} ETH
                 From:- ${from}
                 
                 TX ID: ${typeof transfer === "string" ? transfer : JSON.stringify(transfer)
