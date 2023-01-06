@@ -4,14 +4,13 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { BASE_DIVISOR_IN_GWEI, env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
+import { BASE_DIVISOR_IN_GWEI, env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
 import { decryptData } from "src/lib/utils"
 import { BlockchainFeesAccruedFactoryServices } from "../../fees/fee-factory.service"
 
-const ethBaseDivisorInWei = 1000000000000000000
 
 const tronBaseDivisor = 1000000
 
@@ -60,7 +59,7 @@ export class WithdrawalToFeeWalletListener {
             )
             const { fast: gasPriceBeforeConversion } = estimations
 
-            let gasPriceConvertToEth = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
+            let gasPriceConvertToEth = _.divide(Number(gasPriceBeforeConversion), ETH_BASE_DIVISOR_IN_WEI)
             gasPriceConvertToEth = gasPriceConvertToEth.toFixed(18)
 
             const amountAfterDeduction = _.subtract(amount, gasPriceConvertToEth)
@@ -102,7 +101,7 @@ export class WithdrawalToFeeWalletListener {
                 Gas Price In GWEI :- ${gasPrice} GWEI
                 
                 Gas Price In ETH :- ${gasPriceConvertToEth} ETH
-                
+
                 From:- ${from}
                 
                 TX ID: ${typeof transfer === "string" ? transfer : JSON.stringify(transfer)

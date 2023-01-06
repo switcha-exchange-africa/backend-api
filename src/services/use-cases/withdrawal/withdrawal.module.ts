@@ -9,6 +9,7 @@ import { AxiosServiceModule } from "src/frameworks/http/axios/axios-service.modu
 import { DiscordServicesModule } from "src/frameworks/notification-services/discord/discord-service.module";
 import { UtilsServicesModule } from "../utils/utils.module";
 import { WithdrawalLib } from "./withdrawal.lib";
+import { BlockchainFeesAccruedFactoryServices } from "../fees/fee-factory.service";
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { WithdrawalLib } from "./withdrawal.lib";
     TransactionFactoryService,
     NotificationFactoryService,
     ActivityFactoryService,
-    WithdrawalLib
+    WithdrawalLib,
+    BlockchainFeesAccruedFactoryServices
   ],
   exports: [WithdrawalServices, WithdrawalFactoryService],
 })

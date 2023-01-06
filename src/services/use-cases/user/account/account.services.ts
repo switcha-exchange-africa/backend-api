@@ -85,7 +85,7 @@ export class AccountServices {
       const comparePin = await compareHash(oldPin, user?.transactionPin);
       if (!comparePin) {
         return Promise.reject({
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.BAD_REQUEST,
           state: ResponseState.ERROR,
           error: null,
           message: "Old transaction pin is invalid"

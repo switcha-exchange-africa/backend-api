@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   BASE_DIVISOR_IN_GWEI,
-  env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT,
+  env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -13,7 +13,7 @@ import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import { ERC_20_TOKENS, Trc20TokensContractAddress, TRC_20_TOKENS, UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
-import { decryptData, generateReference } from "src/lib/utils"
+import { compareHash, decryptData, generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
 import {
   IBtcWithdrawal,
@@ -40,6 +40,7 @@ import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
 import { WithdrawalFactoryService } from "./withdrawal-factory.service"
 import { WithdrawalLib } from "./withdrawal.lib"
+import { BlockchainFeesAccruedFactoryServices } from "../fees/fee-factory.service"
 
 @Injectable()
 export class WithdrawalServices {
@@ -53,6 +54,7 @@ export class WithdrawalServices {
     private readonly discord: INotificationServices,
     private readonly http: IHttpServices,
     private readonly lib: WithdrawalLib,
+    private readonly blockchainFeesAccured: BlockchainFeesAccruedFactoryServices,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
@@ -79,7 +81,7 @@ export class WithdrawalServices {
     return key
   }
   async createCryptoWithdrawalManual(payload: ICreateWithdrawal) {
-    const { coin, destination, amount: amountBeforeFee, userId, email } = payload
+    const { coin, destination, amount: amountBeforeFee, userId, email, pin } = payload
 
     try {
       // check if user has access to this feature
@@ -100,11 +102,23 @@ export class WithdrawalServices {
           error: null
         })
       }
+      
       // if(amountBeforeFee)
-      const [wallet, feeWallet] = await Promise.all([
+      const [wallet, feeWallet, user] = await Promise.all([
         this.data.wallets.findOne({ userId, coin }),
         this.data.feeWallets.findOne({ coin }),
+        this.data.users.findOne({ _id:userId }),
       ])
+
+      const comparePin = await compareHash(pin, user?.transactionPin);
+      if (!comparePin) {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          error: null,
+          message: "Transaction pin is invalid"
+        })
+      }
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
@@ -195,6 +209,8 @@ export class WithdrawalServices {
       if(coin === 'ETH'){
         // eth balance on the blockchain
         const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:'ETH'})
+        console.log("FEE WALLET BALANCE ON THE BLOCKCHAIN",feeWalletBalanceOnBlockchain)
+
         if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
           // send notification to discord
           await this.discord.inHouseNotification({
@@ -223,6 +239,8 @@ export class WithdrawalServices {
           email,
           from: feeWallet.address,
           destination,
+          walletId:String(wallet._id),
+          userId:String(user._id),
           fromPrivateKey: decryptData({
             text: feeWallet.privateKey,
             username: TATUM_PRIVATE_KEY_USER_NAME,
@@ -715,7 +733,7 @@ export class WithdrawalServices {
   }
 
   async ethWithdrawal(payload:IEthWithdrawal){
-    const {email, from, destination, fromPrivateKey, amount} = payload
+    const {email, from, destination, fromPrivateKey, amount, userId, walletId} = payload
     try{
       const { gasLimit, estimations } = await this.http.post(
         `${TATUM_BASE_URL}/ethereum/gas`,
@@ -733,6 +751,10 @@ export class WithdrawalServices {
     const convertGasPriceToGwei = _.divide(Number(fast), BASE_DIVISOR_IN_GWEI)
     const gasPrice = String(convertGasPriceToGwei)
 
+    // convert to eth
+    let gasPriceConvertToEth = _.divide(Number(fast), ETH_BASE_DIVISOR_IN_WEI)
+    gasPriceConvertToEth = gasPriceConvertToEth.toFixed(18)
+
     const ethFee = { gasLimit, gasPrice }
     const transfer = await this.lib.withdrawalV3({
         destination,
@@ -740,7 +762,16 @@ export class WithdrawalServices {
         privateKey:fromPrivateKey,
         coin: 'ETH',
         ethFee
-    })
+    })  
+            const blockchainFeeAccuredFactory = await this.blockchainFeesAccured.create({
+                action: 'withdrawal',
+                coin: 'ETH',
+                fee: gasPriceConvertToEth,
+                description: `Transferred ${amount} ETH from master wallet ${amount} to ${destination}, fee ${gasPriceConvertToEth} ETH`,
+                userId,
+                walletId,
+            })
+            await this.data.blockchainFeesAccured.create(blockchainFeeAccuredFactory)
 
     return transfer
     }catch(error){
