@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
+  BASE_DIVISOR_IN_GWEI,
   env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
@@ -728,7 +729,10 @@ export class WithdrawalServices {
     )
     const { standard } = estimations
 
-    const gasPrice = standard
+// conversion to gwei for gas price
+    const convertGasPriceToGwei = _.divide(Number(standard), BASE_DIVISOR_IN_GWEI)
+    const gasPrice = String(convertGasPriceToGwei)
+
     const ethFee = { gasLimit, gasPrice }
     const transfer = await this.lib.withdrawalV3({
         destination,
