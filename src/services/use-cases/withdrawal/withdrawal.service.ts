@@ -727,10 +727,10 @@ export class WithdrawalServices {
         },
         TATUM_CONFIG
     )
-    const { standard } = estimations
+    const { fast } = estimations
 
 // conversion to gwei for gas price
-    const convertGasPriceToGwei = _.divide(Number(standard), BASE_DIVISOR_IN_GWEI)
+    const convertGasPriceToGwei = _.divide(Number(fast), BASE_DIVISOR_IN_GWEI)
     const gasPrice = String(convertGasPriceToGwei)
 
     const ethFee = { gasLimit, gasPrice }
