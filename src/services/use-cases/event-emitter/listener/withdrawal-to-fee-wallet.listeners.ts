@@ -4,13 +4,14 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
+import { BASE_DIVISOR_IN_GWEI, env, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
 import { decryptData } from "src/lib/utils"
 
 const ethBaseDivisorInWei = 1000000000000000000
+
 const tronBaseDivisor = 1000000
 
 export enum ERC_20_TOKENS_ADDRESS {
@@ -43,7 +44,7 @@ export class WithdrawalToFeeWalletListener {
                 throw new Error("Fee Wallet does not exists")
             }
 
-            const { gasLimit, gasPrice: beforeGasPriceOh, estimations } = await this.http.post(
+            const { gasLimit, estimations } = await this.http.post(
                 `${TATUM_BASE_URL}/ethereum/gas`,
                 {
 
@@ -57,13 +58,13 @@ export class WithdrawalToFeeWalletListener {
 
             let gasPriceConvert = _.divide(Number(gasPriceBeforeConversion), ethBaseDivisorInWei)
             gasPriceConvert = gasPriceConvert.toFixed(18)
-            const gasPrice = gasPriceBeforeConversion
-            const ethFee = { gasLimit, gasPrice }
+
             const amountAfterDeduction = _.subtract(amount, gasPriceConvert)
-            console.log("GAS LIMIT", gasLimit)
-            console.log("GAS PRICE", beforeGasPriceOh)
-            console.log("ESTIMATIONS", estimations)
-            console.log("ETH FEE", ethFee)
+
+            const convertGasPriceToGwei = _.divide(Number(gasPriceBeforeConversion), BASE_DIVISOR_IN_GWEI)
+            const gasPrice = String(convertGasPriceToGwei)
+            const ethFee = { gasLimit, gasPrice }
+
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amountAfterDeduction),

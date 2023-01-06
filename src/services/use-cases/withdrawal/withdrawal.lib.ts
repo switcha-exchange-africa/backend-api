@@ -241,6 +241,7 @@ export class WithdrawalLib {
                     amount,
                     fromPrivateKey: privateKey,
                     currency: Currency.ETH,
+                    fee: ethFee
                     // nonce: randomFixedInteger(7)
                 })
                 return transfer
