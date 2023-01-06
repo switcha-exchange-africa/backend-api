@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
 
 export class WithdrawalCreateDto {
   @IsNotEmpty()
@@ -14,7 +14,7 @@ export class WithdrawalCreateDto {
   @IsPositive()
   public readonly amount: number
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MinLength(6, {
     message: 'Pin is too short',

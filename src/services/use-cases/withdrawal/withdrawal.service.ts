@@ -13,7 +13,9 @@ import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import { ERC_20_TOKENS, Trc20TokensContractAddress, TRC_20_TOKENS, UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
-import { compareHash, decryptData, generateReference } from "src/lib/utils"
+import { 
+  // compareHash,
+   decryptData, generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
 import {
   IBtcWithdrawal,
@@ -81,7 +83,7 @@ export class WithdrawalServices {
     return key
   }
   async createCryptoWithdrawalManual(payload: ICreateWithdrawal) {
-    const { coin, destination, amount: amountBeforeFee, userId, email, pin } = payload
+    const { coin, destination, amount: amountBeforeFee, userId, email } = payload
 
     try {
       // check if user has access to this feature
@@ -110,15 +112,15 @@ export class WithdrawalServices {
         this.data.users.findOne({ _id:userId }),
       ])
 
-      const comparePin = await compareHash(pin, user?.transactionPin);
-      if (!comparePin) {
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          error: null,
-          message: "Transaction pin is invalid"
-        })
-      }
+      // const comparePin = await compareHash(pin, user?.transactionPin);
+      // if (!comparePin) {
+      //   return Promise.reject({
+      //     status: HttpStatus.BAD_REQUEST,
+      //     state: ResponseState.ERROR,
+      //     error: null,
+      //     message: "Transaction pin is invalid"
+      //   })
+      // }
       if (!wallet) {
         return Promise.reject({
           status: HttpStatus.NOT_FOUND,
