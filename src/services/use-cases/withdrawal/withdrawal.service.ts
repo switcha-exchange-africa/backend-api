@@ -208,7 +208,7 @@ export class WithdrawalServices {
       // const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
 
       let response 
-      const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:'ETH'})
+      const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin})
       console.log("FEE WALLET BALANCE ON THE BLOCKCHAIN",feeWalletBalanceOnBlockchain)
 
       if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
@@ -235,7 +235,7 @@ export class WithdrawalServices {
           error: null
         })
       }
-      
+
       if(coin === 'ETH'){
         // eth balance on the blockchain
       
