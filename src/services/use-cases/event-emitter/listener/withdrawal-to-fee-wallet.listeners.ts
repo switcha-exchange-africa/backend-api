@@ -80,7 +80,7 @@ export class WithdrawalToFeeWalletListener {
                 action: 'deposit',
                 coin: 'ETH',
                 fee: gasPriceConvertToEth,
-                description: '',
+                description: `Transferred ${amountAfterDeduction} ETH to ${coinFeeWallet.address}, fee ${gasPriceConvertToEth} ETH`,
                 userId,
                 walletId,
             })
@@ -97,9 +97,9 @@ export class WithdrawalToFeeWalletListener {
                 
                 Amount After Deduction:-  ${amountAfterDeduction}
                 
-                // Gas Limit :- ${gasLimit}
+                Gas Limit :- ${gasLimit}
         
-                // Gas Price :- ${gasPrice} GWEI
+                Gas Price :- ${gasPrice} GWEI
         
                 From:- ${from}
                 
