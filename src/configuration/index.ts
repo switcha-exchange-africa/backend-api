@@ -85,7 +85,27 @@ export const BASE_DIVISOR_IN_GWEI = 1000000000  // There are 1 billion wei in on
 export const ETH_BASE_DIVISOR_IN_WEI = 1000000000000000000
 export const TRON_BASE_DIVISOR = 1000000
 
-
+export const ERC_20_TOKENS = ['USDT', 'USDC']
+export const BEP_20_TOKENS = [
+  'BUSD',
+  "BSC",
+  "BETH",
+  "BBTC",
+  "RMD",
+  "USDC_BSC",
+  "B2U_BSC",
+  "BADA",
+  "WBNB",
+  "GMC_BSC",
+  "BDOT",
+  "BXRP",
+  "BLTC",
+  "BBCH",
+  "HAG",
+  "CAKE",
+  "BUSD_BSC"
+]
+export const TRC_20_TOKENS = ['USDT_TRON']
 export const LOGS_LEVEL = (): LogLevel[] => {
 
   if (env.isProd) return ['log', 'warn', 'error'];

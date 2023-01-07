@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   BASE_DIVISOR_IN_GWEI,
-  env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
+  env, ERC_20_TOKENS, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TOKENS, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -11,7 +11,7 @@ import { ICreateWithdrawal } from "src/core/dtos/withdrawal"
 import { CUSTOM_TRANSACTION_TYPE, Transaction, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity"
 import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
-import { ERC_20_TOKENS, Trc20TokensContractAddress, TRC_20_TOKENS, UtilsServices } from "../utils/utils.service"
+import {  Trc20TokensContractAddress, UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
 import { 
   // compareHash,

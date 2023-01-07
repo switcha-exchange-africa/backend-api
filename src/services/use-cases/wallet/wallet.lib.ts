@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { TatumEthSDK } from '@tatumio/eth'
-import { env, TATUM_API_KEY, TATUM_BTC_MNEMONIC, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration";
+import { env, ERC_20_TOKENS, TATUM_API_KEY, TATUM_BTC_MNEMONIC, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration";
 import { TatumTronSDK } from '@tatumio/tron'
 import { TatumBtcSDK } from "@tatumio/btc";
 // import { TatumBscSDK } from '@tatumio/bsc'
 // import { Currency } from '@tatumio/api-client'
 import { encryptData } from "src/lib/utils";
-import { ERC_20_TOKENS } from "../utils/utils.service";
 
 const API_KEY_CONFIG = {
     apiKey: TATUM_API_KEY

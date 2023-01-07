@@ -1,12 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { env, MASTER_TRON_MNEMONIC, TATUM_API_KEY, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC } from "src/configuration"
+import { BEP_20_TOKENS, env, ERC_20_TOKENS, MASTER_TRON_MNEMONIC, TATUM_API_KEY, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC, TRC_20_TOKENS } from "src/configuration"
 import { Currency } from '@tatumio/api-client'
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { TatumBscSDK } from "@tatumio/bsc"
 import { TatumBtcSDK } from "@tatumio/btc"
 import { TatumEthSDK } from "@tatumio/eth"
 import { TatumTronSDK } from "@tatumio/tron"
-import { BEP_20_TOKENS, ERC_20_TOKENS, TRC_20_TOKENS } from "../utils/utils.service"
 // import { randomFixedInteger } from "src/lib/utils"
 
 const API_KEY_CONFIG = {
