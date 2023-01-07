@@ -987,7 +987,6 @@ export class QuickTradeServices {
             orderType: 'quick-trade',
             clientWalletId: clientWallet ? String(clientWallet._id) : null,
             totalAmount: Math.abs(Number(ad.price)) * Math.abs(Number(amount)),
-            processedByAdminId:'none',
           }
 
           const factory = await this.orderFactory.create(orderPayload)
