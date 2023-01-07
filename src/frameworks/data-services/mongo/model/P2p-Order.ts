@@ -21,10 +21,7 @@ export class P2pOrder {
   })
   merchantId: string;
 
-  @Prop({
-    type: Types.ObjectId,
-    ref: "Admin"
-  })
+  @Prop()
   processedByAdminId: string
 
   @Prop({
