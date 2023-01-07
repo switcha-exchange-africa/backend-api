@@ -23,7 +23,7 @@ export class P2pOrder {
 
   @Prop({
     type: Types.ObjectId,
-    ref: "Admin",
+    ref: "Admin"
   })
   processedByAdminId: string
 
