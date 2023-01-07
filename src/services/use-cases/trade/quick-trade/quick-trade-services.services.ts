@@ -964,6 +964,14 @@ export class QuickTradeServices {
             error: null
           })
         }
+        if (amount > clientWallet.balance) {
+          return Promise.reject({
+            status: HttpStatus.BAD_REQUEST,
+            state: ResponseState.ERROR,
+            message: `Insufficient balance in your ${ad.coin.toUpperCase()} balance to sell`,
+            error: null
+          })
+        }
       }
 
       const atomicTransaction = async (session: mongoose.ClientSession) => {
