@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   BASE_DIVISOR_IN_GWEI,
-  env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT,
+  env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -264,6 +264,7 @@ export class WithdrawalServices {
             pin: TATUM_PRIVATE_KEY_PIN
         }),
           email,
+          from:feeWallet.address,
           destination
         }
         response = await this.trc20Withdrawal(trc20Payload)
@@ -851,9 +852,19 @@ export class WithdrawalServices {
 
 
   async trc20Withdrawal(payload:ITrc20Withdrawal){
-    const {amount, privateKey, email, destination} = payload
+    const {amount, privateKey, email, destination, from} = payload
     try{
 
+      const coinFeeWalletTrxBalance = await this.http.get(
+        `${TATUM_BASE_URL}/tron/account/${from}`,
+
+        TATUM_CONFIG
+    )
+    const coinFeeWalletTrxConversionBalance = _.divide(coinFeeWalletTrxBalance.balance, TRON_BASE_DIVISOR)
+    if (coinFeeWalletTrxConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
+      Logger.error('send.to.trc20.fee.wallet', `Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+      throw new Error(`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+  }
     const transfer = await this.lib.withdrawalV3({
       destination,
       amount,

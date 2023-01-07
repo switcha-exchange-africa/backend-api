@@ -323,7 +323,7 @@ export class WithdrawalToFeeWalletListener {
 
             if (coinFeeWalletTrxConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
                 Logger.error('send.to.trc20.fee.wallet', `Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
-                throw new Error(`Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+                throw new Error(`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
 
             // send tron to activate wallet
