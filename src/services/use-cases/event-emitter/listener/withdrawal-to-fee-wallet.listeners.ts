@@ -4,7 +4,7 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { BASE_DIVISOR_IN_GWEI, env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT } from "src/configuration"
+import { BASE_DIVISOR_IN_GWEI, env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
@@ -12,7 +12,6 @@ import { decryptData } from "src/lib/utils"
 import { BlockchainFeesAccruedFactoryServices } from "../../fees/fee-factory.service"
 
 
-const tronBaseDivisor = 1000000
 
 export enum ERC_20_TOKENS_ADDRESS {
     USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -295,47 +294,43 @@ export class WithdrawalToFeeWalletListener {
     }) {
         const { amount, privateKey, from, email, coin } = event
         try {
-            const [masterTronWallet, coinFeeWallet] = await Promise.all([
-                this.data.feeWallets.findOne({ coin: 'TRON' }),
-                this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
-            ])
+            const coinFeeWallet= await   this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
+            
 
-            if (!masterTronWallet) {
-                // send notification to discord
-                Logger.error('send.to.trc20.fee.wallet', 'Master Tron wallet does not exists')
-                throw new Error(`Master Tron wallet does not exists`)
-            }
+            
             if (!coinFeeWallet) {
                 // send notification to discord
                 Logger.error('send.to.trc20.fee.wallet', 'USDT_TRON fee wallet does not exists')
 
                 throw new Error(`USDT_TRON fee wallet does not exists`)
-            }
+            }   
 
-            // get master tron balance
-            const getMasterTrxBalance = await this.http.get(
-                `${TATUM_BASE_URL}/tron/account/${masterTronWallet.address}`,
+
+            const coinFeeWalletTrxBalance = await this.http.get(
+                `${TATUM_BASE_URL}/tron/account/${coinFeeWallet.address}`,
 
                 TATUM_CONFIG
             )
+
             const fromTrxBalance = await this.http.get(
                 `${TATUM_BASE_URL}/tron/account/${from}`,
 
                 TATUM_CONFIG
             )
 
-            const masterTrxBalance = _.divide(getMasterTrxBalance.balance, tronBaseDivisor)
-            const fromTrxBalanceConversionBalance = _.divide(fromTrxBalance.balance, tronBaseDivisor)
+            const coinFeeWalletTrxConversionBalance = _.divide(coinFeeWalletTrxBalance.balance, TRON_BASE_DIVISOR)
+            const fromTrxBalanceConversionBalance = _.divide(fromTrxBalance.balance, TRON_BASE_DIVISOR)
 
-            if (masterTrxBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
-                Logger.error('send.to.trc20.fee.wallet', `Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+            if (coinFeeWalletTrxConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
+                Logger.error('send.to.trc20.fee.wallet', `Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
                 throw new Error(`Master tron balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
+
             // send tron to activate wallet
             if (fromTrxBalanceConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
                 // if balance is less than the fee send from tron master address to from address
-                const masterTronWalletPrivateKey = decryptData({
-                    text: masterTronWallet.privateKey,
+                const coinFeeWalletPrivateKey = decryptData({
+                    text: coinFeeWallet.privateKey,
                     username: TATUM_PRIVATE_KEY_USER_NAME,
                     userId: TATUM_PRIVATE_KEY_USER_ID,
                     pin: TATUM_PRIVATE_KEY_PIN
@@ -344,8 +339,8 @@ export class WithdrawalToFeeWalletListener {
                     coin: 'TRON',
                     amount: TRC_20_TRON_FEE_AMOUNT,
                     destination: from,
-                    from: masterTronWallet.address,
-                    privateKey: masterTronWalletPrivateKey
+                    from: coinFeeWallet.address,
+                    privateKey: coinFeeWalletPrivateKey
                 })
             }
 
