@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { INotificationServices } from "src/core/abstracts";
 import { Notification } from "src/core/entities/notification.entity";
 import { Webhook, MessageBuilder } from 'discord-webhook-node'
-import { PLATFORM_NAME, GITHUB_LINK } from "src/lib/constants";
+import { PLATFORM_NAME } from "src/lib/constants";
 
 
 @Injectable()
