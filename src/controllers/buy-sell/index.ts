@@ -22,7 +22,7 @@ export class BuySellController {
 
   @FeatureManagement(FeatureEnum.SWAP)
   @isAuthenticated('strict')
-  @IsLevelTwo('two')
+  // @IsLevelTwo('two')
   @Post('/swap')
   async swap(@Req() req: Request, @Res() res: Response, @Body() body: SwapDto) {
     try {
