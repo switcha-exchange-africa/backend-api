@@ -11,7 +11,9 @@ import { ICreateSwap, SwapDto } from "src/core/dtos/trade/swap.dto";
 import { SwapServices } from "src/services/use-cases/trade/swap/swap-services.services";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureEnum } from "src/core/dtos/activity";
-import { FeatureManagement, IsLevelTwo } from "src/decorator";
+import { FeatureManagement,
+  //  IsLevelTwo
+   } from "src/decorator";
 
 @Controller('/trade')
 export class BuySellController {
@@ -36,7 +38,7 @@ export class BuySellController {
 
 
   @isAuthenticated('strict')
-  @IsLevelTwo('two')
+  // @IsLevelTwo('two')
   @FeatureManagement(FeatureEnum.SWAP)
   @Version('2')
   @Post('/swap')
