@@ -157,7 +157,7 @@ export class AuthServices {
           error: null
         })
       }
-      const factory = await this.factory.createNewUser(data)
+      const factory = await this.factory.createNewUser({ ...data, email: data.email.toLowerCase() })
       const user = await this.data.users.create(factory);
       const redisKey = `${RedisPrefix.signupEmailCode}/${user?.email}`
 
@@ -929,7 +929,7 @@ export class AuthServices {
       })
       email = data.email
       const userManagement = await this.data.userFeatureManagement.findOne({ userId: String(data._id) })
-      await this.data.userFeatureManagement.update({_id:userManagement._id},{
+      await this.data.userFeatureManagement.update({ _id: userManagement._id }, {
         canBuy: true,
         canSell: true,
         canSwap: true,
