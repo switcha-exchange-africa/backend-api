@@ -928,6 +928,17 @@ export class AuthServices {
         select: ['-password', '-transactionPin']
       })
       email = data.email
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: String(data._id) })
+      await this.data.userFeatureManagement.update({_id:userManagement._id},{
+        canBuy: true,
+        canSell: true,
+        canSwap: true,
+        canP2PBuy: true,
+        canP2PSell: true,
+        canWithdraw: false,
+        canP2PCreateBuyAd: true,
+        canP2PCreateSellAd: true
+      })
       return {
         status: HttpStatus.OK,
         state: ResponseState.SUCCESS,
