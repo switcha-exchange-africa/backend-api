@@ -14,9 +14,7 @@ export class DiscordService implements INotificationServices {
       const embed = await new MessageBuilder()
         .setTitle(notification?.title)
         .setAuthor(
-          notification?.author || PLATFORM_NAME,
-          '',
-          notification?.github || GITHUB_LINK
+          notification?.author || PLATFORM_NAME
         )
         .setDescription(notification?.message)
       hook.send(embed);
