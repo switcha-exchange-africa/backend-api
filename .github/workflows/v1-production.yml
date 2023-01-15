@@ -69,7 +69,7 @@ jobs:
             docker pull registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # Run a new container from a new image
-            docker run --name switcha-production-api -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+            docker run --name switcha-production-api --env-file ~/secrets/api/.env-production -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # deleting untagged image
             #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
