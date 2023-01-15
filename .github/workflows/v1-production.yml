@@ -23,12 +23,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Download .env from url
-      uses: suisei-cn/actions-download-file@v1
-      id: downloadfile  # Remember to give an ID if you need the output
-      with:
-        url: "https://res.cloudinary.com/https-dynastys-org/raw/upload/v1671571377/switcha-production-env/env-production_kovflk.txt"
-        target: ./
 
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
@@ -69,7 +63,7 @@ jobs:
             docker pull registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # Run a new container from a new image
-            docker run --name switcha-production-api --env-file ~/secrets/api/.env-production -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
+            docker run --name switcha-production-api --env-file ~/secrets/api/.env.production -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # deleting untagged image
             #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
