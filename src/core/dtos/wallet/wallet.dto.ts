@@ -1,5 +1,4 @@
 import {
-  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -29,13 +28,14 @@ export class WalletDto {
   chain: BLOCKCHAIN_NETWORK;
 
   @IsNotEmpty()
+  @IsString()
   coin: string;
 }
 
 export class CreateWalletDto {
 
   @IsNotEmpty()
-  @IsEnum(CoinType)
+  @IsString()
   coin: CoinType
 }
 

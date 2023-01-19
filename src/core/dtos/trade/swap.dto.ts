@@ -8,7 +8,8 @@ export enum SwapableCoin {
   ETH = 'ETH',
   USDT_TRON = 'USDT_TRON',
   BUSD = 'BUSD',
-  BNB = 'BNB'
+  BNB = 'BNB',
+  TRON='tron'
 }
 export class SwapDto {
 
@@ -35,11 +36,11 @@ export class SwapV2Dto {
   @IsNotEmpty()
   @Type(() => Number)
   @IsPositive()
-  amount: number;
+ public readonly amount: number;
 
   @IsNotEmpty()
   @IsEnum(SwapableCoin)
-  source: SwapableCoin;
+  public readonly source: SwapableCoin;
 
   @IsNotEmpty()
   @IsEnum(SwapableCoin)
