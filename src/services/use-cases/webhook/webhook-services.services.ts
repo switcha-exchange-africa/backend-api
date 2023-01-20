@@ -18,6 +18,7 @@ import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 import { OptionalQuery } from "src/core/types/database";
 import { decryptData, generateReference, generateReferencePrefix } from "src/lib/utils";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import * as _ from "lodash"
 
 Injectable()
 export class WebhookServices {
@@ -779,10 +780,15 @@ export class WebhookServices {
     }
   }
 
+  formatAmount(payload: { amount: number, coin: string }) {
+    const { amount, coin } = payload
+    if (coin === 'USDT_TRON') return _.divide(amount, 1000000)
+    return amount
+  }
   async addressTransaction(payload: Record<string, any>) {
     try {
-      const { address, amount: amountBeforeConversion, counterAddress, txId, mempool, type: webhookTxType } = payload
-      const feeWallet = await this.data.feeWallets.findOne({ address })
+      const { address, amount: amountBeforeConversion, counterAddress, txId, mempool, type: webhookTxType, asset } = payload
+      const feeWallet = await this.data.feeWallets.findOne({ address, coin: asset })
 
       if (mempool) {
         await this.discord.inHouseNotification({
@@ -819,7 +825,7 @@ export class WebhookServices {
 
       }
 
-      const convertedAmount = Number(amountBeforeConversion)
+      const convertedAmount = this.formatAmount({ amount: Number(amountBeforeConversion), coin: asset })
       const debitDescription = `Withdraw ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
       const creditDescription = `Recieved ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
