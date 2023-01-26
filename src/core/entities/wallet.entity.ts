@@ -65,6 +65,7 @@ export class Wallet {
   derivationKey: string
   privateKey: string
   isActivated: boolean
+  patchedNewPrivKeyEnc: boolean
 }
 
 export enum CryptoPairType {

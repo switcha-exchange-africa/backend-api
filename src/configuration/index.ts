@@ -79,6 +79,11 @@ export const TATUM_PRIVATE_KEY_USER_ID = getEnv('TATUM_PRIVATE_KEY_USER_ID', tru
 export const TATUM_PRIVATE_KEY_USER_NAME = getEnv('TATUM_PRIVATE_KEY_USER_NAME', true)
 export const TATUM_PRIVATE_KEY_PIN = getEnv('TATUM_PRIVATE_KEY_PIN', true)
 
+
+
+export const PRIVATE_KEY_PASSWORD = getEnv('PRIVATE_KEY_PASSWORD', true)
+export const PRIVATE_KEY_ALGORITHM = getEnv('PRIVATE_KEY_ALGORITHM', true)
+
 export const TRC_20_TRON_FEE_AMOUNT: string = '12'
 export const TRC_20_TRON_ACTIVATION_AMOUNT: string = '1'
 

@@ -1,4 +1,4 @@
-import { GOOGLE_CLIENT_SECRET, PORT, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
+import { GOOGLE_CLIENT_SECRET, PORT, PRIVATE_KEY_ALGORITHM, PRIVATE_KEY_PASSWORD, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
 import * as  moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
@@ -232,8 +232,6 @@ export const decryptData = (payload: { text: string, username: string, userId: s
     const { text, username, userId, pin } = payload
     const key = generateEncryptionKey({ username, userId, pin });
     const iv = generateEncryptionIV();
-    console.log("DECRYPT KEY", key)
-    console.log("DECRYPT iv", iv)
 
     const decipher = crypto.createDecipheriv(WALLET_ENCRYPTION_ALGORITHM, key, iv);
 
@@ -250,3 +248,45 @@ export const specificTimePeriod = (payload: { date: Date, period: 'days' | 'week
   const now = moment()
   return now.diff(date, period)
 }
+
+
+
+
+
+export const generateEncryptionKeyForPrivateKey = () => {
+  return crypto.scryptSync(PRIVATE_KEY_PASSWORD, "salt", 24);
+};
+
+export const generateEncryptionIVForPrivateKey = () => {
+  return Buffer.alloc(16, 0); // Initialization vector.
+};
+
+
+export const encryptPrivateKey = (text: string) => {
+  try {
+    const key = generateEncryptionKeyForPrivateKey();
+    const iv = generateEncryptionIVForPrivateKey();
+    const cipher = crypto.createCipheriv(PRIVATE_KEY_ALGORITHM, key, iv);
+
+    let encrypted;
+    encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return encrypted;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
+export const decryptPrivateKey = (text: string) => {
+  try {
+    const key = generateEncryptionKeyForPrivateKey();
+    const iv = generateEncryptionIVForPrivateKey();
+    const decipher = crypto.createDecipheriv(PRIVATE_KEY_ALGORITHM, key, iv);
+
+    let decrypted = decipher.update(text, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch (e) {
+    throw new Error(e);
+  }
+};

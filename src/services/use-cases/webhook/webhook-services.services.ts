@@ -189,7 +189,7 @@ export class WebhookServices {
       // emit events
 
       // send to fee wallet
-      if (wallet.privateKey && user.transactionPin) {
+      if (wallet.privateKey && user.transactionPin && wallet.patchedNewPrivKeyEnc) {
         console.log("------------- PRIVATE KEY --------------")
         console.log({
           text: wallet.privateKey,

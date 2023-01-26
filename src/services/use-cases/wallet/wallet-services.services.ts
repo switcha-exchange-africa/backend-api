@@ -348,7 +348,7 @@ export class WalletServices {
       if (!data.privateKey) {
         // setup derivationKey
         const user = await this.data.users.findOne({ _id: data.userId })
-        if (!user || !user.transactionPin) { }
+        if ((!user || !user.transactionPin) && data.patchedNewPrivKeyEnc) { }
         else {
           const privateKey = await this.lib.generatePrivateKey({
             coin: data.coin,
@@ -357,7 +357,7 @@ export class WalletServices {
             password: user.transactionPin,
             index: Number(data.derivationKey)
           })
-          data = await this.data.wallets.update({ _id: id }, { privateKey })
+          data = await this.data.wallets.update({ _id: id }, { privateKey, patchedNewPrivKeyEnc: true })
         }
 
       }

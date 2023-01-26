@@ -68,6 +68,9 @@ export class Wallet {
   @Prop({ default: false })
   isActivated: boolean;
 
+  @Prop({ default: false })
+  patchedNewPrivKeyEnc: boolean;
+
   @Prop()
   destinationTag: string;
 
