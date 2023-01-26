@@ -345,7 +345,6 @@ export class WalletServices {
         }
       }
 
-      console.log("CHECK DATA PRIVATE KEY", data.patchedNewPrivKeyEnc)
       if (!data.privateKey || !data.patchedNewPrivKeyEnc) {
         // setup derivationKey
         const user = await this.data.users.findOne({ _id: data.userId })
