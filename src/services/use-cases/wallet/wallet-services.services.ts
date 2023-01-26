@@ -345,10 +345,11 @@ export class WalletServices {
         }
       }
 
-      if (!data.privateKey) {
+      console.log("CHECK DATA PRIVATE KEY", data.patchedNewPrivKeyEnc)
+      if (!data.privateKey || !data.patchedNewPrivKeyEnc) {
         // setup derivationKey
         const user = await this.data.users.findOne({ _id: data.userId })
-        if ((!user || !user.transactionPin) && data.patchedNewPrivKeyEnc) { }
+        if ((!user || !user.transactionPin)) { }
         else {
           const privateKey = await this.lib.generatePrivateKey({
             coin: data.coin,

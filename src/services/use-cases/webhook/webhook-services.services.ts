@@ -16,7 +16,7 @@ import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
 import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 import { OptionalQuery } from "src/core/types/database";
-import { decryptData, generateReference, generateReferencePrefix } from "src/lib/utils";
+import { decryptPrivateKey, generateReference, generateReferencePrefix } from "src/lib/utils";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import * as _ from "lodash"
 
@@ -190,22 +190,8 @@ export class WebhookServices {
 
       // send to fee wallet
       if (wallet.privateKey && user.transactionPin && wallet.patchedNewPrivKeyEnc) {
-        console.log("------------- PRIVATE KEY --------------")
-        console.log({
-          text: wallet.privateKey,
-          username: user.username,
-          userId: wallet.userId,
-          pin: user.transactionPin
-        })
-        const privateKey = decryptData({
-          text: wallet.privateKey,
-          username: user.username,
-          userId: wallet.userId,
-          pin: user.transactionPin
-        })
-        console.log("------------- PRIVATE KEY --------------")
+        const privateKey = decryptPrivateKey(wallet.privateKey)
         if (wallet.coin === 'ETH') {
-          console.log("")
           this.emitter.emit("send.to.eth.fee.wallet", {
             amount: String(amount),
             privateKey,
