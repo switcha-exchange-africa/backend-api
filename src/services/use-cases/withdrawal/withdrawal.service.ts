@@ -36,13 +36,14 @@ import { ActivityFactoryService } from "../activity/activity-factory.service"
 import { ActivityAction } from "src/core/dtos/activity"
 import databaseHelper from "src/frameworks/data-services/mongo/database-helper"
 import { InjectConnection } from "@nestjs/mongoose"
-import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
+import { ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT, ERROR_REPORTING_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT, WITHDRAWAL_CHANNEL_LINK_PRODUCTION } from "src/lib/constants"
 import * as _ from 'lodash'
 import { IErrorReporter } from "src/core/types/error"
 import { Status } from "src/core/types/status"
 import { WithdrawalFactoryService } from "./withdrawal-factory.service"
 import { WithdrawalLib } from "./withdrawal.lib"
 import { BlockchainFeesAccruedFactoryServices } from "../fees/fee-factory.service"
+import { BadRequestsException } from "../user/exceptions"
 
 @Injectable()
 export class WithdrawalServices {
@@ -57,6 +58,7 @@ export class WithdrawalServices {
     private readonly http: IHttpServices,
     private readonly lib: WithdrawalLib,
     private readonly blockchainFeesAccured: BlockchainFeesAccruedFactoryServices,
+    private readonly txFactoryServices:TransactionFactoryService,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
 
   ) { }
@@ -106,7 +108,7 @@ export class WithdrawalServices {
       }
       
       // if(amountBeforeFee)
-      const [wallet, feeWallet, user] = await Promise.all([
+      const [wallet, feeWallet, _] = await Promise.all([
         this.data.wallets.findOne({ userId, coin }),
         this.data.feeWallets.findOne({ coin }),
         this.data.users.findOne({ _id:userId }),
@@ -150,30 +152,7 @@ export class WithdrawalServices {
       }
       // check fee wallet balance on switcha
       // check 
-      if (feeWallet.balance <= amountBeforeFee) {
-        // send notification to discord
-        await this.discord.inHouseNotification({
-          title: `crypto.withdrawal.${env.env}`,
-          message: `
-             
-          Coin :- ${coin}
-
-          Withdrawal Amount:- ${amountBeforeFee} ${coin}
-
-          Master Wallet Address On Switcha :- ${feeWallet.address}
-          
-          Master Wallet Balance On Switcha :- ${feeWallet.balance}
-          
-          `,
-          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-        })
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: 'Withdrawal feature currently under maintenance',
-          error: null
-        })
-      }
+      
       if (amountBeforeFee >= wallet.balance) {
         return Promise.reject({
           status: HttpStatus.BAD_REQUEST,
@@ -205,100 +184,8 @@ export class WithdrawalServices {
         }
       }
 
-      // const index = wallet.derivationKey ? Number(wallet.derivationKey) : Number(getIndex)
-
       let response 
-      const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin})
-      console.log("FEE WALLET BALANCE ON THE BLOCKCHAIN",feeWalletBalanceOnBlockchain)
 
-      if(amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
-        // send notification to discord
-        await this.discord.inHouseNotification({
-          title: `crypto.withdrawal.${env.env}`,
-          message: `
-            
-          Coin :- ${coin}
-
-          Withdrawal Amount:- ${amount} ${coin}
-
-          Master Wallet Address On The Blockchain :- ${feeWallet.address}
-          
-          Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
-          
-          `,
-          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-        })
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: 'Withdrawal feature currently under maintenance',
-          error: null
-        })
-      }
-
-      if(coin === 'ETH'){
-        // eth balance on the blockchain
-      
-        const ethPayload:IEthWithdrawal = {
-          email,
-          from: feeWallet.address,
-          destination,
-          walletId:String(wallet._id),
-          userId:String(user._id),
-          fromPrivateKey: decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
-          amount
-        }
-        response = await this.ethWithdrawal(ethPayload)
-      }else if(TRC_20_TOKENS.includes(coin)){
-        const trc20Payload:ITrc20Withdrawal = {
-          amount:String(amount),
-          privateKey:decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
-          email,
-          from:feeWallet.address,
-          destination
-        }
-        response = await this.trc20Withdrawal(trc20Payload)
-      }else if(coin === 'BTC'){
-        console.log("ENTERING BTC WITHDRAWALS")
-        const btcPayload:IBtcWithdrawal = {
-          amount:String(amount),
-            privateKey:  decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
-        from: feeWallet.address,
-        email,
-          destination
-        }
-        response = await this.btcWithdrawal(btcPayload)
-
-      }else if(ERC_20_TOKENS.includes(coin)){
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: `${coin} withdrawal not supported`,
-          error: null
-        })
-      }else {
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: `${coin} withdrawal not supported`,
-          error: null
-        })
-      }
 
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -366,7 +253,7 @@ export class WithdrawalServices {
             signedAmount: -amount,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Withdrawal request of ${amount} ${coin}`,
-            status: Status.COMPLETED,
+            status: Status.PENDING,
             balanceAfter: debitedWallet?.balance,
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
@@ -383,7 +270,7 @@ export class WithdrawalServices {
             signedAmount: -fee,
             type: TRANSACTION_TYPE.DEBIT,
             description: `Charged ${fee} ${coin}`,
-            status: Status.COMPLETED,
+            status: Status.PENDING,
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
@@ -434,10 +321,10 @@ export class WithdrawalServices {
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
             subType: WithdrawalSubType.AUTO,
-            status: WithdrawalStatus.APPROVED,
+            status: WithdrawalStatus.PENDING,
             amount,
             tatumWithdrawalId: response.id,
-            blockchainTransactionId: response.txId,
+            // blockchainTransactionId: response.txId,
             tatumReference: response.reference,
             originalAmount: amountBeforeFee,
             metadata: response,
@@ -497,7 +384,7 @@ export class WithdrawalServices {
         link: env.isProd ? WITHDRAWAL_CHANNEL_LINK_PRODUCTION : WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT,
       })
       return {
-        message: "Withdrawals created successfully",
+        message: `Withdrawal request of ${amount} ${this.utils.formatCoin(coin)} sent successfully`,
         status: HttpStatus.CREATED,
         data: response,
         state: ResponseState.SUCCESS
@@ -887,6 +774,358 @@ export class WithdrawalServices {
       this.utils.errorReporter(errorPayload)
       throw new Error(error)
     }
+  }
+
+  async approveWithdrawals(payload:{withdrawalId:mongoose.Types.ObjectId, email:string}) {
+    const {withdrawalId, email} = payload
+    try{
+      const withdrawal = await this.data.withdrawals.findOne({_id:withdrawalId})
+      if(!withdrawal){
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal does not exists',
+          error: null
+        })
+      }
+      if(withdrawal.status === WithdrawalStatus.DENIED){
+        return Promise.reject({
+          status: HttpStatus.OK,
+          state: ResponseState.SUCCESS,
+          message: 'Withdrawal already processed',
+        })
+      }
+      const description = `Withdrawal request of ${withdrawal.originalAmount} ${this.utils.formatCoin(withdrawal.currency) } approved`
+
+      const feeWallet= await this.data.feeWallets.findOne({ coin:withdrawal.currency })
+      if(!feeWallet){
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Fee wallet does not exists',
+          error: null
+        })
+      }
+      const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:withdrawal.currency})
+      if(withdrawal.amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
+        // send notification to discord
+        await this.discord.inHouseNotification({
+          title: `crypto.withdrawal.${env.env}`,
+          message: `
+            
+          Coin :- ${withdrawal.currency}
+          Withdrawal Amount:- ${withdrawal.amount} ${withdrawal.currency}
+          Master Wallet Address On The Blockchain :- ${feeWallet.address}
+          
+          Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
+          
+          `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal feature currently under maintenance',
+          error: null
+        })
+      }
+
+      if(withdrawal.amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
+        // send notification to discord
+        await this.discord.inHouseNotification({
+          title: `crypto.withdrawal.${env.env}`,
+          message: `
+            
+          Coin :- ${withdrawal.currency}
+
+          Withdrawal Amount:- ${withdrawal.amount} ${withdrawal.currency}
+
+          Master Wallet Address On The Blockchain :- ${feeWallet.address}
+          
+          Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
+          
+          `,
+          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
+        })
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal feature currently under maintenance',
+          error: null
+        })
+      }
+      let response
+
+      if(withdrawal.currency === 'ETH'){
+        // eth balance on the blockchain
+      
+        const ethPayload:IEthWithdrawal = {
+          email,
+          from: feeWallet.address,
+          destination:withdrawal.destination.address,
+          walletId:String(withdrawal.walletId),
+          userId:String(withdrawal.userId),
+          fromPrivateKey: decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+          amount:withdrawal.amount
+        }
+        response = await this.ethWithdrawal(ethPayload)
+      }else if(TRC_20_TOKENS.includes(withdrawal.currency)){
+        const trc20Payload:ITrc20Withdrawal = {
+          amount:String(withdrawal.amount),
+          privateKey:decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+          email,
+          from:feeWallet.address,
+          destination:withdrawal.destination.address,
+        }
+        response = await this.trc20Withdrawal(trc20Payload)
+      }else if(withdrawal.currency === 'BTC'){
+        console.log("ENTERING BTC WITHDRAWALS")
+        const btcPayload:IBtcWithdrawal = {
+          amount:String(withdrawal.amount),
+            privateKey:  decryptData({
+            text: feeWallet.privateKey,
+            username: TATUM_PRIVATE_KEY_USER_NAME,
+            userId: TATUM_PRIVATE_KEY_USER_ID,
+            pin: TATUM_PRIVATE_KEY_PIN
+        }),
+        from: feeWallet.address,
+        email,
+        destination:withdrawal.destination.address,
+      }
+        response = await this.btcWithdrawal(btcPayload)
+
+      }else if(ERC_20_TOKENS.includes(withdrawal.currency)){
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `${withdrawal.currency} withdrawal not supported`,
+          error: null
+        })
+      }else {
+        return Promise.reject({
+          status: HttpStatus.BAD_REQUEST,
+          state: ResponseState.ERROR,
+          message: `${withdrawal.currency} withdrawal not supported`,
+          error: null
+        })
+      }
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        await this.data.transactions.update(
+          { _id: withdrawal.transactionId },
+          {
+            status: Status.COMPLETED,
+          },
+          session
+        )
+
+        await this.data.transactions.update(
+          { _id: withdrawal.feeTransactionId },
+          {
+            status: Status.COMPLETED,
+          },
+          session
+        )
+        await this.data.transactions.update(
+          { _id: withdrawal.feeWalletTransactionId },
+          {
+            status: Status.COMPLETED,
+          },
+          session
+        )
+        await this.data.withdrawals.update(
+          { _id: withdrawal._id },
+          {
+            status: Status.APPROVED,
+            blockchainTransactionId: response.txId,
+          },
+          session
+        )
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+      await this.discord.inHouseNotification({
+        title: `Withdrawal :- ${env.env} environment`,
+        message: `
+        
+        ACTION: CUSTODIAL WALLET
+
+        External Withdrawal Web
+
+        Withdraw ${withdrawal.amount} ${withdrawal.currency} 
+        
+        
+        TO :- ${withdrawal.destination.address}
+
+
+        BODY : ${JSON.stringify(payload)}
+`,
+        link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      })
+      // state last withdrawal
+      // update transaction status and reference
+      // store reference
+      return { message: description, status: HttpStatus.OK, data: response, state:ResponseState.SUCCESS }
+
+    }catch(error){
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CRYPTO WITHDRAWAL APPROVAL',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utils.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: typeof error === 'string' ? error: 'An error occured, please contact support',
+        error: error
+      })    }
+  }
+
+  async denyWithdrawal(payload:{withdrawalId:mongoose.Types.ObjectId, email:string}) {
+    const {withdrawalId, email} = payload
+    try{
+      const withdrawal = await this.data.withdrawals.findOne({_id:withdrawalId})
+      if(!withdrawal){
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Withdrawal does not exists',
+          error: null
+        })
+      }
+      if(withdrawal.status !== WithdrawalStatus.PENDING){
+        return Promise.reject({
+          status: HttpStatus.OK,
+          state: ResponseState.SUCCESS,
+          message: 'Withdrawal already processed',
+        })
+      }
+      const wallet = await this.data.wallets.findOne({_id:withdrawal.walletId})
+      const description = `Withdrawal request of ${withdrawal.originalAmount} ${this.utils.formatCoin(withdrawal.currency) } denied`
+
+      const atomicTransaction = async (session: mongoose.ClientSession) => {
+        await this.data.transactions.update(
+          { _id: withdrawal.transactionId },
+          {
+            status: Status.DENIED,
+          },
+          session
+        )
+
+        await this.data.transactions.update(
+          { _id: withdrawal.feeTransactionId },
+          {
+            status: Status.DENIED,
+          },
+          session
+        )
+        await this.data.transactions.update(
+          { _id: withdrawal.feeWalletTransactionId },
+          {
+            status: Status.DENIED,
+          },
+          session
+        )
+        await this.data.withdrawals.update(
+          { _id: withdrawal._id },
+          {
+            status: Status.DENIED,
+
+          },
+          session
+        )
+
+        const creditedWallet = await this.data.wallets.update(
+          {
+            _id: withdrawal.walletId,
+          },
+          {
+            $inc: {
+              balance: withdrawal.originalAmount,
+            },
+            lastDeposit: withdrawal.originalAmount
+          },
+          session
+        );
+        if (!creditedWallet) {
+          Logger.error("Error Occurred");
+          throw new BadRequestsException("Error Occurred");
+        }
+
+        const txCreditPayload = {
+          userId: withdrawal.userId,
+          walletId: withdrawal.walletId,
+          currency: withdrawal.currency,
+          amount:withdrawal.originalAmount,
+          signedAmount:withdrawal.originalAmount,
+          type: TRANSACTION_TYPE.CREDIT,
+          description,
+          status: Status.COMPLETED,
+          balanceAfter: creditedWallet?.balance,
+          balanceBefore: wallet?.balance,
+          subType: TRANSACTION_SUBTYPE.REVERSAL,
+          customTransactionType: CUSTOM_TRANSACTION_TYPE.MANUAL_DEPOSIT,
+          reference: generateReference('credit'),
+        };
+
+        const notificationPayload = {
+          userId: wallet.userId,
+          title: "Withdrawal denied",
+          message:description,
+        }
+
+        const [notificationFactory, txCreditFactory] = await Promise.all([
+          this.notificationFactory.create(notificationPayload),
+          this.txFactoryServices.create(txCreditPayload)
+        ])
+        await this.data.transactions.create(txCreditFactory, session)
+        await this.data.notifications.create(notificationFactory, session)
+
+      }
+      await databaseHelper.executeTransactionWithStartTransaction(
+        atomicTransaction,
+        this.connection
+      )
+
+      return { 
+        message:description,
+       status: HttpStatus.OK, 
+       data: {}, 
+       state:ResponseState.SUCCESS 
+      }
+
+    }catch(error){
+      Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'CRYPTO WITHDRAWAL DENIAL',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utils.errorReporter(errorPayload)
+      return Promise.reject({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        state: ResponseState.ERROR,
+        message: typeof error === 'string' ? error: 'An error occured, please contact support',
+        error: error
+      })    }
   }
 }
 

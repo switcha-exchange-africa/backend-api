@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Query, Res } from "@nestjs/common";
-import { Response } from "express"
+import { Controller, Get, Param, Put, Query, Req, Res } from "@nestjs/common";
+import { Response, Request } from "express"
 import { isAdminAuthenticated } from "src/core/decorators";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { IGetWithdrawals } from "src/core/entities/Withdrawal";
@@ -76,4 +76,39 @@ export class AdminWithdrawalController {
     }
   }
 
+  @Put('/:id/approved')
+  @isAdminAuthenticated('strict')
+  async approveWithdrawal(@Req() req: Request, @Res() res: Response, @Param() param: FindByIdDto) {
+    try {
+      const { email } = req.user
+      const { id: withdrawalId } = param;
+      const payload = {
+        withdrawalId,
+        email
+      }
+      const response = await this.services.approveWithdrawals(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
+
+  @Put('/:id/deny')
+  @isAdminAuthenticated('strict')
+  async denyWithdrawal(@Req() req: Request, @Res() res: Response, @Param() param: FindByIdDto) {
+    try {
+      const { email } = req.user
+      const { id: withdrawalId } = param;
+      const payload = {
+        withdrawalId,
+        email
+      }
+      const response = await this.services.denyWithdrawal(payload);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return res.status(error.status || 500).json(error);
+
+    }
+  }
 }
