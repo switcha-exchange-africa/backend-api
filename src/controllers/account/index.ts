@@ -39,13 +39,16 @@ export class AccountController {
     try {
 
       const userId = req?.user?._id;
+      const transactionPin = req?.user?.transactionPin
+      
       const email = req?.user.email
 
       const { pin } = body;
       const payload: ICreateTransactionPin = {
         userId,
         pin,
-        email
+        email,
+        transactionPin
       }
       const response = await this.accountServices.createTransactionPin(payload);
       return res.status(response.status).json(response);
@@ -157,8 +160,8 @@ export class AccountController {
     try {
       const userId = req?.user?._id;
       const email = req?.user?.email
-      
-      const payload:IUpdatePhone = {
+
+      const payload: IUpdatePhone = {
         userId,
         email,
         ...body

@@ -48,6 +48,7 @@ export class TxPinDto {
 export type ICreateTransactionPin = TxPinDto & {
   userId: string
   email: string
+  transactionPin?: string
 }
 export type IUpdateTransactionPin = ICreateTransactionPin & {
 

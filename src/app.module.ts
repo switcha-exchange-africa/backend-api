@@ -24,6 +24,7 @@ declare global {
         emailVerified?: boolean;
         phoneVerified?: boolean;
         roles?: RoleType[]
+        transactionPin?: string
       }
     }
   }
@@ -66,14 +67,14 @@ declare global {
       useClass: IsLevelTwoGuard,
     },
 
-    
+
 
   ],
 })
 
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CustomIpMiddleware).forRoutes('*');    
+    consumer.apply(CustomIpMiddleware).forRoutes('*');
     consumer.apply(LogsMiddleware).forRoutes('*');
 
   }

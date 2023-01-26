@@ -367,11 +367,10 @@ export class WalletServices {
       const period = specificTimePeriod({ date: data.createdAt, period: 'days' })
       const MIN_DAYS = 0
       const MAX_DAYS = 60
-      console.log("PERIOD", period)
       if ((period >= MIN_DAYS && period <= MAX_DAYS) && data.coin === 'USDT_TRON' && !data.isActivated) {
         /// transfer tron to activate wallet
-       // activate tron wallet 
-        console.log("TRANSFER USDT_TRON JOOR")
+        // activate tron wallet 
+        this.emitter.emit("activate.trc20.wallet", { destination: data.address, email })
       }
       // console.log(period)
       // 

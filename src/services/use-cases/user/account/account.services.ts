@@ -35,9 +35,18 @@ export class AccountServices {
   ) { }
 
   async createTransactionPin(payload: ICreateTransactionPin) {
-    const { userId, pin, email } = payload
+    const { userId, pin, email, transactionPin } = payload
     try {
 
+      if (transactionPin) {
+        return Promise.reject({
+          status: HttpStatus.CONFLICT,
+          state: ResponseState.ERROR,
+          message: 'Already set transaction pin',
+          error: null
+        })
+      }
+      
       const hashedPin = await hash(pin);
       await this.data.users.update(
         { _id: userId },
