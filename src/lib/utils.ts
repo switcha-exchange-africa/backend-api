@@ -1,11 +1,11 @@
-import { GOOGLE_CLIENT_SECRET, PORT, PRIVATE_KEY_ALGORITHM, PRIVATE_KEY_PASSWORD, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
+import {  PRIVATE_KEY_ALGORITHM, PRIVATE_KEY_PASSWORD, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
 import * as  moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
-import { env, GOOGLE_CLIENT_ID } from "src/configuration";
+import { env } from "src/configuration";
 import { createCipheriv, randomBytes, scrypt } from "crypto";
 import { promisify } from "util";
-import { google } from "googleapis";
+// import { google } from "googleapis";
 import * as crypto from "crypto";
 
 export const convertDate = (date: any) => {
@@ -178,27 +178,27 @@ export const generateReferencePrefix = (type: string) => {
   return ref;
 };
 
-export const generateGoogleAuthUrl = () => {
-  const oauth2Client = new google.auth.OAuth2(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    /*
-     * This is where Google will redirect the user after they
-     * give permission to your application
-     */
-    `https://localhost:${PORT}/auth/google`,
-  );
-  const scopes = [
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email',
-  ];
+// export const generateGoogleAuthUrl = () => {
+//   const oauth2Client = new google.auth.OAuth2(
+//     GOOGLE_CLIENT_ID,
+//     GOOGLE_CLIENT_SECRET,
+//     /*
+//      * This is where Google will redirect the user after they
+//      * give permission to your application
+//      */
+//     `https://localhost:${PORT}/auth/google`,
+//   );
+//   const scopes = [
+//     'https://www.googleapis.com/auth/userinfo.profile',
+//     'https://www.googleapis.com/auth/userinfo.email',
+//   ];
 
-  return oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    prompt: 'consent',
-    scope: scopes, // If you only need one scope you can pass it as string
-  });
-}
+//   return oauth2Client.generateAuthUrl({
+//     access_type: 'offline',
+//     prompt: 'consent',
+//     scope: scopes, // If you only need one scope you can pass it as string
+//   });
+// }
 
 
 export const generateEncryptionKey = (payload: { username: string, userId: string, pin: string }) => {

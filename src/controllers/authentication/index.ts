@@ -16,7 +16,7 @@ import {
 } from "src/core/dtos/resetPasswordDto.dto";
 import { RecoverPasswordDto } from "src/core/dtos/recoverPasswordDto.dto";
 import { ILogin, ISignup, LoginDto, SignupDto } from "src/core/dtos/authentication/login.dto";
-import { generateGoogleAuthUrl } from "src/lib/utils";
+// import { generateGoogleAuthUrl } from "src/lib/utils";
 import { AUTHENTICATION_ROUTE } from "src/lib/route-constant";
 import { isAuthenticated } from "src/core/decorators";
 import { FeatureManagement } from "src/decorator";
@@ -130,11 +130,11 @@ export class AuthenticationController {
     }
   }
 
-  @Get(AUTHENTICATION_ROUTE.GOOGLE)
-  async google(@Res() res: Response) {
-    const response = await generateGoogleAuthUrl();
-    res.redirect(response);
-  }
+  // @Get(AUTHENTICATION_ROUTE.GOOGLE)
+  // async google(@Res() res: Response) {
+  //   const response = await generateGoogleAuthUrl();
+  //   res.redirect(response);
+  // }
 
   @Get(AUTHENTICATION_ROUTE.GET_USER)
   @isAuthenticated('loose')
