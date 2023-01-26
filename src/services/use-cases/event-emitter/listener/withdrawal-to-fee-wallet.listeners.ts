@@ -41,6 +41,7 @@ export class WithdrawalToFeeWalletListener {
     }) {
         const { amount, privateKey, from, email, userId, walletId } = event
         try {
+            console.log("------------ WITHDRAWING TO ETH FEE WALLET -------------")
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'ETH' })
             if (!coinFeeWallet) {
                 throw new Error("Fee Wallet does not exists")

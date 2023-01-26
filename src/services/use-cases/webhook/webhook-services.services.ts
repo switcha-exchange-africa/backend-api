@@ -190,13 +190,22 @@ export class WebhookServices {
 
       // send to fee wallet
       if (wallet.privateKey && user.transactionPin) {
+        console.log("------------- PRIVATE KEY --------------")
+        console.log({
+          text: wallet.privateKey,
+          username: user.username,
+          userId: wallet.userId,
+          pin: user.transactionPin
+        })
         const privateKey = decryptData({
           text: wallet.privateKey,
           username: user.username,
           userId: wallet.userId,
           pin: user.transactionPin
         })
+        console.log("------------- PRIVATE KEY --------------")
         if (wallet.coin === 'ETH') {
+          console.log("")
           this.emitter.emit("send.to.eth.fee.wallet", {
             amount: String(amount),
             privateKey,
