@@ -232,6 +232,9 @@ export const decryptData = (payload: { text: string, username: string, userId: s
     const { text, username, userId, pin } = payload
     const key = generateEncryptionKey({ username, userId, pin });
     const iv = generateEncryptionIV();
+    console.log("DECRYPT KEY", key)
+    console.log("DECRYPT iv", iv)
+
     const decipher = crypto.createDecipheriv(WALLET_ENCRYPTION_ALGORITHM, key, iv);
 
     let decrypted = decipher.update(text, "hex", "utf8");
