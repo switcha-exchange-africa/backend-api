@@ -19,11 +19,17 @@ export class ActivateWalletListener {
         private readonly utils: UtilsServices,
     ) { }
 
+    /**
+     * @desc event emitter to activation users usdt-tron wallet, sending 1 tron o activate it 
+     * then update on the db
+     * @nb will keep monitoring this operation
+     * @param event 
+     */
     @OnEvent('activate.trc20.wallet', { async: true })
     async activateUsdtTronWallet(event: { destination: string, email: string }) {
         const { destination, email } = event
         try {
-
+            console.log("ENTERING ACTIVATE WALLET")
             const destinationWallet = await this.data.wallets.findOne({ address: destination, coin: 'USDT_TRON' })
             if (!destinationWallet) {
                 Logger.error('activate.trc20.wallet', 'USDT_TRON destination wallet does not exists')
@@ -42,15 +48,12 @@ export class ActivateWalletListener {
 
                 TATUM_CONFIG
             )
-
-
             const coinFeeWalletTrxConversionBalance = _.divide(coinFeeWalletTrxBalance.balance, TRON_BASE_DIVISOR)
-
             if (coinFeeWalletTrxConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
-                Logger.error('send.to.trc20.fee.wallet', `Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+                Logger.error('activate.trc20.wallet',`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
                 throw new Error(`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
-
+         
             const coinFeeWalletPrivateKey = decryptData({
                 text: coinFeeWallet.privateKey,
                 username: TATUM_PRIVATE_KEY_USER_NAME,
@@ -64,8 +67,8 @@ export class ActivateWalletListener {
                 from: coinFeeWallet.address,
                 privateKey: coinFeeWalletPrivateKey
             })
-
             await this.data.wallets.update({ _id: destinationWallet._id }, { isActivated: true })
+
         } catch (error) {
             Logger.error(error)
 
