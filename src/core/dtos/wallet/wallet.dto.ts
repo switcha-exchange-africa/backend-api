@@ -47,6 +47,10 @@ export type IGetWallets = PaginationType & {
   reference: string
   isAdmin?: boolean
 }
+export type IGetSingleWallet = {
+  id: Types.ObjectId,
+  email: string
+}
 export class FundWalletDto {
   @IsNotEmpty()
   @IsNumber()

@@ -14,9 +14,9 @@ import {
 } from "src/configuration";
 import { WalletFactoryService } from "./wallet-factory.service";
 import { BLOCKCHAIN_CHAIN, Wallet, WalletCleanedData } from "src/core/entities/wallet.entity";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import { ResponseState, ResponsesType } from "src/core/types/response";
-import { IFundWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { IFundWallet, IGetSingleWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { CoinType } from "src/core/types/coin";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
@@ -27,7 +27,7 @@ import databaseHelper from "src/frameworks/data-services/mongo/database-helper";
 import { BadRequestsException } from "../user/exceptions";
 import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { Status } from "src/core/types/status";
-import { generateReference } from "src/lib/utils";
+import { generateReference, specificTimePeriod } from "src/lib/utils";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { WalletLib } from "./wallet.lib";
@@ -321,16 +321,20 @@ export class WalletServices {
     }
   }
 
-  async details(id: Types.ObjectId): Promise<ResponsesType<Wallet>> {
+  async details(payload: IGetSingleWallet): Promise<ResponsesType<Wallet>> {
+    const { id, email } = payload
+
     try {
       let data = await this.data.wallets.findOne({ _id: id });
-      if (!data) return Promise.reject({
-        status: HttpStatus.NOT_FOUND,
-        state: ResponseState.ERROR,
-        message: 'Wallet does not exist',
-        error: null,
-      })
+      if (!data) {
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message: 'Wallet does not exist',
+          error: null,
+        })
 
+      }
       if (!data.derivationKey) {
         // setup derivationKey
         const getWalletsFromVirtualAccounts = await this.http.get(`${TATUM_BASE_URL}/offchain/account/${data.accountId}/address`, TATUM_CONFIG)
@@ -357,6 +361,19 @@ export class WalletServices {
         }
 
       }
+      /**
+       * will remove this patch after a month
+       */
+      const period = specificTimePeriod({ date: data.createdAt, period: 'days' })
+      const MIN_DAYS = 0
+      const MAX_DAYS = 60
+      console.log("PERIOD", period)
+      if ((period >= MIN_DAYS && period <= MAX_DAYS) && data.coin === 'USDT_TRON' && !data.isActivated) {
+        /// transfer tron to activate wallet
+       // activate tron wallet 
+        console.log("TRANSFER USDT_TRON JOOR")
+      }
+      // console.log(period)
       // 
       // if no private key generate one
       return {
@@ -368,6 +385,15 @@ export class WalletServices {
 
     } catch (error) {
       Logger.error(error)
+      const errorPayload: IErrorReporter = {
+        action: 'GET SINGLE WALLET',
+        error,
+        email,
+        message: error.message
+      }
+
+      this.utilsService.errorReporter(errorPayload)
+
       return Promise.reject({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         state: ResponseState.ERROR,

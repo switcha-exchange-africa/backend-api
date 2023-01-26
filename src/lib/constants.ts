@@ -42,16 +42,9 @@ export const USER_SIGNUP_STATUS_TYPE_LIST = [
 
 export type JWT_USER_PAYLOAD_TYPE = {
   _id?: string;
-  firstName?: string;
-  lastName?: string;
-  username?: string
   email?: string;
-  level?: string;
-  isBlacklisted?: boolean
-  lock?: boolean;
-  emailVerified?: boolean;
-  phoneVerified?: boolean;
 };
+
 export const JWT_EXPIRY_TIME: number = 5;
 export const JWT_EXPIRY_TIME_IN_SECONDS: number = 5 * 60 * 60;
 export const SIGNUP_CODE_EXPIRY: number = 600;

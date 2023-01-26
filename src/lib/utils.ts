@@ -1,5 +1,5 @@
 import { GOOGLE_CLIENT_SECRET, PORT, WALLET_ENCRYPTION_ALGORITHM, WALLET_ENCRYPTION_PRIVATE_KEY, WALLET_ENCRYPTION_PUBLIC_KEY } from './../configuration/index';
-import moment from "moment";
+import * as  moment from "moment";
 import { hash as bcryptHash, compare } from "bcrypt";
 import slugify from "slugify";
 import { env, GOOGLE_CLIENT_ID } from "src/configuration";
@@ -241,3 +241,9 @@ export const decryptData = (payload: { text: string, username: string, userId: s
     throw new Error(e);
   }
 };
+
+export const specificTimePeriod = (payload: { date: Date, period: 'days' | 'weeks' | 'years' }) => {
+  const { date, period } = payload
+  const now = moment()
+  return now.diff(date, period)
+}

@@ -36,10 +36,7 @@ export class AdminServices {
       const data = await this.data.admins.create(factory);
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: data._id,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        lock: data.lock
+        email: data.email
       }
       const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
 
@@ -280,10 +277,7 @@ export class AdminServices {
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: String(admin?._id),
-        firstName: admin.firstName,
-        lastName: admin.lastName,
         email: admin?.email,
-        lock: admin?.lock,
       }
       const token = await jwtLib.jwtSign(jwtPayload);
 

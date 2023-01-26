@@ -13,7 +13,7 @@ import {
 import { WALLET_ROUTE } from "src/lib/route-constant";
 
 import { Request, Response } from "express";
-import { CreateWalletDto, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
+import { CreateWalletDto, IGetSingleWallet, IGetWallets } from "src/core/dtos/wallet/wallet.dto";
 import { FindByIdDto } from "src/core/dtos/authentication/login.dto";
 import { isAuthenticated } from "src/core/decorators";
 
@@ -49,7 +49,7 @@ export class WalletController {
       const userId = req?.user?._id;
       const { perpage, page, dateFrom, dateTo, sortBy, orderBy, coin, reference } = query
 
-      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference, email:req?.user?.email, fullName:`${req?.user?.firstName} ${req?.user?.lastName}` }
+      const payload: IGetWallets = { perpage, page, dateFrom, dateTo, sortBy, orderBy, userId, coin, reference, email: req?.user?.email, fullName: `${req?.user?.firstName} ${req?.user?.lastName}` }
       const response = await this.services.findAll(payload);
 
       return res.status(response.status).json(response);
@@ -62,10 +62,12 @@ export class WalletController {
 
   @Get(WALLET_ROUTE.SINGLE_ROUTE)
   @isAuthenticated('strict')
-  async detail(@Res() res: Response, @Param() param: FindByIdDto) {
+  async detail(@Req() req: Request, @Res() res: Response, @Param() param: FindByIdDto) {
     try {
+      const { email } = req.user
       const { id } = param;
-      const response = await this.services.details(id);
+      const payload: IGetSingleWallet = { email, id }
+      const response = await this.services.details(payload);
       return res.status(response.status).json(response);
     } catch (error) {
       return res.status(error.status || 500).json(error);

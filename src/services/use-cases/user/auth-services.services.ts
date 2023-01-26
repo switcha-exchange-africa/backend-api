@@ -163,14 +163,7 @@ export class AuthServices {
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: user._id,
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user.email,
-        lock: user.lock,
-        username: user.username,
-        isBlacklisted: user.isBlacklisted,
-        level: user.level,
-        emailVerified: user.emailVerified,
+        email: user.email
       }
       const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`) as string;
       const code = randomFixedInteger(6)
@@ -186,7 +179,7 @@ export class AuthServices {
       await Promise.all([
         this.discordServices.inHouseNotification({
           title: `Email Verification code :- ${env.env} environment`,
-          message: `Verification code for ${jwtPayload?.firstName} ${jwtPayload.lastName}:- ${jwtPayload?.email} is ${code}`,
+          message: `Verification code for ${user?.firstName} ${user.lastName}:- ${user?.email} is ${code}`,
           link: DISCORD_VERIFICATION_CHANNEL_LINK,
         }),
         this.inMemoryServices.set(redisKey, hashedCode, String(SIGNUP_CODE_EXPIRY)),
@@ -308,14 +301,7 @@ export class AuthServices {
       // Remove phone code for this user
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: String(updatedUser._id),
-        firstName: updatedUser?.firstName,
-        lastName: updatedUser?.lastName,
         email: updatedUser.email,
-        lock: updatedUser.lock,
-        username: updatedUser.username,
-        isBlacklisted: updatedUser.isBlacklisted,
-        level: updatedUser.level,
-        emailVerified: updatedUser.emailVerified
       }
       const [token, , , userManagementFactory, activityFactory] = await Promise.all([
         jwtLib.jwtSign(jwtPayload),
@@ -791,14 +777,7 @@ export class AuthServices {
 
         const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
           _id: String(user._id),
-          firstName: user?.firstName,
-          lastName: user?.lastName,
-          email: user.email,
-          lock: user.lock,
-          username: user.username,
-          isBlacklisted: user.isBlacklisted,
-          level: user.level,
-          emailVerified: user.emailVerified
+          email: user.email
         }
 
         const token = await jwtLib.jwtSign(jwtPayload, `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`);
@@ -820,14 +799,7 @@ export class AuthServices {
 
       const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
         _id: String(updatedUser._id),
-        firstName: updatedUser?.firstName,
-        lastName: updatedUser?.lastName,
-        email: updatedUser.email,
-        lock: updatedUser.lock,
-        username: updatedUser.username,
-        isBlacklisted: updatedUser.isBlacklisted,
-        level: updatedUser.level,
-        emailVerified: updatedUser.emailVerified
+        email: updatedUser.email
       }
       const token = await jwtLib.jwtSign(jwtPayload);
 
