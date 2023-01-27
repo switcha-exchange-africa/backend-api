@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
 
       const user = await this.data.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
-      request.user = user;
+      request.user = { ...user, _id: String(user._id) };
 
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
