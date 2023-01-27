@@ -76,7 +76,7 @@ export class AdminWithdrawalController {
     }
   }
 
-  @Put('/:id/approved')
+  @Put('/:id/approve')
   @isAdminAuthenticated('strict')
   async approveWithdrawal(@Req() req: Request, @Res() res: Response, @Param() param: FindByIdDto) {
     try {

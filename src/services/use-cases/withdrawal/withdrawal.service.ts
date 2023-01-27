@@ -89,7 +89,7 @@ export class WithdrawalServices {
 
     try {
       // check if user has access to this feature
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId:String(userId) })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,
@@ -109,7 +109,7 @@ export class WithdrawalServices {
       
       // if(amountBeforeFee)
       const [wallet, feeWallet, _] = await Promise.all([
-        this.data.wallets.findOne({ userId, coin }),
+        this.data.wallets.findOne({ userId:String(userId), coin }),
         this.data.feeWallets.findOne({ coin }),
         this.data.users.findOne({ _id:userId }),
       ])
@@ -184,8 +184,6 @@ export class WithdrawalServices {
         }
       }
 
-      let response 
-
 
       const generalTransactionReference = generateReference('general')
       const atomicTransaction = async (session: mongoose.ClientSession) => {
@@ -258,7 +256,7 @@ export class WithdrawalServices {
             balanceBefore: wallet?.balance || 0,
             subType: TRANSACTION_SUBTYPE.DEBIT,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
-            metadata: response,
+
             generalTransactionReference,
             reference: generateReference('debit'),
           };
@@ -274,7 +272,6 @@ export class WithdrawalServices {
             subType: TRANSACTION_SUBTYPE.FEE,
             customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
             generalTransactionReference,
-            metadata: response,
             reference: generateReference('debit'),
           };
 
@@ -316,18 +313,17 @@ export class WithdrawalServices {
               address: destination,
               coin,
             },
-            walletWithdrawalType: WithdrawalWalletType.CUSTODIAL,
+            walletWithdrawalType: WithdrawalWalletType.NON_CUSTODIAL,
             currency: coin,
             reference: generalTransactionReference,
             type: WithdrawalType.CRYPTO,
-            subType: WithdrawalSubType.AUTO,
+            subType: WithdrawalSubType.MANUAL,
             status: WithdrawalStatus.PENDING,
             amount,
-            tatumWithdrawalId: response.id,
+            // tatumWithdrawalId: response.id,
             // blockchainTransactionId: response.txId,
-            tatumReference: response.reference,
             originalAmount: amountBeforeFee,
-            metadata: response,
+
             fee,
           }
           const [withdrawalFactory, notificationFactory, activityFactory] = await Promise.all([
@@ -384,9 +380,9 @@ export class WithdrawalServices {
         link: env.isProd ? WITHDRAWAL_CHANNEL_LINK_PRODUCTION : WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT,
       })
       return {
-        message: `Withdrawal request of ${amount} ${this.utils.formatCoin(coin)} sent successfully`,
+        message: `Withdrawal request of ${amount} ${this.utils.formatCoin(coin)} sent successfully.Withdrawal will be processed in the next 15 to 30 minute`,
         status: HttpStatus.CREATED,
-        data: response,
+        data: {},
         state: ResponseState.SUCCESS
       };
 
@@ -735,9 +731,6 @@ export class WithdrawalServices {
     }
   }
 
-
-
-
   async trc20Withdrawal(payload:ITrc20Withdrawal){
     const {amount, privateKey, email, destination, from} = payload
     try{
@@ -925,6 +918,7 @@ export class WithdrawalServices {
           { _id: withdrawal.transactionId },
           {
             status: Status.COMPLETED,
+            metadata: response
           },
           session
         )
@@ -933,13 +927,7 @@ export class WithdrawalServices {
           { _id: withdrawal.feeTransactionId },
           {
             status: Status.COMPLETED,
-          },
-          session
-        )
-        await this.data.transactions.update(
-          { _id: withdrawal.feeWalletTransactionId },
-          {
-            status: Status.COMPLETED,
+            metadata: response
           },
           session
         )
@@ -947,10 +935,21 @@ export class WithdrawalServices {
           { _id: withdrawal._id },
           {
             status: Status.APPROVED,
+            tatumWithdrawalId: response.id,
             blockchainTransactionId: response.txId,
+            tatumReference: response.reference,
           },
           session
         )
+
+        const notificationPayload = {
+          userId: withdrawal.userId,
+          title: "Withdrawal approved",
+          message:description,
+        }
+
+        const notificationFactory = await this.notificationFactory.create(notificationPayload)
+        await this.data.notifications.create(notificationFactory, session)
       }
       await databaseHelper.executeTransactionWithStartTransaction(
         atomicTransaction,
@@ -1080,7 +1079,7 @@ export class WithdrawalServices {
           balanceAfter: creditedWallet?.balance,
           balanceBefore: wallet?.balance,
           subType: TRANSACTION_SUBTYPE.REVERSAL,
-          customTransactionType: CUSTOM_TRANSACTION_TYPE.MANUAL_DEPOSIT,
+          customTransactionType: CUSTOM_TRANSACTION_TYPE.WITHDRAWAL,
           reference: generateReference('credit'),
         };
 

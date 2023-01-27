@@ -28,6 +28,7 @@ export class WithdrawalFactoryService {
     if (data.walletWithdrawalType) withdrawal.walletWithdrawalType = data.walletWithdrawalType;
     if (data.blockchainTransactionId) withdrawal.blockchainTransactionId = data.blockchainTransactionId;
     if (data.feeWalletTransactionId) withdrawal.feeWalletTransactionId = data.feeWalletTransactionId;
+    if (data.feeTransactionId) withdrawal.feeTransactionId = data.feeTransactionId;
 
     
     

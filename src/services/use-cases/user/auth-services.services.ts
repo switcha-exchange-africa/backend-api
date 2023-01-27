@@ -318,7 +318,7 @@ export class AuthServices {
           canSwap: true,
           canP2PBuy: true,
           canP2PSell: true,
-          canWithdraw: false,
+          canWithdraw: true,
           canP2PCreateBuyAd: true,
           canP2PCreateSellAd: true
         }),
@@ -844,7 +844,7 @@ export class AuthServices {
               canSwap: true,
               canP2PBuy: true,
               canP2PSell: true,
-              canWithdraw: false,
+              canWithdraw: true,
               canP2PCreateBuyAd: true,
               canP2PCreateSellAd: true
             })
@@ -907,7 +907,7 @@ export class AuthServices {
         canSwap: true,
         canP2PBuy: true,
         canP2PSell: true,
-        canWithdraw: false,
+        canWithdraw: true,
         canP2PCreateBuyAd: true,
         canP2PCreateSellAd: true
       })
