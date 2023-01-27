@@ -106,7 +106,6 @@ export class P2pServices {
           error: null
         })
       }
-      console.log("USER ID", userId)
       const [wallet, user] = await Promise.all([
         this.data.wallets.findOne({ coin, userId }),
         this.data.users.findOne({ _id: userId })
