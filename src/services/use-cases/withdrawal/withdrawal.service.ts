@@ -244,7 +244,7 @@ export class WithdrawalServices {
         //   }
 
           const txDebitPayload: OptionalQuery<Transaction> = {
-            userId,
+            userId:String(userId),
             walletId: String(wallet?._id),
             currency: coin,
             amount: amount,
@@ -261,7 +261,7 @@ export class WithdrawalServices {
             reference: generateReference('debit'),
           };
           const txFeePayload: OptionalQuery<Transaction> = {
-            userId,
+            userId:String(userId),
             walletId: String(wallet?._id),
             currency: coin,
             amount: fee,
@@ -304,7 +304,7 @@ export class WithdrawalServices {
           // const feeWalletTransaction = await this.data.transactions.create(feeWalletTransactionFactory, session)
 
           const withdrawalPayload: OptionalQuery<Withdrawal> = {
-            userId,
+            userId:String(userId),
             transactionId: transactionData._id,
             feeTransactionId: feeTransactionData._id,
             // feeWalletTransactionId: feeWalletTransaction._id,
