@@ -29,10 +29,20 @@ export class AuthGuard implements CanActivate {
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
 
-      const user:mongoose.HydratedDocument<User> = await this.data.users.findOne({ _id: decoded._id })
+      const user: mongoose.HydratedDocument<User> = await this.data.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
-      request.user = {...user, _id:String(user._id)};
-      
+      request.user = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        lock: user.lock,
+        isBlacklisted: user.isBlacklisted,
+        level: user.level,
+        username: user.username,
+        emailVerified: user.emailVerified,
+        transactionPin: user.transactionPin,
+        _id: String(user._id)
+      }
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
 
