@@ -372,7 +372,7 @@ export class SwapServices {
       ]);
 
       // check if user has access to this feature
-      const userManagement = await this.data.userFeatureManagement.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      const userManagement = await this.data.userFeatureManagement.findOne({ userId: String(userId) })
       if (!userManagement) {
         return Promise.reject({
           status: HttpStatus.SERVICE_UNAVAILABLE,

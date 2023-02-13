@@ -67,7 +67,7 @@ export class BankServices {
   async findAllWithPagination(payload: IGetBank): Promise<ResponsesType<Bank>> {
     try {
       const cleanedPayload = this.cleanQueryPayload(payload)
-
+      console.log(cleanedPayload)
       const { data, pagination } = await this.data.banks.findAllWithPagination({
         query: cleanedPayload,
         queryFields: {},

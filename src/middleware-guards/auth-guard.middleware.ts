@@ -5,6 +5,8 @@ import { IDataServices } from "src/core/abstracts";
 import jwtLib from "src/lib/jwtLib";
 import { isEmpty } from "src/lib/utils";
 import { DoesNotExistsException, UnAuthorizedException } from "src/services/use-cases/user/exceptions";
+import * as mongoose from "mongoose";
+import { User } from "src/frameworks/data-services/mongo/model/User";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,11 +29,10 @@ export class AuthGuard implements CanActivate {
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
 
-      const user = await this.data.users.findOne({ _id: decoded._id })
+      const user:mongoose.HydratedDocument<User> = await this.data.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('User does not exists')
-      request.user = user;
-      request.user._id = String(user._id)
-
+      request.user = {...user, _id:String(user._id)};
+      
       if (decorator !== 'strict') return true
       if (!user.emailVerified) throw new UnAuthorizedException('Unauthorized. please verify email')
 
