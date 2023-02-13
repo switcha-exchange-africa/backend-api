@@ -112,10 +112,32 @@ export const WalletCleanedData = [
 
 export type ISendToEthFeeWallet = {
   amount: number | string,
-  privateKey: string,
   from: string,
   email: string,
   userId: string,
   walletId: string,
   derivationKey: number
+}
+
+export type ISendToBtcFeeWallet = {
+  amount: number,
+  from: string,
+  email: string,
+  derivationKey: number
+}
+
+export type ISendToErc20FeeWallet = {
+  amount: number,
+  derivationKey: number
+  from: string,
+  email: string,
+  coin: string
+}
+
+export type ISendToTrc20FeeWallet = {
+  amount: number,
+  derivationKey: number
+  from: string,
+  email: string,
+  coin: string
 }

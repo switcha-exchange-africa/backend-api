@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { TATUM_BASE_URL, TATUM_CONFIG, TRON_BASE_DIVISOR, TRC_20_TRON_FEE_AMOUNT, TATUM_PRIVATE_KEY_USER_NAME, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_PIN, TRC_20_TRON_ACTIVATION_AMOUNT } from "src/configuration"
+import { TATUM_BASE_URL, TATUM_CONFIG, TRON_BASE_DIVISOR, TRC_20_TRON_FEE_AMOUNT, TRC_20_TRON_ACTIVATION_AMOUNT } from "src/configuration"
 import { IDataServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { IErrorReporter } from "src/core/types/error"
-import { decryptData } from "src/lib/utils"
 import { UtilsServices } from "../../utils/utils.service"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
@@ -50,22 +49,17 @@ export class ActivateWalletListener {
             )
             const coinFeeWalletTrxConversionBalance = _.divide(coinFeeWalletTrxBalance.balance, TRON_BASE_DIVISOR)
             if (coinFeeWalletTrxConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
-                Logger.error('activate.trc20.wallet',`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
+                Logger.error('activate.trc20.wallet', `Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
                 throw new Error(`Master usdt-tron tron's balance is less than ${TRC_20_TRON_FEE_AMOUNT}`)
             }
-         
-            const coinFeeWalletPrivateKey = decryptData({
-                text: coinFeeWallet.privateKey,
-                username: TATUM_PRIVATE_KEY_USER_NAME,
-                userId: TATUM_PRIVATE_KEY_USER_ID,
-                pin: TATUM_PRIVATE_KEY_PIN
-            })
+
             await this.withdrawalLib.withdrawalV3({
                 coin: 'TRON',
                 amount: TRC_20_TRON_ACTIVATION_AMOUNT,
                 destination,
                 from: coinFeeWallet.address,
-                privateKey: coinFeeWalletPrivateKey
+                isMasterWallet: true,
+                derivationKey: coinFeeWallet.derivationKey
             })
             await this.data.wallets.update({ _id: destinationWallet._id }, { isActivated: true })
 

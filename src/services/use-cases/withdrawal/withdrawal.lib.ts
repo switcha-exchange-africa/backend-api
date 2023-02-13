@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BEP_20_TOKENS, env, ERC_20_TOKENS, MASTER_TRON_MNEMONIC, TATUM_API_KEY, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC, TRC_20_TOKENS } from "src/configuration"
+import { env, ERC_20_TOKENS, MASTER_TRON_MNEMONIC, TATUM_API_KEY_CONFIG, TATUM_BASE_URL, TATUM_BTC_MNEMONIC, TATUM_BTC_XPUB_KEY, TATUM_CONFIG, TATUM_ETH_MNEMONIC, TATUM_TRON_MNEMONIC, TRC_20_TOKENS } from "src/configuration"
 import { Currency } from '@tatumio/api-client'
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { TatumBscSDK } from "@tatumio/bsc"
@@ -8,9 +8,6 @@ import { TatumEthSDK } from "@tatumio/eth"
 import { TatumTronSDK } from "@tatumio/tron"
 // import { randomFixedInteger } from "src/lib/utils"
 
-const API_KEY_CONFIG = {
-    apiKey: TATUM_API_KEY
-}
 const NETWORK_CONFIG = { testnet: !env.isProd }
 
 type BtcTransactionFromAddress = {
@@ -158,7 +155,7 @@ export class WithdrawalLib {
             console.log(payload)
 
             if (coin === Currency.BTC) {
-                const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
+                const btcSDK = TatumBtcSDK(TATUM_API_KEY_CONFIG)
                 const transfer = await btcSDK.virtualAccount.send({
                     senderAccountId: accountId,
                     amount: amount,
@@ -173,7 +170,7 @@ export class WithdrawalLib {
 
             if (coin === Currency.ETH || coin === Currency.USDT || coin === Currency.USDC) {
 
-                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
+                const ethSDK = TatumEthSDK(TATUM_API_KEY_CONFIG)
                 const privateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, index, NETWORK_CONFIG)
 
                 const transfer = await ethSDK.virtualAccount.send({
@@ -185,7 +182,7 @@ export class WithdrawalLib {
                 return transfer
             }
             if (coin === Currency.USDT_TRON || coin === Currency.TRON) {
-                const tronSDK = TatumTronSDK(API_KEY_CONFIG)
+                const tronSDK = TatumTronSDK(TATUM_API_KEY_CONFIG)
                 const fromPrivateKey = await tronSDK.wallet.generatePrivateKeyFromMnemonic(mnemonic, index)
 
                 const transfer = await tronSDK.virtualAccount.send({
@@ -198,7 +195,7 @@ export class WithdrawalLib {
             }
             if (coin === Currency.BNB || coin === Currency.BSC || coin === Currency.BUSD) {
 
-                const bscSdk = TatumBscSDK(API_KEY_CONFIG)
+                const bscSdk = TatumBscSDK(TATUM_API_KEY_CONFIG)
                 const fromPrivateKey = await bscSdk.wallet.generatePrivateKeyFromMnemonic(mnemonic, index, NETWORK_CONFIG)
 
                 const transfer = await bscSdk.virtualAccount.send({
@@ -216,6 +213,7 @@ export class WithdrawalLib {
 
     // withdrawal version 3
     async withdrawalV3(payload: {
+        isMasterWallet?: boolean,
         accountId?: string,
         coin?: string,
         amount: string,
@@ -223,7 +221,6 @@ export class WithdrawalLib {
         destination?: string,
         xpub?: string,
         index?: number,
-        privateKey?: string,
         fee?: string,
         changeAddress?: string,
         ethFee?: { gasLimit: string; gasPrice: string; },
@@ -231,10 +228,10 @@ export class WithdrawalLib {
         contractAddress?: string
     }) {
         try {
-            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress, derivationKey } = payload
+            const { isMasterWallet, coin, destination, ethFee, amount, from, fee, changeAddress, contractAddress, derivationKey } = payload
 
             if (coin === Currency.ETH) {
-                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
+                const ethSDK = TatumEthSDK(TATUM_API_KEY_CONFIG)
                 const fromPrivateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_ETH_MNEMONIC, derivationKey, NETWORK_CONFIG)
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,
@@ -249,13 +246,14 @@ export class WithdrawalLib {
 
             if (coin === Currency.BTC) {
                 const convertToNumber = Number(amount).toFixed(8)
-                const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
+                const btcSDK = TatumBtcSDK(TATUM_API_KEY_CONFIG)
+                const privateKey = await btcSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_BTC_MNEMONIC, derivationKey, NETWORK_CONFIG)
 
                 const transfer = await btcSDK.transaction.sendTransaction({
                     fromAddress: [
                         {
                             address: from,
-                            privateKey: privateKey,
+                            privateKey,
                         },
                     ],
                     to: [
@@ -273,37 +271,42 @@ export class WithdrawalLib {
 
             if (ERC_20_TOKENS.includes(coin)) {
 
-                const ethSDK = TatumEthSDK(API_KEY_CONFIG)
+                const ethSDK = TatumEthSDK(TATUM_API_KEY_CONFIG)
+                const fromPrivateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_ETH_MNEMONIC, derivationKey, NETWORK_CONFIG)
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,
                     amount,
-                    fromPrivateKey: privateKey,
+                    fromPrivateKey,
                     fee: ethFee,
                     currency: coin as Currency
                 })
                 return transfer
             }
 
-            if (BEP_20_TOKENS.includes(coin)) {
+            // if (BEP_20_TOKENS.includes(coin)) {
 
-                const bscSDK = TatumBscSDK(API_KEY_CONFIG)
-                const transfer = await bscSDK.transaction.send.transferSignedTransaction({
-                    to: destination,
-                    amount,
-                    fromPrivateKey: privateKey,
-                    fee: ethFee,
-                    currency: coin as Currency
-                })
-                return transfer
-            }
+            //     const bscSDK = TatumBscSDK(TATUM_API_KEY_CONFIG)
+            //     const fromPrivateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_ETH_MNEMONIC, derivationKey, NETWORK_CONFIG)
+
+            //     const transfer = await bscSDK.transaction.send.transferSignedTransaction({
+            //         to: destination,
+            //         amount,
+            //         fromPrivateKey: privateKey,
+            //         fee: ethFee,
+            //         currency: coin as Currency
+            //     })
+            //     return transfer
+            // }
 
             if (TRC_20_TOKENS.includes(coin)) {
 
-                const tronSdk = TatumTronSDK(API_KEY_CONFIG)
+                const tronSdk = TatumTronSDK(TATUM_API_KEY_CONFIG)
+                const fromPrivateKey = await tronSdk.wallet.generatePrivateKeyFromMnemonic(TATUM_TRON_MNEMONIC, derivationKey)
+
                 const transfer = await tronSdk.trc20.send.signedTransaction({
                     to: destination,
                     amount,
-                    fromPrivateKey: privateKey,
+                    fromPrivateKey,
                     tokenAddress: contractAddress,
                     feeLimit: Number(fee) | 15,
                 })
@@ -312,11 +315,12 @@ export class WithdrawalLib {
 
             if (coin === 'TRON') {
 
-                const tronSdk = TatumTronSDK(API_KEY_CONFIG)
+                const tronSdk = TatumTronSDK(TATUM_API_KEY_CONFIG)
+                const fromPrivateKey = isMasterWallet ? await tronSdk.wallet.generatePrivateKeyFromMnemonic(MASTER_TRON_MNEMONIC, derivationKey) : await tronSdk.wallet.generatePrivateKeyFromMnemonic(TATUM_TRON_MNEMONIC, derivationKey)
                 const transfer = await tronSdk.transaction.send.signedTransaction({
                     to: destination,
                     amount,
-                    fromPrivateKey: privateKey,
+                    fromPrivateKey,
                 })
                 return transfer
             }

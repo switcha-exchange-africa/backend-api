@@ -4,13 +4,17 @@ import { IDataServices, INotificationServices } from "src/core/abstracts"
 import { IHttpServices } from "src/core/abstracts/http-services.abstract"
 import { WithdrawalLib } from "../../withdrawal/withdrawal.lib"
 import * as _ from "lodash"
-import { BASE_DIVISOR_IN_GWEI, env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR } from "src/configuration"
+import { BASE_DIVISOR_IN_GWEI, env, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, 
+    // TATUM_PRIVATE_KEY_PIN, 
+    // TATUM_PRIVATE_KEY_USER_ID, 
+    // TATUM_PRIVATE_KEY_USER_NAME,
+     TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR } from "src/configuration"
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION, EXTERNAL_DEPOSIT_CHANNEL_LINK } from "src/lib/constants"
 import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
-import { decryptData } from "src/lib/utils"
+// import { decryptData } from "src/lib/utils"
 import { BlockchainFeesAccruedFactoryServices } from "../../fees/fee-factory.service"
-import { ISendToEthFeeWallet } from "src/core/entities/wallet.entity"
+import { ISendToBtcFeeWallet, ISendToErc20FeeWallet, ISendToEthFeeWallet, ISendToTrc20FeeWallet } from "src/core/entities/wallet.entity"
 
 
 
@@ -32,7 +36,7 @@ export class WithdrawalToFeeWalletListener {
 
 
     @OnEvent('send.to.eth.fee.wallet', { async: true })
-    async toEthFeeWWallet(event:ISendToEthFeeWallet) {
+    async toEthFeeWWallet(event: ISendToEthFeeWallet) {
         const { amount, from, email, userId, walletId, derivationKey } = event
         try {
             console.log("------------ WITHDRAWING TO ETH FEE WALLET -------------")
@@ -120,13 +124,8 @@ export class WithdrawalToFeeWalletListener {
 
 
     @OnEvent('send.to.btc.fee.wallet', { async: true })
-    async toBtcFeeWWallet(event: {
-        amount: number,
-        privateKey: string,
-        from: string,
-        email: string
-    }) {
-        const { amount, privateKey, from, email } = event
+    async toBtcFeeWWallet(event: ISendToBtcFeeWallet) {
+        const { amount, derivationKey, from, email } = event
         try {
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'BTC' })
             if (!coinFeeWallet) {
@@ -158,7 +157,7 @@ export class WithdrawalToFeeWalletListener {
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amountAfterDeduction),
-                privateKey,
+                derivationKey,
                 coin: 'BTC',
                 from,
                 fee: String(fee),
@@ -202,14 +201,8 @@ export class WithdrawalToFeeWalletListener {
     }
 
     @OnEvent('send.to.erc20.fee.wallet', { async: true })
-    async toErc20FeeWWallet(event: {
-        amount: number,
-        privateKey: string,
-        from: string,
-        email: string,
-        coin: string
-    }) {
-        const { amount, privateKey, from, email, coin } = event
+    async toErc20FeeWWallet(event: ISendToErc20FeeWallet) {
+        const { amount, derivationKey, from, email, coin } = event
         try {
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: coin })
             if (!coinFeeWallet) {
@@ -236,8 +229,8 @@ export class WithdrawalToFeeWalletListener {
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amount),
-                privateKey,
-                coin: 'ETH',
+                derivationKey,
+                coin,
                 ethFee
             })
 
@@ -280,14 +273,8 @@ export class WithdrawalToFeeWalletListener {
 
 
     @OnEvent('send.to.trc20.fee.wallet', { async: true })
-    async toTrc20FeeWWallet(event: {
-        amount: number,
-        privateKey: string,
-        from: string,
-        email: string,
-        coin: string
-    }) {
-        const { amount, privateKey, from, email, coin } = event
+    async toTrc20FeeWWallet(event: ISendToTrc20FeeWallet) {
+        const { amount, derivationKey, from, email, coin } = event
         try {
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
 
@@ -324,18 +311,18 @@ export class WithdrawalToFeeWalletListener {
             // send tron to activate wallet
             if (fromTrxBalanceConversionBalance < Number(TRC_20_TRON_FEE_AMOUNT)) {
                 // if balance is less than the fee send from tron master address to from address
-                const coinFeeWalletPrivateKey = decryptData({
-                    text: coinFeeWallet.privateKey,
-                    username: TATUM_PRIVATE_KEY_USER_NAME,
-                    userId: TATUM_PRIVATE_KEY_USER_ID,
-                    pin: TATUM_PRIVATE_KEY_PIN
-                })
+                // const coinFeeWalletPrivateKey = decryptData({
+                //     text: coinFeeWallet.privateKey,
+                //     username: TATUM_PRIVATE_KEY_USER_NAME,
+                //     userId: TATUM_PRIVATE_KEY_USER_ID,
+                //     pin: TATUM_PRIVATE_KEY_PIN
+                // })
                 await this.withdrawalLib.withdrawalV3({
                     coin: 'TRON',
                     amount: TRC_20_TRON_FEE_AMOUNT,
                     destination: from,
                     from: coinFeeWallet.address,
-                    privateKey: coinFeeWalletPrivateKey
+                    derivationKey: coinFeeWallet.derivationKey
                 })
             }
 
@@ -343,7 +330,7 @@ export class WithdrawalToFeeWalletListener {
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amount),
-                privateKey,
+                derivationKey,
                 coin: 'USDT_TRON',
                 contractAddress: Trc20TokensContractAddress.USDT_TRON,
                 fee: String(TRC_20_TRON_FEE_AMOUNT)

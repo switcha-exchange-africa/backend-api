@@ -65,7 +65,9 @@ export const TATUM_USDC_ACCOUNT_ID = getEnv('TATUM_USDC_ACCOUNT_ID')!
 export const TATUM_BTC_ACCOUNT_ID = getEnv('TATUM_BTC_ACCOUNT_ID')!
 export const TATUM_USDT_TRON_ACCOUNT_ID = getEnv('TATUM_USDT_TRON_ACCOUNT_ID')!
 export const TATUM_ETH_ACCOUNT_ID = getEnv("TATUM_ETH_ACCOUNT_ID")
-
+export const TATUM_API_KEY_CONFIG = {
+  apiKey: TATUM_API_KEY
+}
 export const WEB_PUSH_PUBLIC_KEY = getEnv("WEB_PUSH_PUBLIC_KEY", true)
 export const WEB_PUSH_PRIVATE_KEY = getEnv("WEB_PUSH_PRIVATE_KEY", true)
 export const FRONTEND_URL = getEnv("FRONTEND_URL", true)

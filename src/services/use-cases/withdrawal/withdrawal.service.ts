@@ -1,7 +1,8 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   BASE_DIVISOR_IN_GWEI,
-  env, ERC_20_TOKENS, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, TATUM_PRIVATE_KEY_PIN, TATUM_PRIVATE_KEY_USER_ID, TATUM_PRIVATE_KEY_USER_NAME, TRC_20_TOKENS, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
+  env, ERC_20_TOKENS, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, 
+  TRC_20_TOKENS, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -13,9 +14,7 @@ import { OptionalQuery } from "src/core/types/database"
 import { ResponseState } from "src/core/types/response"
 import {  Trc20TokensContractAddress, UtilsServices } from "../utils/utils.service"
 import * as mongoose from "mongoose";
-import { 
-  // compareHash,
-   decryptData, generateReference } from "src/lib/utils"
+import {  generateReference } from "src/lib/utils"
 import { TransactionFactoryService } from "../transaction/transaction-factory.services"
 import {
   IBtcWithdrawal,
@@ -623,7 +622,7 @@ export class WithdrawalServices {
   }
 
   async ethWithdrawal(payload:IEthWithdrawal){
-    const {email, from, destination, fromPrivateKey, amount, userId, walletId} = payload
+    const {email, from, destination,derivationKey, amount, userId, walletId} = payload
     try{
       const { gasLimit, estimations } = await this.http.post(
         `${TATUM_BASE_URL}/ethereum/gas`,
@@ -649,7 +648,7 @@ export class WithdrawalServices {
     const transfer = await this.lib.withdrawalV3({
         destination,
         amount:String(amount),
-        privateKey:fromPrivateKey,
+        derivationKey,
         coin: 'ETH',
         ethFee
     })  
@@ -679,7 +678,7 @@ export class WithdrawalServices {
   }
 
   async btcWithdrawal(payload:IBtcWithdrawal){
-    const {amount, privateKey, from, email, destination} = payload
+    const {amount, derivationKey, from, email, destination} = payload
     try{
      
     let convertTo8Dp = Number(amount).toFixed(8)
@@ -709,7 +708,7 @@ export class WithdrawalServices {
     const transfer = await this.lib.withdrawalV3({
       destination,
       amount: String(amount),
-      privateKey,
+      derivationKey,
       coin: 'BTC',
       from,
       fee:String(fee),
@@ -732,7 +731,7 @@ export class WithdrawalServices {
   }
 
   async trc20Withdrawal(payload:ITrc20Withdrawal){
-    const {amount, privateKey, email, destination, from} = payload
+    const {amount, derivationKey, email, destination, from} = payload
     try{
 
       const coinFeeWalletTrxBalance = await this.http.get(
@@ -748,7 +747,7 @@ export class WithdrawalServices {
     const transfer = await this.lib.withdrawalV3({
       destination,
       amount,
-      privateKey,
+      derivationKey,
       coin: 'USDT_TRON',
       fee:TRC_20_TRON_FEE_AMOUNT,
       contractAddress: Trc20TokensContractAddress.USDT_TRON,
@@ -789,6 +788,15 @@ export class WithdrawalServices {
         })
       }
       const description = `Withdrawal request of ${withdrawal.originalAmount} ${this.utils.formatCoin(withdrawal.currency) } approved`
+      const wallet = await this.data.wallets.findOne({id:withdrawal.walletId})
+      if(!wallet){
+        return Promise.reject({
+          status: HttpStatus.NOT_FOUND,
+          state: ResponseState.ERROR,
+          message:`User does not have ${withdrawal.currency} wallet`,
+          error: null
+        })
+      }
 
       const feeWallet= await this.data.feeWallets.findOne({ coin:withdrawal.currency })
       if(!feeWallet){
@@ -858,24 +866,14 @@ export class WithdrawalServices {
           destination:withdrawal.destination.address,
           walletId:String(withdrawal.walletId),
           userId:String(withdrawal.userId),
-          fromPrivateKey: decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
+          derivationKey:Number(wallet.derivationKey),
           amount:withdrawal.amount
         }
         response = await this.ethWithdrawal(ethPayload)
       }else if(TRC_20_TOKENS.includes(withdrawal.currency)){
         const trc20Payload:ITrc20Withdrawal = {
           amount:String(withdrawal.amount),
-          privateKey:decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
+          derivationKey:Number(wallet.derivationKey),
           email,
           from:feeWallet.address,
           destination:withdrawal.destination.address,
@@ -885,12 +883,7 @@ export class WithdrawalServices {
         console.log("ENTERING BTC WITHDRAWALS")
         const btcPayload:IBtcWithdrawal = {
           amount:String(withdrawal.amount),
-            privateKey:  decryptData({
-            text: feeWallet.privateKey,
-            username: TATUM_PRIVATE_KEY_USER_NAME,
-            userId: TATUM_PRIVATE_KEY_USER_ID,
-            pin: TATUM_PRIVATE_KEY_PIN
-        }),
+          derivationKey:Number(wallet.derivationKey),
         from: feeWallet.address,
         email,
         destination:withdrawal.destination.address,

@@ -10,13 +10,13 @@ import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
-import { ISendToEthFeeWallet, Wallet } from "src/core/entities/wallet.entity";
+import { ISendToBtcFeeWallet, ISendToEthFeeWallet, Wallet } from "src/core/entities/wallet.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
 import { WithdrawalStatus } from "src/core/entities/Withdrawal";
 // import { OptionalQuery } from "src/core/types/database";
-import { decryptPrivateKey, generateReferencePrefix } from "src/lib/utils";
+import {  generateReferencePrefix } from "src/lib/utils";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import * as _ from "lodash"
 
@@ -190,11 +190,9 @@ export class WebhookServices {
 
       // send to fee wallet
       if (wallet.privateKey && user.transactionPin && wallet.patchedNewPrivKeyEnc) {
-        const privateKey = decryptPrivateKey(wallet.privateKey)
         if (wallet.coin === 'ETH') {
           const ethToFeePayload: ISendToEthFeeWallet = {
             amount: String(amount),
-            privateKey,
             from: wallet.address,
             derivationKey: Number(wallet.derivationKey),
             email: user.email,
@@ -202,18 +200,21 @@ export class WebhookServices {
             walletId: String(wallet._id)
           }
           this.emitter.emit("send.to.eth.fee.wallet", ethToFeePayload)
+
         } else if (wallet.coin === 'BTC') {
           console.log("SENDING FEE TO BTC FEE WALLET")
-          this.emitter.emit("send.to.btc.fee.wallet", {
+          const btcToFeeWallet: ISendToBtcFeeWallet = {
             amount: Number(amount),
-            privateKey,
-            from: wallet.address
-          })
+            email: user.email,
+            from: wallet.address,
+            derivationKey: Number(wallet.derivationKey)
+          }
+          this.emitter.emit("send.to.btc.fee.wallet", btcToFeeWallet)
         } else if (wallet.coin === 'USDT_TRON') {
           console.log("SENDING FEE TO USDT TRON FEE WALLET")
           this.emitter.emit('send.to.trc20.fee.wallet', {
             amount: Number(amount),
-            privateKey,
+            derivationKey: Number(wallet.derivationKey),
             from: wallet.address,
             email: user.email,
             coin: 'USDT_TRON'

@@ -69,5 +69,5 @@ jobs:
             docker run --name switcha-staging-api --env-file ~/secrets/api/.env.staging -d --restart always --publish 3464:3464 registry.digitalocean.com/switcha-africa/switcha-staging-api:latest
 
             # deleting untagged image
-            #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 
