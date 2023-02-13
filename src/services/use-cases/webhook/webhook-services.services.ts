@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Request } from "express"
 import { IDataServices, INotificationServices } from "src/core/abstracts";
 import { BadRequestsException } from "../user/exceptions";
@@ -69,7 +69,9 @@ export class WebhookServices {
       ])
 
       const feeWallet = await this.data.feeWallets.findOne({ address: to })
-      if (feeWallet) return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+      if (feeWallet){
+        return Promise.resolve({ message: 'Stop webhook, Fee wallet' })
+      }
 
       if (!wallet) {
         await this.discord.inHouseNotification({
@@ -189,7 +191,6 @@ export class WebhookServices {
       // emit events
 
       // send to fee wallet
-      if (wallet.privateKey && user.transactionPin && wallet.patchedNewPrivKeyEnc) {
         if (wallet.coin === 'ETH') {
           const ethToFeePayload: ISendToEthFeeWallet = {
             amount: String(amount),
@@ -219,9 +220,8 @@ export class WebhookServices {
             email: user.email,
             coin: 'USDT_TRON'
           })
-        }
+        }else{}
 
-      }
 
       await this.discord.inHouseNotification({
         title: `External Deposit :- ${env.env} environment`,
@@ -444,7 +444,9 @@ export class WebhookServices {
       const { amount, currency, accountId, from, to } = payload
       const wallet: Wallet = await this.data.wallets.findOne({ accountId, coin: currency.toUpperCase(), address: to })
 
-      if (!wallet) return Promise.resolve({ message: 'Wallet does not exists' })
+      if (!wallet){
+        return Promise.resolve({ message: 'Wallet does not exists' }) 
+      }
       const factory = await this.notificationFactory.create({
         title: "Incoming Deposit",
         message: `Incoming deposit of ${amount}${currency} from ${from}`,
@@ -455,7 +457,7 @@ export class WebhookServices {
 
 
       await this.discord.inHouseNotification({
-        title: `Pending External Deposit :- ${env.env} environment`,
+        title: `pending.external.deposit.${env.env}`,
         message: `
 
         External Deposit
@@ -470,7 +472,7 @@ export class WebhookServices {
 `,
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
       })
-      return { message: "Webhook received successfully", status: 200, data: payload }
+      return { message: "Webhook received successfully", status:  HttpStatus.OK, data: payload }
 
     } catch (error) {
       Logger.error(error)
@@ -482,8 +484,8 @@ export class WebhookServices {
       }
 
       this.utilsService.errorReporter(errorPayload)
-      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
-      return Promise.resolve({ message: error, status: 200 })
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: HttpStatus.OK })
+      return Promise.resolve({ message: error, status:  HttpStatus.OK })
     }
   }
 
