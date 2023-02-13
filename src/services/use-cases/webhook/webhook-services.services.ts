@@ -239,7 +239,7 @@ export class WebhookServices {
 `,
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
       })
-      return { message: "Webhook received successfully", status: 200, data: payload }
+      return { message: "Webhook received successfully", status: HttpStatus.OK, data: payload }
     } catch (error) {
       Logger.error(error)
       const errorPayload: IErrorReporter = {
@@ -250,8 +250,8 @@ export class WebhookServices {
       }
 
       this.utilsService.errorReporter(errorPayload)
-      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: 200 })
-      return Promise.resolve({ message: error, status: 200 })
+      if (error.name === 'TypeError') return Promise.resolve({ message: error.message, status: HttpStatus.OK })
+      return Promise.resolve({ message: error, status: HttpStatus.OK })
     }
   }
 
