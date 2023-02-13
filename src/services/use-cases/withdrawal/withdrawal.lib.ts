@@ -223,22 +223,23 @@ export class WithdrawalLib {
         destination?: string,
         xpub?: string,
         index?: number,
-        privateKey: string,
+        privateKey?: string,
         fee?: string,
         changeAddress?: string,
         ethFee?: { gasLimit: string; gasPrice: string; },
+        derivationKey?: number,
         contractAddress?: string
     }) {
         try {
-            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress } = payload
+            const { coin, privateKey, destination, ethFee, amount, from, fee, changeAddress, contractAddress, derivationKey } = payload
 
             if (coin === Currency.ETH) {
                 const ethSDK = TatumEthSDK(API_KEY_CONFIG)
-                
+                const fromPrivateKey = await ethSDK.wallet.generatePrivateKeyFromMnemonic(TATUM_ETH_MNEMONIC, derivationKey, NETWORK_CONFIG)
                 const transfer = await ethSDK.transaction.send.transferSignedTransaction({
                     to: destination,
                     amount,
-                    fromPrivateKey: privateKey,
+                    fromPrivateKey,
                     currency: Currency.ETH,
                     fee: ethFee
                     // nonce: randomFixedInteger(7)
@@ -249,7 +250,7 @@ export class WithdrawalLib {
             if (coin === Currency.BTC) {
                 const convertToNumber = Number(amount).toFixed(8)
                 const btcSDK = TatumBtcSDK(API_KEY_CONFIG)
-               
+
                 const transfer = await btcSDK.transaction.sendTransaction({
                     fromAddress: [
                         {

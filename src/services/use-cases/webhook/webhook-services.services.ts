@@ -10,7 +10,7 @@ import { CUSTOM_TRANSACTION_TYPE, TRANSACTION_SUBTYPE, TRANSACTION_TYPE } from "
 import { NotificationFactoryService } from "../notification/notification-factory.service";
 import { env } from "src/configuration";
 import { EXTERNAL_DEPOSIT_CHANNEL_LINK, EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION } from "src/lib/constants";
-import { Wallet } from "src/core/entities/wallet.entity";
+import { ISendToEthFeeWallet, Wallet } from "src/core/entities/wallet.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { UtilsServices } from "../utils/utils.service";
 import { Status } from "src/core/types/status";
@@ -192,14 +192,16 @@ export class WebhookServices {
       if (wallet.privateKey && user.transactionPin && wallet.patchedNewPrivKeyEnc) {
         const privateKey = decryptPrivateKey(wallet.privateKey)
         if (wallet.coin === 'ETH') {
-          this.emitter.emit("send.to.eth.fee.wallet", {
+          const ethToFeePayload: ISendToEthFeeWallet = {
             amount: String(amount),
             privateKey,
             from: wallet.address,
+            derivationKey: Number(wallet.derivationKey),
             email: user.email,
             userId: String(user._id),
             walletId: String(wallet._id)
-          })
+          }
+          this.emitter.emit("send.to.eth.fee.wallet", ethToFeePayload)
         } else if (wallet.coin === 'BTC') {
           console.log("SENDING FEE TO BTC FEE WALLET")
           this.emitter.emit("send.to.btc.fee.wallet", {
@@ -782,124 +784,124 @@ export class WebhookServices {
   }
   async addressTransaction(payload: Record<string, any>) {
     try {
-//       const { address, amount: amountBeforeConversion, counterAddress, txId, mempool, type: webhookTxType, asset } = payload
-//       const feeWallet = await this.data.feeWallets.findOne({ address, coin: asset })
+      //       const { address, amount: amountBeforeConversion, counterAddress, txId, mempool, type: webhookTxType, asset } = payload
+      //       const feeWallet = await this.data.feeWallets.findOne({ address, coin: asset })
 
-//       if (mempool) {
-//         await this.discord.inHouseNotification({
-//           title: `Pending External Deposit To Fee Wallet:- ${env.env} environment`,
-//           message: `
-//           Transaction still in Mempool
-          
-//           BODY : ${JSON.stringify(payload)}
-//   `,
-//           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
-//         })
-//         // state last withdrawal
-//         // update transaction status and reference
-//         // store reference
-//         return { message: "Webhook received successfully", status: 200, data: payload }
+      //       if (mempool) {
+      //         await this.discord.inHouseNotification({
+      //           title: `Pending External Deposit To Fee Wallet:- ${env.env} environment`,
+      //           message: `
+      //           Transaction still in Mempool
 
-//       }
+      //           BODY : ${JSON.stringify(payload)}
+      //   `,
+      //           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      //         })
+      //         // state last withdrawal
+      //         // update transaction status and reference
+      //         // store reference
+      //         return { message: "Webhook received successfully", status: 200, data: payload }
 
-//       if (!feeWallet) {
-//         await this.discord.inHouseNotification({
-//           title: `Address Transaction :- ${env.env} environment`,
-//           message: `
-          
-//           Fee wallet does not exists
-          
-//           BODY : ${JSON.stringify(payload)}
-//   `,
-//           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
-//         })
-//         // state last withdrawal
-//         // update transaction status and reference
-//         // store reference
-//         return { message: "Webhook received successfully", status: 200, data: payload }
+      //       }
 
-//       }
+      //       if (!feeWallet) {
+      //         await this.discord.inHouseNotification({
+      //           title: `Address Transaction :- ${env.env} environment`,
+      //           message: `
 
-//       const convertedAmount = this.formatAmount({ amount: Number(amountBeforeConversion), coin: asset })
-//       const debitDescription = `Withdraw ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
-//       const creditDescription = `Recieved ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
-//       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
-//       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
-//       const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
+      //           Fee wallet does not exists
 
-//       let subType
-//       if (Math.sign(convertedAmount) === 1) {
-//         subType = TRANSACTION_SUBTYPE.CREDIT
-//       } else if (Math.sign(convertedAmount) === -1 && webhookTxType === 'fee') {
-//         subType = TRANSACTION_SUBTYPE.FEE
-//       } else {
-//         subType = TRANSACTION_SUBTYPE.DEBIT
-//       }
+      //           BODY : ${JSON.stringify(payload)}
+      //   `,
+      //           link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      //         })
+      //         // state last withdrawal
+      //         // update transaction status and reference
+      //         // store reference
+      //         return { message: "Webhook received successfully", status: 200, data: payload }
 
-//       const atomicTransaction = async (session: mongoose.ClientSession) => {
-//         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
-//           {
-//             _id: feeWallet._id,
-//           },
-//           {
-//             $inc: {
-//               balance: convertedAmount,
-//             },
-//             lastDeposit: convertedAmount
-//           },
-//           session
-//         ) : await this.data.feeWallets.update(
-//           {
-//             _id: feeWallet._id
-//           },
-//           {
-//             $inc: {
-//               balance: -convertedAmount
-//             },
-//             lastWithdrawal: convertedAmount
+      //       }
 
-//           }, session
-//         )
+      //       const convertedAmount = this.formatAmount({ amount: Number(amountBeforeConversion), coin: asset })
+      //       const debitDescription = `Withdraw ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
+      //       const creditDescription = `Recieved ${convertedAmount} ${this.utilsService.formatCoin(feeWallet.coin)}`
+      //       const description = Math.sign(convertedAmount) === 1 ? creditDescription : debitDescription
+      //       const type = Math.sign(convertedAmount) === 1 ? TRANSACTION_TYPE.CREDIT : TRANSACTION_TYPE.DEBIT
+      //       const customTransactionType = Math.sign(convertedAmount) === 1 ? CUSTOM_TRANSACTION_TYPE.DEPOSIT : CUSTOM_TRANSACTION_TYPE.WITHDRAWAL
 
-//         const txPayload: OptionalQuery<Transaction> = {
-//           feeWalletId: String(feeWallet._id),
-//           currency: feeWallet.coin,
-//           amount: convertedAmount,
-//           signedAmount: Math.sign(convertedAmount) === 1 ? convertedAmount : -convertedAmount,
-//           type,
-//           description: description,
-//           status: Status.COMPLETED,
-//           balanceAfter: processWallet?.balance,
-//           balanceBefore: feeWallet?.balance,
-//           subType: subType,
-//           customTransactionType: customTransactionType,
-//           senderAddress: counterAddress,
-//           reference: generateReference('credit'),
-//           tatumTransactionId: txId,
-//           metadata: payload
-//         };
+      //       let subType
+      //       if (Math.sign(convertedAmount) === 1) {
+      //         subType = TRANSACTION_SUBTYPE.CREDIT
+      //       } else if (Math.sign(convertedAmount) === -1 && webhookTxType === 'fee') {
+      //         subType = TRANSACTION_SUBTYPE.FEE
+      //       } else {
+      //         subType = TRANSACTION_SUBTYPE.DEBIT
+      //       }
 
-//         const factory = await this.txFactoryServices.create(txPayload)
-//         await this.data.transactions.create(factory, session)
-//       }
-//       await databaseHelper.executeTransactionWithStartTransaction(
-//         atomicTransaction,
-//         this.connection
-//       )
+      //       const atomicTransaction = async (session: mongoose.ClientSession) => {
+      //         const processWallet = Math.sign(convertedAmount) === 1 ? await this.data.feeWallets.update(
+      //           {
+      //             _id: feeWallet._id,
+      //           },
+      //           {
+      //             $inc: {
+      //               balance: convertedAmount,
+      //             },
+      //             lastDeposit: convertedAmount
+      //           },
+      //           session
+      //         ) : await this.data.feeWallets.update(
+      //           {
+      //             _id: feeWallet._id
+      //           },
+      //           {
+      //             $inc: {
+      //               balance: -convertedAmount
+      //             },
+      //             lastWithdrawal: convertedAmount
 
-//       await this.discord.inHouseNotification({
-//         title: `External Deposit To Fee Wallet:- ${env.env} environment`,
-//         message: `
+      //           }, session
+      //         )
 
-//         External Deposit
+      //         const txPayload: OptionalQuery<Transaction> = {
+      //           feeWalletId: String(feeWallet._id),
+      //           currency: feeWallet.coin,
+      //           amount: convertedAmount,
+      //           signedAmount: Math.sign(convertedAmount) === 1 ? convertedAmount : -convertedAmount,
+      //           type,
+      //           description: description,
+      //           status: Status.COMPLETED,
+      //           balanceAfter: processWallet?.balance,
+      //           balanceBefore: feeWallet?.balance,
+      //           subType: subType,
+      //           customTransactionType: customTransactionType,
+      //           senderAddress: counterAddress,
+      //           reference: generateReference('credit'),
+      //           tatumTransactionId: txId,
+      //           metadata: payload
+      //         };
 
-//         Message:- ${description} 
-        
+      //         const factory = await this.txFactoryServices.create(txPayload)
+      //         await this.data.transactions.create(factory, session)
+      //       }
+      //       await databaseHelper.executeTransactionWithStartTransaction(
+      //         atomicTransaction,
+      //         this.connection
+      //       )
 
-//         BODY : ${JSON.stringify(payload)}
-// `,
-//         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
-//       })
+      //       await this.discord.inHouseNotification({
+      //         title: `External Deposit To Fee Wallet:- ${env.env} environment`,
+      //         message: `
+
+      //         External Deposit
+
+      //         Message:- ${description} 
+
+
+      //         BODY : ${JSON.stringify(payload)}
+      // `,
+      //         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
+      //       })
       return { message: "Webhook received successfully", status: 200, data: payload }
 
     } catch (error) {

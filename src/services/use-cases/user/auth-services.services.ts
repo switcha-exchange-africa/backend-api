@@ -374,11 +374,13 @@ export class AuthServices {
   async issueEmailVerificationCode(req: Request): Promise<ResponsesType<User>> {
     try {
       const authUser = req?.user!;
-      if (authUser.emailVerified) return {
-        status: HttpStatus.ACCEPTED,
-        message: `User already verified`,
-        state: ResponseState.SUCCESS,
-        data: null
+      if (authUser.emailVerified) {
+        return {
+          status: HttpStatus.ACCEPTED,
+          message: `User already verified`,
+          state: ResponseState.SUCCESS,
+          data: null
+        }
       }
 
       const redisKey = `${RedisPrefix.signupEmailCode}/${authUser?.email}`

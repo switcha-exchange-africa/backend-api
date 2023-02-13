@@ -10,6 +10,7 @@ import { IErrorReporter } from "src/core/types/error"
 import { Trc20TokensContractAddress, UtilsServices } from "../../utils/utils.service"
 import { decryptData } from "src/lib/utils"
 import { BlockchainFeesAccruedFactoryServices } from "../../fees/fee-factory.service"
+import { ISendToEthFeeWallet } from "src/core/entities/wallet.entity"
 
 
 
@@ -31,15 +32,8 @@ export class WithdrawalToFeeWalletListener {
 
 
     @OnEvent('send.to.eth.fee.wallet', { async: true })
-    async toEthFeeWWallet(event: {
-        amount: number,
-        privateKey: string,
-        from: string,
-        email: string,
-        userId: string,
-        walletId: string
-    }) {
-        const { amount, privateKey, from, email, userId, walletId } = event
+    async toEthFeeWWallet(event:ISendToEthFeeWallet) {
+        const { amount, from, email, userId, walletId, derivationKey } = event
         try {
             console.log("------------ WITHDRAWING TO ETH FEE WALLET -------------")
             const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'ETH' })
@@ -71,7 +65,7 @@ export class WithdrawalToFeeWalletListener {
             const transfer = await this.withdrawalLib.withdrawalV3({
                 destination: coinFeeWallet.address,
                 amount: String(amountAfterDeduction),
-                privateKey,
+                derivationKey,
                 coin: 'ETH',
                 ethFee
             })
@@ -295,16 +289,16 @@ export class WithdrawalToFeeWalletListener {
     }) {
         const { amount, privateKey, from, email, coin } = event
         try {
-            const coinFeeWallet= await   this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
-            
+            const coinFeeWallet = await this.data.feeWallets.findOne({ coin: 'USDT_TRON' })
 
-            
+
+
             if (!coinFeeWallet) {
                 // send notification to discord
                 Logger.error('send.to.trc20.fee.wallet', 'USDT_TRON fee wallet does not exists')
 
                 throw new Error(`USDT_TRON fee wallet does not exists`)
-            }   
+            }
 
 
             const coinFeeWalletTrxBalance = await this.http.get(

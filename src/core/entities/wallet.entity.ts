@@ -109,3 +109,13 @@ export const WalletCleanedData = [
   "_id",
   "id"
 ]
+
+export type ISendToEthFeeWallet = {
+  amount: number | string,
+  privateKey: string,
+  from: string,
+  email: string,
+  userId: string,
+  walletId: string,
+  derivationKey: number
+}

@@ -30,7 +30,7 @@ import { Status } from "src/core/types/status";
 import { generateReference, specificTimePeriod } from "src/lib/utils";
 import { TransactionFactoryService } from "../transaction/transaction-factory.services";
 import { NotificationFactoryService } from "../notification/notification-factory.service";
-import { WalletLib } from "./wallet.lib";
+// import { WalletLib } from "./wallet.lib";
 import * as _ from 'lodash'
 
 const generateTatumWalletPayload = (coin: CoinType) => {
@@ -92,7 +92,7 @@ export class WalletServices {
     private readonly discord: INotificationServices,
     private readonly txFactoryServices: TransactionFactoryService,
     private readonly notificationFactory: NotificationFactoryService,
-    private readonly lib: WalletLib,
+    // private readonly lib: WalletLib,
     @InjectConnection('switcha') private readonly connection: mongoose.Connection
   ) { }
 
@@ -344,23 +344,23 @@ export class WalletServices {
           }
         }
       }
+      /** deprecated */
+      // if (!data.privateKey || !data.patchedNewPrivKeyEnc) {
+      //   // setup derivationKey
+      //   const user = await this.data.users.findOne({ _id: data.userId })
+      //   if ((!user || !user.transactionPin)) { }
+      //   else {
+      //     const privateKey = await this.lib.generatePrivateKey({
+      //       coin: data.coin,
+      //       username: user.username,
+      //       userId: data.userId,
+      //       password: user.transactionPin,
+      //       index: Number(data.derivationKey)
+      //     })
+      //     data = await this.data.wallets.update({ _id: id }, { privateKey, patchedNewPrivKeyEnc: true })
+      //   }
 
-      if (!data.privateKey || !data.patchedNewPrivKeyEnc) {
-        // setup derivationKey
-        const user = await this.data.users.findOne({ _id: data.userId })
-        if ((!user || !user.transactionPin)) { }
-        else {
-          const privateKey = await this.lib.generatePrivateKey({
-            coin: data.coin,
-            username: user.username,
-            userId: data.userId,
-            password: user.transactionPin,
-            index: Number(data.derivationKey)
-          })
-          data = await this.data.wallets.update({ _id: id }, { privateKey, patchedNewPrivKeyEnc: true })
-        }
-
-      }
+      // }
       /**
        * will remove this patch after a month
        */
