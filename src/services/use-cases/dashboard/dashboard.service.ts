@@ -27,9 +27,22 @@ export class DashboardServices {
       today = new Date().setHours(0, 0, 0, 0);
       const updateToday = new Date()
       const year = new Date(updateToday.setMonth(updateToday.getMonth() - 12))
-    
 
-      const [transactionsVolume, totalUsers, totalTransactionVolume, dailyUserData, weeklyUserData, monthlyUserData, yearlyUserData, totalDeposit, totalSwaps, totalWithdrawals] = await Promise.all([
+
+      const [
+        transactionsVolume,
+        totalUsers,
+        totalTransactionVolume,
+        dailyUserData,
+        weeklyUserData,
+        monthlyUserData,
+        yearlyUserData,
+        totalDeposit,
+        totalSwaps,
+        totalWithdrawals,
+        totalDepositAmount,
+        totalSwapAMount
+      ] = await Promise.all([
         this.data.transactions.aggregation([
 
           {
@@ -66,18 +79,40 @@ export class DashboardServices {
               $lte: lastDayMonth
             }
           }),
-          this.data.users.find(
+        this.data.users.find(
+          {
+            createdAt: {
+              $gte: year,
+              $lte: today
+            }
+          }),
+        this.data.transactions.find({ customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT }, { isLean: true }),
+        this.data.transactions.find({ customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP }, { isLean: true }),
+        this.data.withdrawals.find({}, { isLean: true }),
+        this.data.transactions.aggregation([
+          {
+            $match:
             {
-              createdAt: {
-                $gte: year,
-                $lte: today
-              }
-            }),
-            this.data.transactions.find({customTransactionType:CUSTOM_TRANSACTION_TYPE.DEPOSIT}, {isLean:true}),
-            this.data.transactions.find({customTransactionType:CUSTOM_TRANSACTION_TYPE.SWAP}, {isLean:true}),
-            this.data.withdrawals.find({}),
-            
-            
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.DEPOSIT
+            }
+          },
+          {
+            $group: { _id: "$currency", total: { $sum: "$amount" } }
+          }
+        ]
+        ),
+        this.data.transactions.aggregation([
+          {
+            $match:
+            {
+              customTransactionType: CUSTOM_TRANSACTION_TYPE.SWAP
+            }
+          },
+          {
+            $group: { _id: "$currency", total: { $sum: "$amount" } }
+          }
+        ]
+        )
       ])
 
       return {
@@ -94,9 +129,11 @@ export class DashboardServices {
           totalWeeklyUser: weeklyUserData.length,
           totalMonthlyUser: monthlyUserData.length,
           totalYearlyUser: yearlyUserData.length,
-          totalDeposit:totalDeposit.length, 
-          totalSwaps:totalSwaps.length, 
-          totalWithdrawals:totalWithdrawals.length
+          totalDeposit: totalDeposit.length,
+          totalSwaps: totalSwaps.length,
+          totalWithdrawals: totalWithdrawals.length,
+          totalDepositAmount,
+          totalSwapAMount
         },
         status: HttpStatus.OK,
         state: ResponseState.SUCCESS,
