@@ -379,7 +379,7 @@ export class WithdrawalServices {
         link: env.isProd ? WITHDRAWAL_CHANNEL_LINK_PRODUCTION : WITHDRAWAL_CHANNEL_LINK_DEVELOPMENT,
       })
       return {
-        message: `Withdrawal request of ${amount} ${this.utils.formatCoin(coin)} sent successfully.Withdrawal will be processed in the next 15 to 30 minute`,
+        message: `Withdrawal request of ${amount} ${this.utils.formatCoin(coin)} sent successfully. Withdrawal will be processed in the next 15 to 30 minute`,
         status: HttpStatus.CREATED,
         data: {},
         state: ResponseState.SUCCESS
