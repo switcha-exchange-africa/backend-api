@@ -787,7 +787,7 @@ export class WithdrawalServices {
           message: 'Withdrawal already processed',
         })
       }
-      const description = `Withdrawal request of ${withdrawal.originalAmount} ${this.utils.formatCoin(withdrawal.currency) } approved`
+      const description = `Withdrawal request of ${withdrawal.amount} ${this.utils.formatCoin(withdrawal.currency) } approved`
       const wallet = await this.data.wallets.findOne({id:withdrawal.walletId})
       if(!wallet){
         return Promise.reject({
@@ -808,7 +808,6 @@ export class WithdrawalServices {
         })
       }
       const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:withdrawal.currency})
-      console.log("FEE WALLET BALANCE ON BLOCKCHAIN", feeWalletBalanceOnBlockchain)
       if(withdrawal.amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
         // send notification to discord
         await this.discord.inHouseNotification({

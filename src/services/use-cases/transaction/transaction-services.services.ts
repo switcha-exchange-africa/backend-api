@@ -57,6 +57,7 @@ export class TransactionServices {
         };
       }
       const cleanedPayload = this.cleanQueryPayload(payload)
+      console.log(cleanedPayload)
       const { data, pagination } = await this.data.transactions.findAllWithPagination({
         query: cleanedPayload,
         queryFields: {},
