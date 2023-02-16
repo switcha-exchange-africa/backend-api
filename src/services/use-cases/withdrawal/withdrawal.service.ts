@@ -808,6 +808,7 @@ export class WithdrawalServices {
         })
       }
       const feeWalletBalanceOnBlockchain = await this.utils.getAddressBalanceOnTheBlockchain({address:feeWallet.address,coin:withdrawal.currency})
+      console.log("FEE WALLET BALANCE ON BLOCKCHAIN", feeWalletBalanceOnBlockchain)
       if(withdrawal.amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
         // send notification to discord
         await this.discord.inHouseNotification({
@@ -831,30 +832,6 @@ export class WithdrawalServices {
         })
       }
 
-      if(withdrawal.amount >= Math.abs(Number(feeWalletBalanceOnBlockchain))){
-        // send notification to discord
-        await this.discord.inHouseNotification({
-          title: `crypto.withdrawal.${env.env}`,
-          message: `
-            
-          Coin :- ${withdrawal.currency}
-
-          Withdrawal Amount:- ${withdrawal.amount} ${withdrawal.currency}
-
-          Master Wallet Address On The Blockchain :- ${feeWallet.address}
-          
-          Master Wallet Balance On Switcha :- ${feeWalletBalanceOnBlockchain}
-          
-          `,
-          link: env.isProd ? ERROR_REPORTING_CHANNEL_LINK_PRODUCTION : ERROR_REPORTING_CHANNEL_LINK_DEVELOPMENT,
-        })
-        return Promise.reject({
-          status: HttpStatus.BAD_REQUEST,
-          state: ResponseState.ERROR,
-          message: 'Withdrawal feature currently under maintenance',
-          error: null
-        })
-      }
       let response
 
       if(withdrawal.currency === 'ETH'){
@@ -866,14 +843,14 @@ export class WithdrawalServices {
           destination:withdrawal.destination.address,
           walletId:String(withdrawal.walletId),
           userId:String(withdrawal.userId),
-          derivationKey:Number(wallet.derivationKey),
+          derivationKey:Number(feeWallet.derivationKey),
           amount:withdrawal.amount
         }
         response = await this.ethWithdrawal(ethPayload)
       }else if(TRC_20_TOKENS.includes(withdrawal.currency)){
         const trc20Payload:ITrc20Withdrawal = {
           amount:String(withdrawal.amount),
-          derivationKey:Number(wallet.derivationKey),
+          derivationKey:Number(feeWallet.derivationKey),
           email,
           from:feeWallet.address,
           destination:withdrawal.destination.address,
@@ -883,7 +860,7 @@ export class WithdrawalServices {
         console.log("ENTERING BTC WITHDRAWALS")
         const btcPayload:IBtcWithdrawal = {
           amount:String(withdrawal.amount),
-          derivationKey:Number(wallet.derivationKey),
+          derivationKey:Number(feeWallet.derivationKey),
         from: feeWallet.address,
         email,
         destination:withdrawal.destination.address,
