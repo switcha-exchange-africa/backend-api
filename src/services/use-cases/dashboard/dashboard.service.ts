@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
+import { CUSTOM_TRANSACTION_TYPE } from "src/core/entities/transaction.entity";
 import { IErrorReporter } from "src/core/types/error";
 import { ResponseState } from "src/core/types/response";
 import { UtilsServices } from "../utils/utils.service";
@@ -28,7 +29,7 @@ export class DashboardServices {
       const year = new Date(updateToday.setMonth(updateToday.getMonth() - 12))
     
 
-      const [transactionsVolume, totalUsers, totalTransactionVolume, dailyUserData, weeklyUserData, monthlyUserData, yearlyUserData] = await Promise.all([
+      const [transactionsVolume, totalUsers, totalTransactionVolume, dailyUserData, weeklyUserData, monthlyUserData, yearlyUserData, totalDeposit, totalSwaps, totalWithdrawals] = await Promise.all([
         this.data.transactions.aggregation([
 
           {
@@ -71,7 +72,12 @@ export class DashboardServices {
                 $gte: year,
                 $lte: today
               }
-            })
+            }),
+            this.data.transactions.find({customTransactionType:CUSTOM_TRANSACTION_TYPE.DEPOSIT}, {isLean:true}),
+            this.data.transactions.find({customTransactionType:CUSTOM_TRANSACTION_TYPE.SWAP}, {isLean:true}),
+            this.data.withdrawals.find({}),
+            
+            
       ])
 
       return {
@@ -88,7 +94,9 @@ export class DashboardServices {
           totalWeeklyUser: weeklyUserData.length,
           totalMonthlyUser: monthlyUserData.length,
           totalYearlyUser: yearlyUserData.length,
-
+          totalDeposit:totalDeposit.length, 
+          totalSwaps:totalSwaps.length, 
+          totalWithdrawals:totalWithdrawals.length
         },
         status: HttpStatus.OK,
         state: ResponseState.SUCCESS,
