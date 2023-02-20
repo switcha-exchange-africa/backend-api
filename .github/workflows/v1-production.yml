@@ -66,4 +66,4 @@ jobs:
             docker run --name switcha-production-api --env-file ~/secrets/api/.env.production -d --restart always --publish 3400:3400 registry.digitalocean.com/switcha-africa/switcha-production-api:latest
 
             # deleting untagged image
-            #docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+            docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
