@@ -938,7 +938,7 @@ export class WithdrawalServices {
         TO :- ${withdrawal.destination.address}
 
 
-        BODY : ${JSON.stringify(payload)}
+        BODY : ${JSON.stringify(response)}
 `,
         link: env.isProd ? EXTERNAL_DEPOSIT_CHANNEL_LINK_PRODUCTION : EXTERNAL_DEPOSIT_CHANNEL_LINK,
       })

@@ -86,7 +86,7 @@ export const TATUM_PRIVATE_KEY_PIN = getEnv('TATUM_PRIVATE_KEY_PIN', true)
 export const PRIVATE_KEY_PASSWORD = getEnv('PRIVATE_KEY_PASSWORD', true)
 export const PRIVATE_KEY_ALGORITHM = getEnv('PRIVATE_KEY_ALGORITHM', true)
 
-export const TRC_20_TRON_FEE_AMOUNT: string = '12'
+export const TRC_20_TRON_FEE_AMOUNT: string = '20'
 export const TRC_20_TRON_ACTIVATION_AMOUNT: string = '1'
 
 export const BASE_DIVISOR_IN_GWEI = 1000000000  // There are 1 billion wei in one gwei and there are 10^9 or 1,000,000,000 gwei in one ether.
