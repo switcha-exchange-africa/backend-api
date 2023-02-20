@@ -2,7 +2,7 @@ import { HttpStatus, Injectable, Logger } from "@nestjs/common"
 import {
   BASE_DIVISOR_IN_GWEI,
   env, ERC_20_TOKENS, ETH_BASE_DIVISOR_IN_WEI, TATUM_BASE_URL, TATUM_CONFIG, 
-  TRC_20_TOKENS, TRC_20_TRON_FEE_AMOUNT, TRON_BASE_DIVISOR,
+  TRC_20_TOKENS, TRC_20_TRON_FEE_AMOUNT, TRC_20_TRON_WITHDRAWAL_FEE_AMOUNT, TRON_BASE_DIVISOR,
   // TATUM_BASE_URL, TATUM_CONFIG,
   // TATUM_BASE_URL, TATUM_CONFIG
 } from "src/configuration"
@@ -749,7 +749,7 @@ export class WithdrawalServices {
       amount,
       derivationKey,
       coin: 'USDT_TRON',
-      fee:TRC_20_TRON_FEE_AMOUNT,
+      fee:TRC_20_TRON_WITHDRAWAL_FEE_AMOUNT,
       contractAddress: Trc20TokensContractAddress.USDT_TRON,
   })
     return transfer
